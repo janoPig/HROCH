@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 from sympy.parsing.sympy_parser import parse_expr
 import sympy as sy
-from math import *
+from math import sqrt
+from math import pow
 import sys
 from sympy import preorder_traversal
 from sklearn.metrics import mean_squared_error
@@ -63,7 +64,6 @@ class Hroch(BaseEstimator, RegressorMixin):
                     # preffer shorter expressions
                     # this is terrible, but may be
                     if (self.rms-0.95*self.best_rms) * pow(self.cplx+100, 4) > (rms-0.95*self.best_rms) * pow(cplx+100, 4):
-                        # if rms < self.rms:
                         self.r2 = r2
                         self.rms = rms
                         self.is_fitted_ = True
@@ -76,12 +76,14 @@ class Hroch(BaseEstimator, RegressorMixin):
                         if verbose:
                             print(
                                 f"[{ss[1]}] rms={rms},r2={self.r2},cplx={self.cplx}, {self.expr}")
-                except:
-                    print("some error!")
 
-                if rms < self.best_rms:
+                    # debug
+                    if rms < self.best_rms:
                         self.best_rms = rms
                         self.best_cplx = cplx
+                except Exception as e:
+                    print(e)
+
                 if self.r2 and self.r2 >= 1.0-stopingCriteria:
                     break
 
