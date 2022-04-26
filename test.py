@@ -10,7 +10,7 @@ import glob
 import os
 
 
-def test_sample(name, timeLimit, verbose=False):
+def test_sample(name):
     print(name)
     f = pd.read_csv(name, sep="\t")
 
@@ -21,7 +21,7 @@ def test_sample(name, timeLimit, verbose=False):
     X = f.drop(columns=['target'])
 
     reg = Hroch()
-    reg.fit(X, Y, timeLimit, 8, verbose)
+    reg.fit(X, Y)
 
     yp = reg.predict(X)
 
@@ -34,13 +34,13 @@ def test_sample(name, timeLimit, verbose=False):
     return [rms, r2]
 
 
-def all_samples(path, timeLimit):
+def all_samples(path):
     os.chdir(path)
     cnt = 0
     fit = 0
     r2_sum = 0.0
     for file in glob.glob("*.tsv"):
-        rms, r2 = test_sample(file, timeLimit)
+        rms, r2 = test_sample(file)
         if r2 < 0.0:
             r2 = 0.0
         r2_sum += r2
@@ -51,4 +51,4 @@ def all_samples(path, timeLimit):
         print(f"cnt={cnt}, fit={fit}, r2{r2_avg}, r2_sum{r2_sum}")
 
 
-all_samples("./test/", 1*1000)
+all_samples("./test/")

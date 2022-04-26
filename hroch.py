@@ -29,8 +29,11 @@ class Hroch(BaseEstimator, RegressorMixin):
     def __init__(self, random_state=-1):
         self.random_state = random_state
         self.r2 = -99999999999999999.0
+        self.rms = 99999999999999999.0
+        self.best_rms = 99999999999999999.0
+        self.cplx = 99999999999999999
 
-    def fit(self, X_train, y_train, timeLimit=5000, numThreads=8, verbose=False):
+    def fit(self, X_train, y_train, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=False):
         with TemporaryDirectory() as temp_dir:
             fname = temp_dir + "/tmpdata.csv"
 
@@ -57,8 +60,12 @@ class Hroch(BaseEstimator, RegressorMixin):
                     r2 = r2_score(y_train, yp)
                     rms = np.sqrt(mean_squared_error(y_train, yp))
 
-                    if r2 > self.r2:
+                    # preffer shorter expressions
+                    # this is terrible, but may be
+                    if (self.rms-0.95*self.best_rms) * pow(self.cplx+100, 4) > (rms-0.95*self.best_rms) * pow(cplx+100, 4):
+                        # if rms < self.rms:
                         self.r2 = r2
+                        self.rms = rms
                         self.is_fitted_ = True
                         self.sexpr = sexpr
                         self.cplx = cplx
@@ -71,7 +78,11 @@ class Hroch(BaseEstimator, RegressorMixin):
                                 f"[{ss[1]}] rms={rms},r2={self.r2},cplx={self.cplx}, {self.expr}")
                 except:
                     print("some error!")
-                if self.r2 and self.r2 >= 0.9999:
+
+                if rms < self.best_rms:
+                        self.best_rms = rms
+                        self.best_cplx = cplx
+                if self.r2 and self.r2 >= 1.0-stopingCriteria:
                     break
 
             process.stdout.close()
