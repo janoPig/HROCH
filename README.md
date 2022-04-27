@@ -11,4 +11,11 @@
 ```
 
   Simple hillclimb algorithm for symbolic regression.
-  CPU must support AVX2 instructions set.
+
+  require:
+
+- AVX2 instructions set
+- GLIBC 2.35
+- pandas
+- sympy
+- numpy
