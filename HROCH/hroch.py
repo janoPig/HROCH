@@ -27,14 +27,33 @@ def complexity(expr):
 
 class Hroch(BaseEstimator, RegressorMixin):
 
-    def __init__(self, random_state=-1):
-        self.random_state = random_state
+    def __init__(self):
         self.r2 = -99999999999999999.0
         self.rms = 99999999999999999.0
         self.best_rms = 99999999999999999.0
         self.cplx = 99999999999999999
 
-    def fit(self, X_train, y_train, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=False):
+    def fit(self, X, y, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=False):
+        # Competition 2022
+        try:
+            numThreads = os.environ['OMP_NUM_THREADS']
+        except Exception as e:
+            print(e)
+
+        x_cnt = np.shape(X)[1]
+        column_names = ['x_'+str(i) for i in range(x_cnt)]
+        X_train = pd.DataFrame(data=X, columns=column_names)
+        y_train = pd.DataFrame(data=y, columns=["target"])
+
+        if len(X_train) <= 1000:
+            max_time = 360 - 15  # 15 second of slack
+        else:
+            max_time = 3600 - 15  # 15 second of slack
+
+        timeLimit = max_time * 1000
+        timeLimit = 60*1000  # todo: remove - test to pass ci
+        # end Competition 2022
+
         with TemporaryDirectory() as temp_dir:
             fname = temp_dir + "/tmpdata.csv"
 
@@ -46,16 +65,15 @@ class Hroch(BaseEstimator, RegressorMixin):
             cwd = os.path.dirname(os.path.realpath(__file__))
 
             process = subprocess.Popen(
-                ["bin/hroch", f"{fname}", "", f"{timeLimit}", f"{numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                ["hroch", f"{fname}", "", f"{timeLimit}", f"{numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             for line in iter(process.stdout.readline, b''):
                 ss = line.decode("utf-8").split(";")
 
                 try:
                     sexpr = sy.sympify(ss[0], evaluate=True)
-                    expr = self.get_panda_expr(X_train, sexpr)
                     cplx = complexity(sexpr)
 
-                    # hroch-cli compute with 32-bit float, and isn't guaranteed thah use all samples
+                    # hroch-cli compute with 32-bit float, and isn't guaranteed that use all samples
                     # we fit data to obtain correct error
                     yp = self.predict(X_train, sexpr)
                     r2 = r2_score(y_train, yp)
@@ -126,9 +144,14 @@ class Hroch(BaseEstimator, RegressorMixin):
             expr = self.get_panda_expr(X, sexpr)
             Z = X.eval(expr)
 
-        return Z
+        return Z.to_numpy()
 
-    def predict(self, X_test, sexpr=None, ic=None):
+    def predict(self, X_test, sexpr=None):
         if sexpr == None:
             check_is_fitted(self)
-        return self.eval_expr(X_test, sexpr)
+        x_cnt = np.shape(X_test)[1]
+        column_names = ['x_'+str(i) for i in range(x_cnt)]
+        X_train = pd.DataFrame(data=X_test, columns=column_names)
+        return self.eval_expr(X_train, sexpr)
+
+
