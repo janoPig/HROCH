@@ -1,4 +1,4 @@
-from hroch import Hroch
+from HROCH import Hroch
 import numpy as np
 import pandas as pd
 from math import sqrt
@@ -21,12 +21,16 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
     X = f.drop(columns=['target'])
 
     reg = Hroch()
-    reg.fit(X, Y, timeLimit, numThreads, stopingCriteria, verbose)
+    reg.numThreads = numThreads
+    reg.verbose = verbose
+    reg.stopingCriteria = stopingCriteria
+    reg.timeLimit = timeLimit
+    reg.fit(X.to_numpy(), Y.to_numpy())
 
-    yp = reg.predict(X)
+    yp = reg.predict(X.to_numpy())
 
     r2 = r2_score(Y, yp)
-    rms = np.sqrt(mean_squared_error(Y, yp))
+    rms = np.sqrt(mean_squared_error(Y.to_numpy(), yp))
     print(f"rms={rms}, r2={r2}")
     print(reg.expr)
 
@@ -36,7 +40,7 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
 print(os.path.dirname(os.path.abspath(__file__)))
 
 
-def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=False):
+def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=True):
     os.chdir(path)
     cnt = 0
     fit = 0
@@ -57,4 +61,4 @@ def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbos
         print(f"cnt={cnt}, fit={fit}, eq={eq}, r2{r2_avg}, r2_sum{r2_sum}")
 
 
-all_samples(os.path.dirname(os.path.abspath(__file__)) + "/test/")
+all_samples(os.path.dirname(os.path.abspath(__file__)) + "/test/", 1000)

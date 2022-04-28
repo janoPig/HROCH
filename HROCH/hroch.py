@@ -32,27 +32,17 @@ class Hroch(BaseEstimator, RegressorMixin):
         self.rms = 99999999999999999.0
         self.best_rms = 99999999999999999.0
         self.cplx = 99999999999999999
+        self.numThreads = 8
+        self.timeLimit = 5000
+        self.stopingCriteria = 1e-12
+        self.verbose = False
 
-    def fit(self, X, y, timeLimit=5000, numThreads=8, stopingCriteria=1e-9, verbose=False):
-        # Competition 2022
-        try:
-            numThreads = os.environ['OMP_NUM_THREADS']
-        except Exception as e:
-            print(e)
+    def fit(self, X, y):
 
         x_cnt = np.shape(X)[1]
         column_names = ['x_'+str(i) for i in range(x_cnt)]
         X_train = pd.DataFrame(data=X, columns=column_names)
         y_train = pd.DataFrame(data=y, columns=["target"])
-
-        if len(X_train) <= 1000:
-            max_time = 360 - 15  # 15 second of slack
-        else:
-            max_time = 3600 - 15  # 15 second of slack
-
-        timeLimit = max_time * 1000
-        timeLimit = 60*1000  # todo: remove - test to pass ci
-        # end Competition 2022
 
         with TemporaryDirectory() as temp_dir:
             fname = temp_dir + "/tmpdata.csv"
@@ -65,7 +55,7 @@ class Hroch(BaseEstimator, RegressorMixin):
             cwd = os.path.dirname(os.path.realpath(__file__))
 
             process = subprocess.Popen(
-                ["hroch", f"{fname}", "", f"{timeLimit}", f"{numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                ["hroch", f"{fname}", "", f"{self.timeLimit}", f"{self.numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             for line in iter(process.stdout.readline, b''):
                 ss = line.decode("utf-8").split(";")
 
@@ -91,7 +81,7 @@ class Hroch(BaseEstimator, RegressorMixin):
                         self.RMSE = sqrt(float(ss[2]))  # debug
                         self.expr = self.get_panda_expr(X_train, sexpr)
 
-                        if verbose:
+                        if self.verbose:
                             print(
                                 f"[{ss[1]}] rms={rms},r2={self.r2},cplx={self.cplx}, {self.expr}")
 
@@ -102,7 +92,7 @@ class Hroch(BaseEstimator, RegressorMixin):
                 except Exception as e:
                     print(e)
 
-                if self.r2 and self.r2 >= 1.0-stopingCriteria:
+                if self.r2 and self.r2 >= 1.0-self.stopingCriteria:
                     break
 
             process.stdout.close()
@@ -153,5 +143,3 @@ class Hroch(BaseEstimator, RegressorMixin):
         column_names = ['x_'+str(i) for i in range(x_cnt)]
         X_train = pd.DataFrame(data=X_test, columns=column_names)
         return self.eval_expr(X_train, sexpr)
-
-
