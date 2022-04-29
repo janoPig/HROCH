@@ -32,7 +32,7 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
     r2 = r2_score(Y, yp)
     rms = np.sqrt(mean_squared_error(Y.to_numpy(), yp))
     print(f"rms={rms}, r2={r2}")
-    print(reg.expr)
+    print(reg.get_panda_expr(X, reg.sexpr))
 
     return [rms, r2]
 

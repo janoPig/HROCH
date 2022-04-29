@@ -8,6 +8,6 @@ setup(
     author_email='jan.pigos@gmail.com',
     url='https://github.com/janoPig/HROCH/',
     packages=['HROCH'],
-    data_files=[('bin', ['hroch'])],
+    data_files=[('bin', ['hroch.bin', 'hroch.exe'])],
     install_requires=['scikit-learn', 'numpy', 'pandas'],
 )

@@ -2,6 +2,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 import os
+import platform
 from tempfile import TemporaryDirectory
 import subprocess
 import numpy as np
@@ -54,8 +55,12 @@ class Hroch(BaseEstimator, RegressorMixin):
 
             cwd = os.path.dirname(os.path.realpath(__file__))
 
+            cli = "hroch.bin"
+            if platform.system() == "Windows":
+                cli = "hroch.exe"
+
             process = subprocess.Popen(
-                ["hroch", f"{fname}", "", f"{self.timeLimit}", f"{self.numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                [cli, f"{fname}", "", f"{self.timeLimit}", f"{self.numThreads}"], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
             for line in iter(process.stdout.readline, b''):
                 ss = line.decode("utf-8").split(";")
 
