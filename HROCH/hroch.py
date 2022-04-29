@@ -34,7 +34,7 @@ class Hroch(BaseEstimator, RegressorMixin):
         self.best_rms = 99999999999999999.0
         self.cplx = 99999999999999999
         self.numThreads = 8
-        self.timeLimit = 5*60*1000
+        self.timeLimit = 5*1000
         self.stopingCriteria = 1e-12
         self.verbose = False
 
@@ -44,9 +44,6 @@ class Hroch(BaseEstimator, RegressorMixin):
         column_names = ['x_'+str(i) for i in range(x_cnt)]
         X_train = pd.DataFrame(data=X, columns=column_names)
         y_train = pd.DataFrame(data=y, columns=["target"])
-
-        raise Exception(
-            f'HROCH.fit: timeLimit={self.timeLimit} numThreads={self.numThreads}')
 
         with TemporaryDirectory() as temp_dir:
             fname = temp_dir + "/tmpdata.csv"
