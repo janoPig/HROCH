@@ -34,7 +34,7 @@ class Hroch(BaseEstimator, RegressorMixin):
         self.best_rms = 99999999999999999.0
         self.cplx = 99999999999999999
         self.numThreads = 8
-        self.timeLimit = 5000
+        self.timeLimit = 60*1000
         self.stopingCriteria = 1e-12
         self.verbose = False
 
