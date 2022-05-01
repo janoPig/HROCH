@@ -41,9 +41,23 @@ class Hroch(BaseEstimator, RegressorMixin):
     def fit(self, X, y):
 
         x_cnt = np.shape(X)[1]
-        column_names = ['x_'+str(i) for i in range(x_cnt)]
-        X_train = pd.DataFrame(data=X, columns=column_names)
-        y_train = pd.DataFrame(data=y, columns=["target"])
+
+        if isinstance(X, pd.DataFrame):
+            X_train = X
+        elif isinstance(X, np.ndarray):
+            column_names = ['x_'+str(i) for i in range(x_cnt)]
+            X_train = pd.DataFrame(data=X, columns=column_names)
+        else:
+            raise Exception(
+                'param X: wrong type (numpy.ndarray and pandas.Dataframe supported)')
+
+        if isinstance(y, pd.DataFrame):
+            y_train = y
+        elif isinstance(y, np.ndarray):
+            y_train = pd.DataFrame(data=y, columns=["target"])
+        else:
+            raise Exception(
+                'param y: wrong type (numpy.ndarray and pandas.Dataframe supported)')
 
         with TemporaryDirectory() as temp_dir:
             fname = temp_dir + "/tmpdata.csv"
@@ -103,7 +117,7 @@ class Hroch(BaseEstimator, RegressorMixin):
             process.stdout.close()
             process.wait()
 
-        return self
+        return self.rms, self.r2, self.cplx
 
     def get_panda_expr(self, X, sexpr):
         seq = str(sexpr)
@@ -145,6 +159,10 @@ class Hroch(BaseEstimator, RegressorMixin):
         if sexpr == None:
             check_is_fitted(self)
         x_cnt = np.shape(X_test)[1]
-        column_names = ['x_'+str(i) for i in range(x_cnt)]
-        X_train = pd.DataFrame(data=X_test, columns=column_names)
-        return self.eval_expr(X_train, sexpr)
+        if isinstance(X_test, pd.DataFrame):
+            column_names = X_test.columns
+            x = X_test
+        else:
+            column_names = ['x_'+str(i) for i in range(x_cnt)]
+            x = pd.DataFrame(data=X_test, columns=column_names)
+        return self.eval_expr(x, sexpr)
