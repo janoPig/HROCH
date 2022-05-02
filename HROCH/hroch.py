@@ -37,6 +37,7 @@ class Hroch(BaseEstimator, RegressorMixin):
         self.timeLimit = 5*1000
         self.stopingCriteria = 1e-12
         self.verbose = False
+        self.SCORE = 10.0
 
     def fit(self, X, y):
 
