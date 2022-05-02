@@ -88,17 +88,19 @@ class Hroch(BaseEstimator, RegressorMixin):
                     r2 = r2_score(y_train, yp)
                     rms = np.sqrt(mean_squared_error(y_train, yp))
 
+                    SCORE = float(ss[2])
+
                     # preffer shorter expressions
                     # this is terrible, but may be
                     # if (self.rms-0.95*self.best_rms) * pow(self.cplx+100, 4) > (rms-0.95*self.best_rms) * pow(cplx+100, 4):
-                    if self.rms > rms:
+                    if self.rms * self.SCORE > rms * SCORE:
                         self.r2 = r2
                         self.rms = rms
                         self.is_fitted_ = True
                         self.sexpr = sexpr
                         self.cplx = cplx
                         self.streq = ss[0]  # debug
-                        self.RMSE = sqrt(float(ss[2]))  # debug
+                        self.SCORE = SCORE
                         self.expr = self.get_panda_expr(X_train, sexpr)
 
                         if self.verbose:
