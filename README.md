@@ -1,6 +1,6 @@
 # HROCH
 
-```
+```txt
       c~~p ,---------.
  ,---'oo  )           \
 ( O O                  )/
@@ -11,25 +11,39 @@
 ```
 
   Simple and fast hillclimb algorithm for symbolic regression.
-  Python wraper(a sklearn-compatible Regressor) for CLI(command line interface)
+  Python wraper(a sklearn-compatible Regressor) for CLI
 
-  CLI builded on Ubuntu 20.04 with g++-9
-  Tested on Ubuntu 20.04 and Pop!_OS 22.04
+  Zero hyperparameter tunning. Only parameters to set are time limit and r2 error as stopping criterium.
 
-  Requirements:
+  *CLI builded on Ubuntu 20.04 with g++-9
+  Tested on Ubuntu 20.04 and Pop!_OS 22.04*
+
+## Requirements
 
 - AVX2 instructions set(all modern CPU support this)
 - pandas
 - sympy
 - numpy
 
-Installation:
+## Performance  
+
+Feynman dataset(all 119 samples from  [PMLB](https://github.com/EpistasisLab/pmlb))  
+5 seconds time limit, 8 threads, AMD Ryzen 5 1600
+
+| **target noise** | **r2 > 0.999** | **r2 = 1.0** | **r2 mean** | **r2 median** | **average model complexity** |
+|:----------------:|:--------------:|:------------:|:-----------:|:-------------:|:----------------------------:|
+| **0**            | 69%            | 52%          | 0.98        | 1.0           | 14                           |
+| **0.001**        | 68%            | 34%          | 0.97        | 1.0           | 14                           |
+| **0.01**         | 68%            | 34%          | 0.97        | 1.0           | 14                           |
+| **0.1**          | 63%            | 30%          | 0.97        | 1.0           | 14                           |
+
+## Installation
 
 ```sh
 pip install git+https://github.com/janoPig/HROCH.git
 ```
 
-Usage:
+## Usage
 
 ```python
 from HROCH import Hroch
