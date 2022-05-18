@@ -1,3 +1,4 @@
+from sympy.parsing.sympy_parser import parse_expr
 from HROCH import Hroch
 import numpy as np
 import pandas as pd
@@ -7,6 +8,10 @@ from sklearn.model_selection import train_test_split
 
 import glob
 import os
+
+import statistics
+
+target_noise = 0.01
 
 
 def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
@@ -23,13 +28,23 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
                                                         train_size=0.75,
                                                         test_size=0.25, random_state=42)
 
+    y_train = y_train.to_numpy()
+
+    if target_noise > 0:
+        noise = np.random.normal(0,
+                                 target_noise *
+                                 np.sqrt(
+                                     np.mean(np.square(y_train))),
+                                 size=[len(y_train), 1])
+        y_train = y_train + noise
+
     reg = Hroch()
     reg.numThreads = numThreads
     reg.verbose = verbose
     reg.stopingCriteria = stopingCriteria
     reg.timeLimit = timeLimit
-    train_rms, train_r2, complexity = reg.fit(X_train, y_train)
-    #reg.fit(X, Y)
+    train_rms, train_r2, complexity = reg.fit(
+        X_train.to_numpy(), y_train)
 
     yp = reg.predict(X_test)
 
@@ -39,28 +54,37 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
         f"train: rms={train_rms}, r2={train_r2}, cplx={complexity}, test: rms={rms}, r2={r2}")
     print(reg.get_panda_expr(X, reg.sexpr))
 
-    return [rms, r2]
+    return [rms, r2, complexity]
 
 
-def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=1e-12, verbose=True):
+def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=0, verbose=False):
     os.chdir(path)
     cnt = 0
     fit = 0
     eq = 0  # symbolic equivalent
+    eq2 = 0  # symbolic equivalent
     r2_sum = 0.0
+    cps = 0.0
+    r2arr = []
     for file in glob.glob("*.tsv"):
-        rms, r2 = test_sample(file, timeLimit, numThreads,
-                              stopingCriteria, verbose)
-        if r2 < 0.0:
-            r2 = 0.0
+        rms, r2, complexity = test_sample(file, timeLimit, numThreads,
+                                          stopingCriteria, verbose)
+
         r2_sum += r2
         cnt = cnt + 1
         if r2 > 0.999:
             fit = fit + 1
+
         if r2 >= 1.0-stopingCriteria:
             eq = eq + 1
+        if r2 >= 1.0:
+            eq2 = eq2 + 1
+        r2arr.append(r2)
         r2_avg = r2_sum / cnt
-        print(f"cnt={cnt}, fit={fit}, eq={eq}, r2{r2_avg}, r2_sum{r2_sum}")
+        cps = cps + complexity
+        print(
+            f"cnt={cnt}, fit={fit}, eq={eq}, eq2={eq2}, r2={r2_avg}, r2_sum={r2_sum} cplx={cps/cnt} med={statistics.median(r2arr)}")
 
 
-all_samples(os.path.dirname(os.path.abspath(__file__)) + "/test2/", 60*1000)
+all_samples(os.path.dirname(os.path.abspath(
+    __file__)) + "/test/", 5*60*1000)

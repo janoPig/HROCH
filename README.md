@@ -28,7 +28,8 @@
 ## Performance  
 
 Feynman dataset(all 119 samples from  [PMLB](https://github.com/EpistasisLab/pmlb))  
-5 seconds time limit, 8 threads, AMD Ryzen 5 1600
+
+**5 seconds** time limit, 8 threads, AMD Ryzen 5 1600
 
 | **target noise** | **r2 > 0.999** | **r2 = 1.0** | **r2 mean** | **r2 median** | **average model complexity** |
 |:----------------:|:--------------:|:------------:|:-----------:|:-------------:|:----------------------------:|
@@ -36,6 +37,15 @@ Feynman dataset(all 119 samples from  [PMLB](https://github.com/EpistasisLab/pml
 | **0.001**        | 68%            | 34%          | 0.97        | 1.0           | 14                           |
 | **0.01**         | 68%            | 34%          | 0.97        | 1.0           | 14                           |
 | **0.1**          | 63%            | 30%          | 0.97        | 1.0           | 14                           |
+
+**5 minutes** time limit, 8 threads, AMD Ryzen 5 1600
+
+| **target noise** | **r2 > 0.999** | **r2 = 1.0** | **r2 mean** | **r2 median** | **average model complexity** |
+|------------------|----------------|--------------|-------------|---------------|------------------------------|
+| **0**            | 89%            | 67%          | 0.999       | 1.0           | 16                           |
+| **0.001**        | 89%            | 42%          | 0.999       | 1.0           | 15                           |
+| **0.01**         |                |              |             |               |                              |
+| **0.1**          |                |              |             |               |                              |
 
 ## Installation
 
