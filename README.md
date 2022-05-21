@@ -18,6 +18,8 @@
   *CLI builded on Ubuntu 20.04 with g++-9
   Tested on Ubuntu 20.04 and Pop!_OS 22.04*
 
+  Search space: add, mul, sq2, sub, div, sqrt, exp, log, asin, acos, sin, cos
+
 ## Requirements
 
 - AVX2 instructions set(all modern CPU support this)
