@@ -11,14 +11,16 @@
 ```
 
   Simple and fast hillclimb algorithm for symbolic regression.
-  Python wraper(a sklearn-compatible Regressor) for CLI
+  Python wraper(a sklearn-compatible Regressor) for [CLI](README_CLI.md)
 
   Zero hyperparameter tunning. Only parameters to set are time limit and r2 error as stopping criterium.
 
   *CLI builded on Ubuntu 20.04 with g++-9
   Tested on Ubuntu 20.04 and Pop!_OS 22.04*
 
-  Search space: add, mul, sq2, sub, div, sqrt, exp, log, asin, acos, sin, cos
+  Search space: add, mul, sq2, sub, div, sqrt, exp, log, asin, acos, sin, cos, tanh
+
+  <span style="color:red"> HROCH use unprotected version of math operations (eg. log or division)</span>
 
 ## Requirements
 
