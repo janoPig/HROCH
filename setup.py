@@ -9,5 +9,5 @@ setup(
     url='https://github.com/janoPig/HROCH/',
     packages=['HROCH'],
     data_files=[('bin', ['hroch.bin', 'hroch.exe'])],
-    install_requires=['scikit-learn', 'numpy', 'pandas'],
+    install_requires=['numpy>=1.22.3'],
 )
