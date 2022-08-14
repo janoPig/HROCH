@@ -1,6 +1,7 @@
 # HROCH
 
 ```txt
+  Hrochy určite nemajú choboty.
       c~~p ,---------.
  ,---'oo  )           \
 ( O O                  )/
@@ -10,7 +11,7 @@
        ||__|    |_|__|
 ```
 
-  Simple and fast hillclimb algorithm for symbolic regression.
+  Simple and fucking fast hillclimb algorithm for symbolic regression.
   Python wraper(a sklearn-compatible Regressor) for [CLI](README_CLI.md)
 
   Zero hyperparameter tunning. Only parameters to set are time limit and r2 error as stopping criterium.
@@ -37,19 +38,19 @@ Feynman dataset(all 119 samples from  [PMLB](https://github.com/EpistasisLab/pml
 
 | **target noise** | **r2 > 0.999** | **r2 = 1.0** | **r2 mean** | **r2 median** | **average model complexity** |
 |:----------------:|:--------------:|:------------:|:-----------:|:-------------:|:----------------------------:|
-| **0**            | 69%            | 52%          | 0.98        | 1.0           | 14                           |
-| **0.001**        | 68%            | 34%          | 0.97        | 1.0           | 14.5                         |
-| **0.01**         | 68%            | 34%          | 0.97        | 1.0           | 13.5                         |
-| **0.1**          | 63%            | 30%          | 0.97        | 1.0           | 12.5                         |
+| **0**            |                |              |             |               |                              |
+| **0.001**        |                |              |             |               |                              |
+| **0.01**         |                |              |             |               |                              |
+| **0.1**          |                |              |             |               |                              |
 
 **5 minutes** time limit, 8 threads, AMD Ryzen 5 1600
 
 | **target noise** | **r2 > 0.999** | **r2 = 1.0** | **r2 mean** | **r2 median** | **average model complexity** |
 |:----------------:|:--------------:|:------------:|:-----------:|:-------------:|:----------------------------:|
-| **0**            | 89%            | 67%          | 0.999       | 1.0           | 16.5                         |
-| **0.001**        | 89%            | 42%          | 0.999       | 1.0           | 16                           |
-| **0.01**         | 89%            | 35%          | 0.999       | 1.0           | 15                           |
-| **0.1**          | 73%            | 32%          | 0.998       | 1.0           | 13                           |
+| **0**            |                |              |             |               |                              |
+| **0.001**        |                |              |             |               |                              |
+| **0.01**         |                |              |             |               |                              |
+| **0.1**          |                |              |             |               |                              |
 
 ## Installation
 
