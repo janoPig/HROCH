@@ -97,3 +97,11 @@ class Hroch:
         process.wait()
         y = np.genfromtxt(fnameY, delimiter=' ')
         return y
+
+    def get_params(self):
+        return {'numThreads': self.numThreads,
+                'timeLimit': self.timeLimit,
+                'stopingCriteria': self.stopingCriteria,
+                'precision': self.precision,
+                'problem': self.problem,
+                'saveModel': self.saveModel}
