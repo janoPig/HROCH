@@ -13,7 +13,7 @@ import statistics
 target_noise = 0.0
 
 
-def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
+def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
     print(name)
     f = pd.read_csv(name, sep="\t")
 
@@ -37,12 +37,8 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
                                  size=[len(y_train), 1])
         y_train = y_train + noise
 
-    reg = Hroch()
-    reg.numThreads = numThreads
-    reg.verbose = verbose
-    reg.stopingCriteria = stopingCriteria
-    reg.timeLimit = timeLimit
-    reg.precision = "f64"
+    reg = Hroch(numThreads, timeLimit, stoppingCriteria,
+                "f32", "math", verbose=verbose)
     reg.fit(X_train.to_numpy(), y_train)
     yp = reg.predict(X_test)
 
@@ -54,7 +50,7 @@ def test_sample(name, timeLimit, numThreads, stopingCriteria, verbose):
     return [rms, r2]
 
 
-def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=0, verbose=False):
+def all_samples(path: str, timeLimit: float, numThreads: int, stopingCriteria: float, verbose: bool = False):
     os.chdir(path)
     cnt = 0
     fit = 0
@@ -82,4 +78,4 @@ def all_samples(path, timeLimit=5000, numThreads=8, stopingCriteria=0, verbose=F
 
 
 all_samples(os.path.dirname(os.path.abspath(
-    __file__)) + "/test/", 5*60*1000)
+    __file__)) + "/test/", numThreads=8, timeLimit=5.0,  stopingCriteria=0.0, verbose=False)

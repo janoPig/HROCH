@@ -1,67 +1,52 @@
-from sklearn.base import BaseEstimator, RegressorMixin
 
 import os
 import platform
 from tempfile import TemporaryDirectory
 import subprocess
 import numpy as np
-import pandas as pd
 
 
-class Hroch(BaseEstimator, RegressorMixin):
+class Hroch:
+    """Hroch symbolic regressor"""
 
-    def __init__(self):
-        self.numThreads = 8
-        self.timeLimit = 5*1000
-        self.stopingCriteria = 0
-        self.verbose = False
-        self.precision = "f32"
-        self.problem = "math"
-        self.saveModel = False
+    def __init__(self, numThreads: int = 8, timeLimit: float = 5.0, stopingCriteria: float = 0.0, precision: str = "f32", problem: str = "math", saveModel: bool = False, verbose: bool = False):
+        self.numThreads = numThreads
+        self.timeLimit = round(timeLimit*1000.0)
+        self.stopingCriteria = stopingCriteria
+        self.verbose = verbose
+        self.precision = precision
+        self.problem = problem
+        self.saveModel = saveModel
+
         self.dir = TemporaryDirectory()
 
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        fnameX = self.dir.name + "/x.csv"
+        fnameY = self.dir.name + "/y.csv"
+        fnameM = self.dir.name + "/model.hrx"
+        fnameP = self.dir.name + "/program.hrx"
 
-        x_cnt = np.shape(X)[1]
+        if os.path.exists(fnameX):
+            os.remove(fnameX)
+        if os.path.exists(fnameY):
+            os.remove(fnameY)
 
-        if isinstance(X, pd.DataFrame):
-            X_train = X
-        elif isinstance(X, np.ndarray):
-            column_names = ['x_'+str(i) for i in range(x_cnt)]
-            X_train = pd.DataFrame(data=X, columns=column_names)
-        else:
-            raise Exception(
-                'param X: wrong type (numpy.ndarray and pandas.Dataframe supported)')
-
-        if isinstance(y, pd.DataFrame):
-            y_train = y
-        elif isinstance(y, np.ndarray):
-            y_train = pd.DataFrame(data=y, columns=["target"])
-        else:
-            raise Exception(
-                'param y: wrong type (numpy.ndarray and pandas.Dataframe supported)')
-
-        # with TemporaryDirectory() as temp_dir:
-        fname = self.dir.name + "/tmpdata.csv"
-        fmname = self.dir.name + "/model.hrx"
-
-        data_merge = X_train.join(y_train)
-        # randomize rows order
-        data_merge = data_merge.sample(frac=1).reset_index(drop=True)
-        data_merge.to_csv(fname, sep=" ", index=False)
+        np.savetxt(fnameX, X, delimiter=" ")
+        np.savetxt(fnameY, y, delimiter=" ")
 
         cwd = os.path.dirname(os.path.realpath(__file__))
 
-        cli = "./hroch"
+        cli = "./hroch.bin"
         if platform.system() == "Windows":
-            cli = "hroch.exe"
+            cli = "./hroch.exe"
 
         process = subprocess.Popen([cli,
-                                    "--problem", "math",
+                                    "--problem", self.problem,
                                     "--task", "fit",
-                                    "--inputFile", fname,
+                                    "--x", fnameX,
+                                    "--y", fnameY,
                                     "--precision", f"{self.precision}",
-                                    "--modelFile" if self.saveModel else "--programFile", fmname,
+                                    "--modelFile" if self.saveModel else "--programFile", fnameM if self.saveModel else fnameP,
                                     "--timeLimit", f"{self.timeLimit}",
                                     "--numThreads", f"{self.numThreads}",
                                     "--stopingCriteria", f"{self.stopingCriteria}"
@@ -70,33 +55,37 @@ class Hroch(BaseEstimator, RegressorMixin):
         for line in iter(process.stdout.readline, b''):
             line = line.decode("utf-8")
             if line.find("eq= ") >= 0:
-                self.sexpr = line.removeprefix("eq=")
+                self.sexpr = line.removeprefix("eq=").removesuffix("\n")
             if self.verbose:
                 print(line, end="")
 
         process.stdout.close()
         process.wait()
 
-    def predict(self, X_test):
-        fname = self.dir.name + "/tmpdata_test.csv"
-        foname = self.dir.name + "/tmpdata_out.csv"
-        fmname = self.dir.name + "/model.hrx"
+    def predict(self, X_test: np.ndarray):
+        fnameX = self.dir.name + "/x.csv"
+        fnameY = self.dir.name + "/y.csv"
+        fnameM = self.dir.name + "/model.hrx"
+        fnameP = self.dir.name + "/program.hrx"
 
-        X_test.insert(len(X_test.columns), 'target', 0)
-        X_test.to_csv(fname, sep=" ", index=False)
+        if os.path.exists(fnameX):
+            os.remove(fnameX)
+        if os.path.exists(fnameY):
+            os.remove(fnameY)
+
+        np.savetxt(fnameX, X_test, delimiter=" ")
 
         cwd = os.path.dirname(os.path.realpath(__file__))
 
-        cli = "./hroch"
+        cli = "./hroch.bin"
         if platform.system() == "Windows":
             cli = "hroch.exe"
 
         process = subprocess.Popen([cli,
-                                    "--problem", "math",
                                     "--task", "predict",
-                                    "--inputFile", fname,
-                                    "--programFile", fmname,
-                                    "--outFile", foname,
+                                    "--x", fnameX,
+                                    "--y", fnameY,
+                                    "--modelFile" if self.saveModel else "--programFile", fnameM if self.saveModel else fnameP,
                                     ],
                                    cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
         for line in iter(process.stdout.readline, b''):
@@ -106,5 +95,5 @@ class Hroch(BaseEstimator, RegressorMixin):
 
         process.stdout.close()
         process.wait()
-        y = np.genfromtxt(foname, delimiter=' ')
+        y = np.genfromtxt(fnameY, delimiter=' ')
         return y

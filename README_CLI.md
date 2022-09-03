@@ -1,39 +1,49 @@
 # HROCH command line inteface
 
-Hroch is a command line symbolic regression solver. Internally it works as virtual machine...
+HROCH is a free command line symbolic regression solver. Internally, it works as a virtual machine. The first step is to run HROCH with the fit task while generating a program or model file. The program file contains only the program with the best solution, the model file contains the entire population so that the search process can be continued next time.
+
+HROCH use <span style="color:red">space delimited</span> csv file format.
 
 ## Parameters
 
-- **--task** (fit|predict) mandatory
-- **--inputFile** (path) mandatory
-- **--outFile** (path) mandatory for predict task
-- **--modelFile or --programFile** (path) mandatory for fit task, if model file exist parameters '--numThreads' and '--problem' partameters are loaded from model. program store only best solution, model store whole populations so it is possible to continue searching
-- **--problem** (math|simple|fuzzy, default math) valid only for fit task
-  - **math** default, all defined math symbols [simple + [sqrt, exp, log, asin, acos, sin, cos, tanh]]
-  - **simple** restricted math to [add, mul, sq2, sub, div]
-  - **fuzzy** [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) and, or, xor, impl, nand, nor, nxor, nimpl
-- **--precision** (f32|f64, default f32) internal floating point representation 32 or 64 bit, valid only for fit task
-- **--timeLimit** (unsigned number, miliseconds, default 5000) valid only for fit task
-- **--numThreads** (unsigned number, default 8) valid only for fit task
-- **--stopingCriteria** (real number, default zero) r2 error when search stop before time limit
-- **--randomState** (64bit unsigned integer number, default zero) if zero then random generator will be initialized by system time
+- **--task** (fit|predict) Mandatory. Task type.
+  - **predict**
+    - **--x** (path) Mandatory. Features csv file. The file must exist and contain valid data.
+    - **--y** (path) Mandatory. Target csv file. If the file exists, it will be overwritten.
+    - **--modelFile or --programFile** (path) Mandatory. File must exist and contain a valid model or program.
+  - **fit**
+    - **--x** (path) Mandatory. Features csv file. The file must exist and contain valid data.
+    - **--y** (path) Mandatory. Target csv file. The file must exist and contain valid data.
+    - **--modelFile or --programFile** (path) Mandatory. If a model file exists, HROCH continues the fitting task from the stored model.
+    - **--timeLimit** (unsigned number) Timeout in milliseconds, 5000 by default.
+
+    <br><span style="color:red"><ins>*If a model file exists, the following parameters are ignored*</ins></span>  
+
+    - **--problem** (math|simple|fuzzy, default math) valid only for fit task
+      - **math** All defined math symbols [simple + [sqrt, exp, log, asin, acos, sin, cos, tanh, pow]]
+      - **simple** Restricted math to [add, mul, sq2, sub, div]
+      - **fuzzy** [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [and, or, xor, impl, nand, nor, nxor, nimpl]
+    - **--precision** (f32|f64, default f32) Internal floating point representation 32 or 64 bit. Default f32.
+    - **--numThreads** (unsigned number) Number of used threads, default 8.
+    - **--stoppingCriteria** (real number) R2 error when search stop before time limit, default zero.
+    - **--randomState** (64bit unsigned integer number) Random generator seed. If zero(default) then random generator will be initialized by system time.
 
 ## Example
 
-Fit task, trained model saved to model.hrx file
+Run the fit task for 5 seconds, save the trained model to the model.hrx file.
 
 ```bash
-./hroch --task fit --inputFile data_train.csv --modelFile model.hrx --precision f32 --timeLimit 5000 --numThreads 8 --problem math
+./hroch.bin --task fit --x feature_train.csv --y target_train.csv --modelFile model.hrx --precision f32 --timeLimit 5000 --numThreads 8 --problem math
 ```
 
-Predict task
+Run the predict task, save computed output to the target_test_predicted.csv file.
 
 ```bash
-./hroch --task predict --inputFile  data_test.csv --modelFile model.hrx --outFile results.csv
+./hroch.bin --task predict --x feature_test.csv --y target_test_predicted.csv --modelFile model.hrx
 ```
 
-Continue fit task (if model.hrx exist numThreads and problem partameters are loaded from model)
+Continue fit task for the next 5 minutes.
 
 ```bash
-./hroch --task fit --inputFile data_train.csv --modelFile model.hrx --timeLimit 5000
+./hroch.bin --task fit --x feature_train.csv --y target_train.csv --modelFile model.hrx --timeLimit 300000
 ```
