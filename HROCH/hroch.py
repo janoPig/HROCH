@@ -77,7 +77,7 @@ class Hroch:
 
         cwd = os.path.dirname(os.path.realpath(__file__))
 
-        cli = "./hroch.bin"
+        cli = "hroch.bin"
         if platform.system() == "Windows":
             cli = "hroch.exe"
 
