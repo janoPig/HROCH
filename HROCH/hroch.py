@@ -9,10 +9,10 @@ import numpy as np
 class Hroch:
     """Hroch symbolic regressor"""
 
-    def __init__(self, numThreads: int = 8, timeLimit: float = 5.0, stopingCriteria: float = 0.0, precision: str = "f32", problem: str = "math", saveModel: bool = False, verbose: bool = False):
+    def __init__(self, numThreads: int = 8, timeLimit: float = 5.0, stoppingCriteria: float = 0.0, precision: str = "f32", problem: str = "math", saveModel: bool = False, verbose: bool = False):
         self.numThreads = numThreads
-        self.timeLimit = round(timeLimit*1000.0)
-        self.stopingCriteria = stopingCriteria
+        self.timeLimit = timeLimit
+        self.stoppingCriteria = stoppingCriteria
         self.verbose = verbose
         self.precision = precision
         self.problem = problem
@@ -47,9 +47,9 @@ class Hroch:
                                     "--y", fnameY,
                                     "--precision", f"{self.precision}",
                                     "--modelFile" if self.saveModel else "--programFile", fnameM if self.saveModel else fnameP,
-                                    "--timeLimit", f"{self.timeLimit}",
+                                    "--timeLimit", f"{int(round(self.timeLimit*1000.0))}",
                                     "--numThreads", f"{self.numThreads}",
-                                    "--stopingCriteria", f"{self.stopingCriteria}"
+                                    "--stoppingCriteria", f"{self.stoppingCriteria}"
                                     ],
                                    cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
         for line in iter(process.stdout.readline, b''):
@@ -101,7 +101,7 @@ class Hroch:
     def get_params(self):
         return {'numThreads': self.numThreads,
                 'timeLimit': self.timeLimit,
-                'stopingCriteria': self.stopingCriteria,
+                'stoppingCriteria': self.stoppingCriteria,
                 'precision': self.precision,
                 'problem': self.problem,
                 'saveModel': self.saveModel}
