@@ -23,9 +23,6 @@ Support mathematic equations and fuzzy logic operators
 
   Zero hyperparameter tunning. Only parameters to set are time limit and r2 error as stopping criterium.
 
-  Support simple mode [add, mul, sq2, sub, div]
-  Search space: add, mul, sq2, sub, div, sqrt, exp, log, asin, acos, sin, cos, tanh, pow
-
   <span style="color:red"> HROCH use unprotected version of math operations (eg. log or division)</span>
 
 ## Dependencies
