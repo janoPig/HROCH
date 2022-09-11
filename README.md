@@ -60,18 +60,52 @@ The search space is governed by the "problem" parameter. To solve fuzzy equation
 - "math" simple + [sqrt, exp, log, asin, acos, sin, cos, tanh, pow]
 - "fuzzy" [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [and, or, xor, impl, nand, nor, nxor, nimpl]
 
-> __Warning__ HROCH use unprotected version of math operations (eg. log or division)
+> **Warning** HROCH use unprotected version of math operations (eg. log or division)
 
 ## Performance
 
-Reproduction of GECCO2022 competition. HROCH run 4 threads only 5 seconds per job.
-https://github.com/janoPig/srbench/tree/srcomp
+### Feynman dataset
+
+Approximate comparison with methods tested in [srbench](https://cavalab.org/srbench/results/#results-for-ground-truth-problems).
+
+| **Algorithm**  | **Training time (s)** | **R2 > 0.999** | **Model size** | **R2 mean** |
+|:---------------|----------------------:|---------------:|---------------:|------------:|
+| **MRGP**       | 14893                 | 93.1%          | 3177           | 0.9988      |
+| **HROCH_1000** | 252                   | 87.4%          | 19             | 0.9951      |
+| **Operon**     | 2093                  | 86.2%          | 70             | 0.9908      |
+| **AIFeynman**  | 26822                 | 78.5%          | 121            | 0.9237      |
+| **HROCH_100**  | 34                    | 76.5%          | 17             | 0.9922      |
+| **SBP-GP**     | 28944                 | 73.7%          | 487            | 0.9946      |
+| **GP-GOMEA**   | 3677                  | 71.6%          | 34             | 0.9969      |
+| **HROCH_10**   | 6                     | 69.7%          | 17             | 0.9693      |
+| **AFP_FE**     | 17682                 | 59.1%          | 41             | 0.9859      |
+| **HROCH_1**    | <1                    | 54.6%          | 15             | 0.9237      |
+| **EPLEX**      | 10599                 | 47.0%          | 56             | 0.9918      |
+| **AFP**        | 2895                  | 44.8%          | 37             | 0.9685      |
+| **FEAT**       | 1561                  | 39.7%          | 195            | 0.9325      |
+| **gplearn**    | 3716                  | 32.8%          | 78             | 0.9010      |
+| **ITEA**       | 1435                  | 27.6%          | 21             | 0.9117      |
+| **DSR**        | 615                   | 25.0%          | 15             | 0.8758      |
+| **BSR**        | 28800                 | 10.8%          | 25             | 0.6940      |
+| **FFX**        | 19                    |  0.0%          | 268            | 0.9082      |
+
+Notes:
+
+- *Tested feynman dataset with noise 0*
+
+- *HROCH was run with a 1 thread [1, 10, 100, 1000] seconds timeout limit.*
+
+- *Because the thing was measuring R2 > 0.999 criterium the stoppingCriteria was set to 1e-5 (stops when r2 > 0.99999).*
+
+### Reproduction of GECCO2022 competition. HROCH run 4 threads only 5 seconds per job
+
+<https://github.com/janoPig/srbench/tree/srcomp>
 
 **Rank**
 
 ![rank_1](https://user-images.githubusercontent.com/75015989/188947889-d609361e-ccb8-4478-8b8d-63080d01fc54.png)
 
-**Time**
+**Training Time**
 
 ![time_1](https://user-images.githubusercontent.com/75015989/188948000-3d6a55f5-9ef5-42dc-9d84-a46a175b72ae.png)
 
