@@ -6,28 +6,44 @@ HROCH is a free command line symbolic regression solver. Internally, it works as
 
 ## Parameters
 
-- **--task** (fit|predict) Mandatory. Task type.
-  - **predict**
-    - **--x** (path) Mandatory. Features csv file. The file must exist and contain valid data.
-    - **--y** (path) Mandatory. Target csv file. If the file exists, it will be overwritten.
-    - **--modelFile or --programFile** (path) Mandatory. File must exist and contain a valid model or program.
-  - **fit**
-    - **--x** (path) Mandatory. Features csv file. The file must exist and contain valid data.
-    - **--y** (path) Mandatory. Target csv file. The file must exist and contain valid data.
-    - **--modelFile or --programFile** (path) Mandatory. If a model file exists, HROCH continues the fitting task from the stored model.
-    - **--timeLimit** (unsigned number) Timeout in milliseconds, 5000 by default.
+---
+
+- __--task__ (fit|predict) Mandatory. Task type.
+  - __predict__
+    - __--x__ (path) Mandatory. Features csv file. The file must exist and contain valid data.
+    - __--y__ (path) Mandatory. Target csv file. If the file exists, it will be overwritten.
+    - __--modelFile or --programFile__ (path) Mandatory. File must exist and contain a valid model or program.
+  - __fit__
+    - __--x__ (path) Mandatory. Features csv file. The file must exist and contain valid data.
+    - __--y__ (path) Mandatory. Target csv file. The file must exist and contain valid data.
+    - __--modelFile or --programFile__ (path) Mandatory. If a model file exists, HROCH continues the fitting task from the stored model.
+    - __--timeLimit__ (unsigned number) Timeout in milliseconds, 5000 by default.
     <br>
-    
+
     > __Warning__ *If a model file exists, the following parameters are ignored*</ins></span>  
 
-    - **--problem** (math|simple|fuzzy, default math) valid only for fit task
-      - **math** All defined math symbols [simple + [sqrt, exp, log, asin, acos, sin, cos, tanh, pow]]
-      - **simple** Restricted math to [add, mul, sq2, sub, div]
-      - **fuzzy** [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [and, or, xor, impl, nand, nor, nxor, nimpl]
-    - **--precision** (f32|f64, default f32) Internal floating point representation 32 or 64 bit. Default f32.
-    - **--numThreads** (unsigned number) Number of used threads, default 8.
-    - **--stoppingCriteria** (real number) R2 error when search stop before time limit, default zero.
-    - **--randomState** (64bit unsigned integer number) Random generator seed. If zero(default) then random generator will be initialized by system time.
+    - __--problem__ (math|simple|fuzzy, default math)
+      - __math:__ All defined math symbols [simple + [sqrt, exp, log, asin, acos, sin, cos, tanh, pow]]
+      - __simple:__ Restricted math to [add, mul, sq2, sub, div]
+      - __fuzzy:__ [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [and, or, xor, impl, nand, nor, nxor, nimpl]
+    - __--precision__ (f32|f64, default f32) Internal floating point representation 32 or 64 bit. Default f32.
+    - __--numThreads__ (unsigned number) Number of used threads, default 8.
+    - __--stoppingCriteria__ (real number) R2 error when search stop before time limit, default zero.
+    - __--randomState__ (64bit unsigned integer number) Random generator seed. If zero(default) then random generator will be initialized by system time.
+
+---
+
+- __--help__ Print help.
+
+---
+
+- __--version__ Print hroch version.
+
+---
+
+- __--logo__ Print hroch logo.
+
+---
 
 ## Example
 

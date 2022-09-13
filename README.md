@@ -2,24 +2,13 @@
 
 **[The fastest symbolic regression algorithm in the world.](#performance)**
 
----
-
-```txt
-  Hrochy určite nemajú choboty.
-      C~~P ,---------.
- ,---'oo  )           \
-( O O                  )/
- `=^='                 /
-       \    ,     .   /
-       \\  |-----'|  /
-       ||__|    |_|__|
-```
-
----
-
-Python wraper(a sklearn-compatible Regressor) for [CLI](README_CLI.md).
-Hroch support mathematic equations and fuzzy logic operators.
-Zero hyperparameter tunning.
+- Zero hyperparameter tunning.
+- Accurate results in seconds or minutes, in contrast to slow GP-based methods.
+- Small models size.
+- Support mathematic equations and fuzzy logic operators.
+- Support 32 and 64 bit floating point arithmetic.
+- Work with unprotected version of math operators (log, sqrt, division)
+- [CLI](README_CLI.md)
 
 ## Dependencies
 
@@ -36,31 +25,11 @@ pip install git+https://github.com/janoPig/HROCH.git
 
 ```python
 from HROCH import Hroch
-...
 
 reg = Hroch(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
-
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
-
-test_r2 = r2_score(y_test, yp)
-test_rms = np.sqrt(mean_squared_error(y_test, yp))
-...
 ```
-
-Floating precision can be set to 32 or 64 bit.
-
-```precision='f64|f32'```
-
-The search space is governed by the "problem" parameter. To solve fuzzy equations, it is recommended that all values in the dataset be in the range [0,0, 1,0], where 0,0 means exactly False and 1,0 means exactly True.
-
-```problem='math|simple|fuzzy'```
-
-- "simple" [add, mul, sq2, sub, div]
-- "math" simple + [sqrt, exp, log, asin, acos, sin, cos, tanh, pow]
-- "fuzzy" [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [and, or, xor, impl, nand, nor, nxor, nimpl]
-
-> **Warning** HROCH use unprotected version of math operations (eg. log or division)
 
 ## Performance
 
@@ -68,34 +37,32 @@ The search space is governed by the "problem" parameter. To solve fuzzy equation
 
 Approximate comparison with methods tested in [srbench](https://cavalab.org/srbench/results/#results-for-ground-truth-problems).
 
-| **Algorithm**  | **Training time (s)** | **R2 > 0.999** | **Model size** | **R2 mean** |
-|:---------------|----------------------:|---------------:|---------------:|------------:|
-| **MRGP**       | 14893                 | 93.1%          | 3177           | 0.9988      |
-| **HROCH_1000** | 252                   | 87.4%          | 19             | 0.9951      |
-| **Operon**     | 2093                  | 86.2%          | 70             | 0.9908      |
-| **AIFeynman**  | 26822                 | 78.5%          | 121            | 0.9237      |
-| **HROCH_100**  | 34                    | 76.5%          | 17             | 0.9922      |
-| **SBP-GP**     | 28944                 | 73.7%          | 487            | 0.9946      |
-| **GP-GOMEA**   | 3677                  | 71.6%          | 34             | 0.9969      |
-| **HROCH_10**   | 6                     | 69.7%          | 17             | 0.9693      |
-| **AFP_FE**     | 17682                 | 59.1%          | 41             | 0.9859      |
-| **HROCH_1**    | <1                    | 54.6%          | 15             | 0.9237      |
-| **EPLEX**      | 10599                 | 47.0%          | 56             | 0.9918      |
-| **AFP**        | 2895                  | 44.8%          | 37             | 0.9685      |
-| **FEAT**       | 1561                  | 39.7%          | 195            | 0.9325      |
-| **gplearn**    | 3716                  | 32.8%          | 78             | 0.9010      |
-| **ITEA**       | 1435                  | 27.6%          | 21             | 0.9117      |
-| **DSR**        | 615                   | 25.0%          | 15             | 0.8758      |
-| **BSR**        | 28800                 | 10.8%          | 25             | 0.6940      |
-| **FFX**        | 19                    |  0.0%          | 268            | 0.9082      |
+|Algorithm|Training time (s)|Model size|R2 > 0.999|R2 > 0.999999|R2 > 0.999999999|R2 mean          |
+|---------|----------------:|---------:|:--------:|:-----------:|:--------------:|:---------------:|
+|MRGP     |14893            |3177      |0.931     |0.000        |0.000           |0.998853549755939|
+|Operon   |2093             |70        |0.862     |0.655        |0.392           |0.990832974928022|
+|AIFeynman|26822            |121       |0.785     |0.689        |0.680           |0.923670858619585|
+|HROCH_100|42               |17        |0.781     |0.679        |0.633           |0.988862822072670|
+|SBP-GP   |28944            |487       |0.737     |0.388        |0.246           |0.994645420032544|
+|GP-GOMEA |3677             |34        |0.716     |0.539        |0.504           |0.996850949284431|
+|AFP_FE   |17682            |41        |0.591     |0.315        |0.185           |0.985876419645066|
+|HROCH_1  |2                |14        |0.544     |0.432        |0.421           |0.911182785072874|
+|EPLEX    |10599            |56        |0.470     |0.121        |0.082           |0.991763792716299|
+|AFP      |2895             |37        |0.448     |0.263        |0.159           |0.968488776363814|
+|FEAT     |1561             |195       |0.397     |0.121        |0.112           |0.932465581448533|
+|gplearn  |3716             |78        |0.328     |0.151        |0.151           |0.901020570640627|
+|ITEA     |1435             |21        |0.276     |0.233        |0.224           |0.911713461958873|
+|DSR      |615              |15        |0.250     |0.207        |0.207           |0.875784840006460|
+|BSR      |28800            |25        |0.108     |0.073        |0.043           |0.693995349495648|
+|FFX      |19               |268       |0.000     |0.000        |0.000           |0.908164756903951|
 
 Notes:
 
-- *Tested feynman dataset with noise 0*
+- *Tested feynman dataset with noise 0*, 10 trials for dataset, 1 thread.
 
-- *HROCH was run with a 1 thread [1, 10, 100, 1000] seconds timeout limit.*
+- *HROCH_1 use 1 second timeout limit, HROCH_100 100 seconds.*
 
-- *Because the thing was measuring R2 > 0.999 criterium the stoppingCriteria was set to 1e-5 (stops when r2 > 0.99999).*
+- *HROCH stoppingCriteria was set to 1e-12 (stops when r2 > 0.999999999999).*
 
 ### Reproduction of GECCO2022 competition. HROCH run 4 threads only 5 seconds per job
 
