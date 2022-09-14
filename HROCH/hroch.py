@@ -34,11 +34,11 @@ class Hroch:
         np.savetxt(fnameX, X, delimiter=" ")
         np.savetxt(fnameY, y, delimiter=" ")
 
-        cwd = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.dirname(os.path.realpath(__file__))
 
-        cli = "hroch.bin"
+        cli = path + "/hroch.bin"
         if platform.system() == "Windows":
-            cli = "hroch.exe"
+            cli = path + "/hroch.exe"
 
         process = subprocess.Popen([cli,
                                     "--problem", self.problem,
@@ -51,7 +51,7 @@ class Hroch:
                                     "--numThreads", f"{self.numThreads}",
                                     "--stoppingCriteria", f"{self.stoppingCriteria}"
                                     ],
-                                   cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                                   cwd=self.dir.name, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
         for line in iter(process.stdout.readline, b''):
             line = line.decode("utf-8")
             if line.find("eq= ") >= 0:
@@ -75,11 +75,11 @@ class Hroch:
 
         np.savetxt(fnameX, X_test, delimiter=" ")
 
-        cwd = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.dirname(os.path.realpath(__file__))
 
-        cli = "hroch.bin"
+        cli = path + "/hroch.bin"
         if platform.system() == "Windows":
-            cli = "hroch.exe"
+            cli = path + "/hroch.exe"
 
         process = subprocess.Popen([cli,
                                     "--task", "predict",
@@ -87,7 +87,7 @@ class Hroch:
                                     "--y", fnameY,
                                     "--modelFile" if self.saveModel else "--programFile", fnameM if self.saveModel else fnameP,
                                     ],
-                                   cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                                   cwd=self.dir.name, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
         for line in iter(process.stdout.readline, b''):
             line = line.decode("utf-8")
             if self.verbose:
