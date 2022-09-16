@@ -18,7 +18,7 @@
 ## Installation
 
 ```sh
-pip install git+https://github.com/janoPig/HROCH.git
+pip install HROCH
 ```
 
 ## Usage
