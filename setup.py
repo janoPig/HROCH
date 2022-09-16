@@ -29,9 +29,9 @@ pip install HROCH
 ## Usage
 
 ```python
-from HROCH import Hroch
+from HROCH import PHCRegressor
 
-reg = Hroch(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
+reg = PHCRegressor(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 # print symbolic expression
@@ -66,13 +66,19 @@ Approximate comparison with methods tested in [srbench](https://cavalab.org/srbe
 
 setup(
     name='HROCH',
-    version='1.0.0',
+    version='1.0.8',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
     author='Jano',
     author_email='hroch.regression@gmail.com',
     url='https://github.com/janoPig/HROCH/',
+    project_urls={
+        'Documentation': 'https://github.com/janoPig/HROCH/tree/main/docs',
+        'Source': 'https://github.com/janoPig/HROCH',
+        'Tracker': 'https://github.com/janoPig/HROCH/issues',
+    },
+
     keywords=['machine-learning', 'numpy', 'symbolic-regression', 'fuzzy'],
     classifiers=['Operating System :: Microsoft :: Windows',
                  'Operating System :: POSIX :: Linux',

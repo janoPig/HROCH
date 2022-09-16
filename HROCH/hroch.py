@@ -6,8 +6,8 @@ import subprocess
 import numpy as np
 
 
-class Hroch:
-    """Hroch symbolic regressor"""
+class PHCRegressor:
+    """Parallel Hill Climbing symbolic regressor"""
 
     def __init__(self, numThreads: int = 8, timeLimit: float = 5.0, stoppingCriteria: float = 0.0, precision: str = "f32", problem: str = "math", saveModel: bool = False, verbose: bool = False):
         self.numThreads = numThreads
