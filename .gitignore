@@ -3,3 +3,7 @@
 
 #Pycache
 *.pyc
+
+HROCH.egg-info
+tmp
+dist
