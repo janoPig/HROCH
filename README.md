@@ -24,9 +24,9 @@ pip install git+https://github.com/janoPig/HROCH.git
 ## Usage
 
 ```python
-from HROCH import Hroch
+from HROCH import PHCRegressor
 
-reg = Hroch(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
+reg = PHCRegressor(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
