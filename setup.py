@@ -66,7 +66,7 @@ Approximate comparison with methods tested in [srbench](https://cavalab.org/srbe
 
 setup(
     name='HROCH',
-    version='1.0.0',
+    version='1.0.1',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
