@@ -73,6 +73,12 @@ setup(
     author='Jano',
     author_email='hroch.regression@gmail.com',
     url='https://github.com/janoPig/HROCH/',
+    project_urls={
+        'Documentation': 'https://github.com/janoPig/HROCH/docs/',
+        'Source': 'https://github.com/janoPig/HROCH',
+        'Tracker': 'https://github.com/janoPig/HROCH/issues',
+    },
+
     keywords=['machine-learning', 'numpy', 'symbolic-regression', 'fuzzy'],
     classifiers=['Operating System :: Microsoft :: Windows',
                  'Operating System :: POSIX :: Linux',

@@ -1,0 +1,19 @@
+name: markdown-autodocs
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  autoupdate-readme:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Markdown autodocs
+        uses: dineshsonachalam/markdown-autodocs@v1.0.7
+        with:
+          output_file_paths: "[./docs/HROCH.md]"
