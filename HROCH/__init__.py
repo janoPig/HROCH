@@ -1,3 +1,2 @@
-from .hroch import Hroch 
 
-__all__ = ['Hroch']
+__all__ = ['PHCRegressor']
