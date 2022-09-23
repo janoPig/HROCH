@@ -52,10 +52,11 @@ class PHCRegressor:
                                     "--stoppingCriteria", f"{self.stoppingCriteria}"
                                     ],
                                    cwd=self.dir.name, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+        eq_prefix = 'eq= '
         for line in iter(process.stdout.readline, b''):
             line = line.decode("utf-8")
-            if line.find("eq= ") >= 0:
-                self.sexpr = line.removeprefix("eq=").removesuffix("\n")
+            if line.startswith(eq_prefix):
+                line = line[len(eq_prefix):]
             if self.verbose:
                 print(line, end="")
 
