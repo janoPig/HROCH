@@ -56,7 +56,7 @@ class PHCRegressor:
         for line in iter(process.stdout.readline, b''):
             line = line.decode("utf-8")
             if line.startswith(eq_prefix):
-                line = line[len(eq_prefix):]
+                self.sexpr = line[len(eq_prefix):]
             if self.verbose:
                 print(line, end="")
 

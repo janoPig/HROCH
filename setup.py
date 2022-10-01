@@ -66,7 +66,7 @@ Approximate comparison with methods tested in [srbench](https://cavalab.org/srbe
 
 setup(
     name='HROCH',
-    version='1.0.8',
+    version='1.0.11',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
@@ -86,6 +86,7 @@ setup(
                  'License :: OSI Approved :: MIT License',
                  'Programming Language :: Python',
                  'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10'],
@@ -93,5 +94,5 @@ setup(
     license='MIT',
     setup_requires=['setuptools_scm'],
     include_package_data=True,
-    install_requires=['numpy>=1.22.3'],
+    install_requires=['numpy'],
 )
