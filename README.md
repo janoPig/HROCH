@@ -1,6 +1,6 @@
 # HROCH  
 
-![GitHub](https://img.shields.io/github/license/janoPig/HROCH) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/janoPig/HROCH/actions/workflows/codeql-analysis.yml) ![LGTM Grade](https://img.shields.io/lgtm/grade/python/github/janoPig/HROCH) ![LGTM Alerts](https://img.shields.io/lgtm/alerts/github/janoPig/HROCH)
+![GitHub](https://img.shields.io/github/license/janoPig/HROCH) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml)
 
 ![PyPI](https://img.shields.io/pypi/v/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch)
 
