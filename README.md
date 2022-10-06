@@ -1,8 +1,10 @@
 # HROCH  
 
-![GitHub](https://img.shields.io/github/license/janoPig/HROCH) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch)
 
-![PyPI](https://img.shields.io/pypi/v/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch)
+| Windows |Results|Linux|Results|
+| ----------- | ----------- | ----------- | ----------- |
+|[![Strogatz - windows](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml)|[results_windows.csv](ci-test/results/results_win.csv)|[![Strogatz - linux](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml)|[results_linux.csv](ci-test/results/results_linux.csv)|
 
 **[The fastest symbolic regression algorithm in the world.](#performance)**
 
