@@ -1,5 +1,9 @@
 # HROCH  
 
+![GitHub](https://img.shields.io/github/license/janoPig/HROCH) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/janoPig/HROCH/actions/workflows/codeql-analysis.yml)
+
+![PyPI](https://img.shields.io/pypi/v/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch)
+
 **[The fastest symbolic regression algorithm in the world.](#performance)**
 
 - Zero hyperparameter tunning.
