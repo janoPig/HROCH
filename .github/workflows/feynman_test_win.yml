@@ -33,6 +33,7 @@ jobs:
           pip install pandas
           pip install sklearn
           pip install sympy
+          pip install pyyaml
           pip install .
 
       - name: Run test
