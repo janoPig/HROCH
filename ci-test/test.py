@@ -54,12 +54,13 @@ def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
     # get model string
     model_str = str(reg.sexpr)
     model_str = str(sp.parse_expr(model_str))
+
     mapping = {'x'+str(i+1): k for i, k in enumerate(X.columns)}
     new_model = model_str
     for k, v in reversed(mapping.items()):
         new_model = new_model.replace(k, v)
 
-    return [rms, r2, model_str]
+    return [rms, r2, new_model]
 
 
 def all_samples(path: str, dataset: str, timeLimit: float, numThreads: int, stopingCriteria: float, verbose: bool = False):
