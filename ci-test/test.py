@@ -5,26 +5,21 @@ import sympy as sp
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
+import argparse
+import yaml
 
 import os
 
-
 target_noise = 0.0
 
-true_eq = {'strogatz_bacres1': '20 - x - (x * y)/(1+0.5 * x**2)',
-           'strogatz_bacres2': '10 - (x * y)/(1+0.5 * x**2)',
-           'strogatz_barmag1': '0.5 * sin(x - y) - sin(x)',
-           'strogatz_barmag2': '0.5 * sin(y - x) - sin(y)',
-           'strogatz_glider1': '-0.05 * x**2 - sin(y)',
-           'strogatz_glider2': 'x - cos(y)/x',
-           'strogatz_lv1': '3  * x - 2  * x * y - x**2',
-           'strogatz_lv2': '2 * y - x * y - y**2',
-           'strogatz_predprey1': 'x  * ( 4 - x - (y)/(1+x) )',
-           'strogatz_predprey2': 'y * ( (x)/(1+x) - 0.075 * y )',
-           'strogatz_shearflow1': 'cot(y) * cos(x)',
-           'strogatz_shearflow2': '(cos(y)**2 + 0.1 *  sin(y)**2) * sin(x)',
-           'strogatz_vdp1': '10 *  (y - (1)/(3) * (x**3-x))',
-           'strogatz_vdp2': '-(1)/(10) * x'}
+
+def read_metadata(file: str):
+    with open(file, 'r') as e:
+        content = yaml.safe_load(e)
+        description = content['description'].split('\n')
+        eq = [ms for ms in description if '=' in ms][0].split('=')[-1]
+        return eq
+    return None
 
 
 def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
@@ -58,17 +53,20 @@ def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
     rms = np.sqrt(mean_squared_error(y_test.to_numpy(), yp))
     # get model string
     model_str = str(reg.sexpr)
+    model_str = str(sp.parse_expr(model_str))
+
     mapping = {'x'+str(i+1): k for i, k in enumerate(X.columns)}
     new_model = model_str
     for k, v in reversed(mapping.items()):
         new_model = new_model.replace(k, v)
 
-    return [rms, r2, sp.parse_expr(new_model)]
+    return [rms, r2, new_model]
 
 
-def all_samples(path: str, timeLimit: float, numThreads: int, stopingCriteria: float, verbose: bool = False):
-    data_dir = os.path.join(path, 'data')
+def all_samples(path: str, dataset: str, timeLimit: float, numThreads: int, stopingCriteria: float, verbose: bool = False):
+
     out_dir = os.path.join(path, 'results')
+    data_dir = os.path.join(path, 'data/' + dataset)
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -82,19 +80,32 @@ def all_samples(path: str, timeLimit: float, numThreads: int, stopingCriteria: f
             suffix = '.tsv.gz'
             if file.endswith(suffix):
                 name = file[:-len(suffix)]
+                true_eq = read_metadata(os.path.join(root, 'metadata.yaml'))
+
                 full_path = os.path.join(root, file)
                 rms, r2, eq = test_sample(full_path, timeLimit, numThreads,
                                           stopingCriteria, verbose)
-                results.loc[idx] = [name, r2, rms, true_eq[name], str(eq)]
+                results.loc[idx] = [name, r2, rms, true_eq, str(eq)]
                 idx = idx + 1
                 print(
                     f"{file}: r2={r2}, rms={rms} eq={str(eq)}")
 
     results.sort_values(by=['name'], inplace=True)
-    csv_path = out_dir + '/results.csv'
+    csv_path = out_dir + '/' + dataset + '.csv'
     print('save to ', csv_path)
     results.to_csv(csv_path, index=False)
 
 
-all_samples(os.path.dirname(os.path.abspath(__file__)), numThreads=1, timeLimit=5.0,
-            stopingCriteria=0.0, verbose=False)
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', dest='dataset', default="", type=str)
+
+    args = parser.parse_args()
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    all_samples(path, args.dataset, numThreads=1, timeLimit=5.0,
+                stopingCriteria=0.0, verbose=False)
+
+
+if __name__ == "__main__":
+    main()
