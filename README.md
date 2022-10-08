@@ -4,7 +4,8 @@
 
 | Windows |Results|Linux|Results|
 | ----------- | ----------- | ----------- | ----------- |
-|[![Strogatz - windows](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml)|[results_windows.csv](ci-test/results/results_win.csv)|[![Strogatz - linux](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml)|[results_linux.csv](ci-test/results/results_linux.csv)|
+|[![Strogatz - windows](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml)|[results_windows.csv](ci-test/results/strogatz_win.csv)|[![Strogatz - linux](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml)|[strogatz_linux.csv](ci-test/results/strogatz_linux.csv)|
+|[![Feynman - windows](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml)|[feynman_windows.csv](ci-test/results/feynman_win.csv)|[![Feynman - linux](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml)|[feynman_linux.csv](ci-test/results/feynman_linux.csv)|
 
 **[The fastest symbolic regression algorithm in the world.](#performance)**
 

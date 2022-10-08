@@ -37,11 +37,11 @@ jobs:
 
       - name: Run test
         run: |
-          python3 ./ci-test/test.py
+          python3 ./ci-test/test.py --dataset strogatz
           git pull
-          mv -Force ./ci-test/results/results.csv ./ci-test/results/results_win.csv
+          mv -Force ./ci-test/results/strogatz.csv ./ci-test/results/strogatz_win.csv
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.0
         with:
-          add: "./ci-test/results/results_win.csv"
+          add: "./ci-test/results/strogatz_win.csv"
