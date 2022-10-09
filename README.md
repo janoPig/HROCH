@@ -75,6 +75,37 @@ Notes:
 
 <https://github.com/janoPig/srbench/tree/srcomp>
 
+```bash
+git clone https://github.com/janoPig/srbench.git
+cd srbench
+git checkout srcomp
+#Install the conda environment
+cd competition-2022
+conda env create -f environment.yml
+conda activate srcomp
+#Install method
+#To test the current version, change pip 'install git+...' to 'pip install HROCH' in /official_competitors/HROCH/install.sh
+#and rename Hroch to PHCRegressor in the file /official_competitors/HROCH/regressor.py
+bash install_competitors.sh HROCH
+#Testing installation
+bash test.sh HROCH
+#Download result data for other methods
+wget -O res.zip https://zenodo.org/record/6842176/files/srbench_competition_results.zip
+unzip res.zip
+mv ./zenodo/results_stage1 ./results_stage1
+rm -r ./zenodo
+rm -r ./res.zip
+#Run experiment (cca 10-15min)
+#For PC whitch have cpu cores < 12 set parameter -n_jobs in submit_stage1_local.sh to smaller value
+#To repeat the experiment, add the --noskips parameter to overwrite the results
+cd experiment
+bash submit_stage1_local.sh HROCH
+```
+
+To show results run competition-2022/postprocessing/stage1.ipynb
+
+:warning: There is an bug with the featureselection score. Test here [test_feature_selection.py](https://github.com/janoPig/srbench/blob/a29e3ec49d3eda72e67af35ac7e12711bda6fbd7/competition-2022/experiment/data/stage1/test_feature_selection.py) and possible fix here [fix_feature_selection.py](https://github.com/janoPig/srbench/blob/a29e3ec49d3eda72e67af35ac7e12711bda6fbd7/competition-2022/experiment/data/stage1/fix_feature_selection.py)
+
 **Rank**
 
 ![rank_1](https://user-images.githubusercontent.com/75015989/188947889-d609361e-ccb8-4478-8b8d-63080d01fc54.png)
