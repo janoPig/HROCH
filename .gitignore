@@ -4,6 +4,10 @@
 #Pycache
 *.pyc
 
+#local build
+build
+.eggs
+
 HROCH.egg-info
 tmp
 dist
