@@ -22,8 +22,8 @@ def read_metadata(file: str):
     return None
 
 
-def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
-    f = pd.read_csv(name, sep="\t", compression='gzip')
+def test_sample(file_name, time_limit, num_threads, stopping_criteria, verbose):
+    f = pd.read_csv(file_name, sep="\t", compression='gzip')
     # normalize feature names
     f.columns = f.columns.str.replace(r"[-.]", "_", regex=True)
 
@@ -44,8 +44,8 @@ def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
                                  size=[len(y_train), 1])
         y_train = y_train + noise
 
-    reg = PHCRegressor(numThreads, timeLimit, stoppingCriteria,
-                       "f32", "math", verbose=verbose)
+    reg = PHCRegressor(num_threads=num_threads, time_limit=time_limit, stopping_criteria=stopping_criteria,
+                       precision="f32", problem="math", verbose=verbose)
     reg.fit(X_train.to_numpy(), y_train)
     yp = reg.predict(X_test)
 
@@ -63,7 +63,7 @@ def test_sample(name, timeLimit, numThreads, stoppingCriteria, verbose):
     return [rms, r2, new_model]
 
 
-def all_samples(path: str, dataset: str, timeLimit: float, numThreads: int, stopingCriteria: float, verbose: bool = False):
+def all_samples(path: str, dataset: str, time_limit: float, num_threads: int, stoping_criteria: float, verbose: bool = False):
 
     out_dir = os.path.join(path, 'results')
     data_dir = os.path.join(path, 'data/' + dataset)
@@ -83,8 +83,8 @@ def all_samples(path: str, dataset: str, timeLimit: float, numThreads: int, stop
                 true_eq = read_metadata(os.path.join(root, 'metadata.yaml'))
 
                 full_path = os.path.join(root, file)
-                rms, r2, eq = test_sample(full_path, timeLimit, numThreads,
-                                          stopingCriteria, verbose)
+                rms, r2, eq = test_sample(file_name=full_path, time_limit=time_limit, num_threads=num_threads,
+                                          stoping_criteria=stoping_criteria, verbose=verbose)
                 results.loc[idx] = [name, r2, rms, true_eq, str(eq)]
                 idx = idx + 1
                 print(
@@ -103,8 +103,8 @@ def main():
     args = parser.parse_args()
     path = os.path.dirname(os.path.abspath(__file__))
 
-    all_samples(path, args.dataset, numThreads=1, timeLimit=5.0,
-                stopingCriteria=0.0, verbose=False)
+    all_samples(path, args.dataset, num_threads=1, time_limit=5.0,
+                stoping_criteria=0.0, verbose=False)
 
 
 if __name__ == "__main__":
