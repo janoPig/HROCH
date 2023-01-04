@@ -63,7 +63,7 @@ def test_sample(file_name, time_limit, num_threads, stopping_criteria, verbose):
     return [rms, r2, new_model]
 
 
-def all_samples(path: str, dataset: str, time_limit: float, num_threads: int, stoping_criteria: float, verbose: bool = False):
+def all_samples(path: str, dataset: str, time_limit: float, num_threads: int, stopping_criteria: float, verbose: bool = False):
 
     out_dir = os.path.join(path, 'results')
     data_dir = os.path.join(path, 'data/' + dataset)
@@ -84,7 +84,7 @@ def all_samples(path: str, dataset: str, time_limit: float, num_threads: int, st
 
                 full_path = os.path.join(root, file)
                 rms, r2, eq = test_sample(file_name=full_path, time_limit=time_limit, num_threads=num_threads,
-                                          stoping_criteria=stoping_criteria, verbose=verbose)
+                                          stopping_criteria=stopping_criteria, verbose=verbose)
                 results.loc[idx] = [name, r2, rms, true_eq, str(eq)]
                 idx = idx + 1
                 print(
@@ -104,7 +104,7 @@ def main():
     path = os.path.dirname(os.path.abspath(__file__))
 
     all_samples(path, args.dataset, num_threads=1, time_limit=5.0,
-                stoping_criteria=0.0, verbose=False)
+                stopping_criteria=0.0, verbose=False)
 
 
 if __name__ == "__main__":

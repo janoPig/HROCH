@@ -9,15 +9,15 @@ def problem_to_string(problem: any):
     if isinstance(problem, str):
         if problem == 'simple' or problem == 'math' or problem == 'fuzzy':
             return problem
-        raise Exception('Invalid problem type')
+        raise ValueError('Invalid problem type')
     if not isinstance(problem, dict):
-        raise Exception('Invalid problem type')
+        raise TypeError('Invalid problem type')
     result = ""
     for instr, prob in problem.items():
         if not isinstance(instr, str) or not isinstance(prob, float):
-            raise Exception('Invalid instruction type')
+            raise TypeError('Invalid instruction type')
         if len(instr) == 0 or prob < 0.0:
-            raise Exception('Invalid instruction value')
+            raise ValueError('Invalid instruction value')
         result = result + f'{instr} {prob};'
     return result
 
@@ -67,18 +67,18 @@ class PHCRegressor:
         self.dir = TemporaryDirectory()
 
     def fit(self, X: np.ndarray, y: np.ndarray):
-        fnameX = self.dir.name + '/x.csv'
-        fnameY = self.dir.name + '/y.csv'
-        fnameM = self.dir.name + '/model.hrx'
-        fnameP = self.dir.name + '/program.hrx'
+        fname_x = self.dir.name + '/x.csv'
+        fname_y = self.dir.name + '/y.csv'
+        fname_model = self.dir.name + '/model.hrx'
+        fname_program = self.dir.name + '/program.hrx'
 
-        if os.path.exists(fnameX):
-            os.remove(fnameX)
-        if os.path.exists(fnameY):
-            os.remove(fnameY)
+        if os.path.exists(fname_x):
+            os.remove(fname_x)
+        if os.path.exists(fname_y):
+            os.remove(fname_y)
 
-        np.savetxt(fnameX, X, delimiter=' ')
-        np.savetxt(fnameY, y, delimiter=' ')
+        np.savetxt(fname_x, X, delimiter=' ')
+        np.savetxt(fname_y, y, delimiter=' ')
 
         path = os.path.dirname(os.path.realpath(__file__))
 
@@ -89,10 +89,10 @@ class PHCRegressor:
         process = subprocess.Popen([cli,
                                     '--problem', problem_to_string(self.problem),
                                     '--task', 'fit',
-                                    '--x', fnameX,
-                                    '--y', fnameY,
+                                    '--x', fname_x,
+                                    '--y', fname_y,
                                     '--precision', f'{self.precision}',
-                                    '--modelFile' if self.save_model else '--programFile', fnameM if self.save_model else fnameP,
+                                    '--modelFile' if self.save_model else '--programFile', fname_model if self.save_model else fname_program,
                                     '--timeLimit', f'{int(round(self.time_limit*1000.0))}',
                                     '--iterLimit', f'{self.iter_limit}',
                                     '--numThreads', f'{self.num_threads}',
@@ -117,17 +117,17 @@ class PHCRegressor:
         process.wait()
 
     def predict(self, X_test: np.ndarray):
-        fnameX = self.dir.name + '/x.csv'
-        fnameY = self.dir.name + '/y.csv'
-        fnameM = self.dir.name + '/model.hrx'
-        fnameP = self.dir.name + '/program.hrx'
+        fname_x = self.dir.name + '/x.csv'
+        fname_y = self.dir.name + '/y.csv'
+        fname_model = self.dir.name + '/model.hrx'
+        fname_program = self.dir.name + '/program.hrx'
 
-        if os.path.exists(fnameX):
-            os.remove(fnameX)
-        if os.path.exists(fnameY):
-            os.remove(fnameY)
+        if os.path.exists(fname_x):
+            os.remove(fname_x)
+        if os.path.exists(fname_y):
+            os.remove(fname_y)
 
-        np.savetxt(fnameX, X_test, delimiter=' ')
+        np.savetxt(fname_x, X_test, delimiter=' ')
 
         path = os.path.dirname(os.path.realpath(__file__))
 
@@ -137,9 +137,9 @@ class PHCRegressor:
 
         process = subprocess.Popen([cli,
                                     '--task', 'predict',
-                                    '--x', fnameX,
-                                    '--y', fnameY,
-                                    '--modelFile' if self.save_model else '--programFile', fnameM if self.save_model else fnameP,
+                                    '--x', fname_x,
+                                    '--y', fname_y,
+                                    '--modelFile' if self.save_model else '--programFile', fname_model if self.save_model else fname_program,
                                     ],
                                    cwd=self.dir.name, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
         for line in iter(process.stdout.readline, b''):
@@ -149,7 +149,7 @@ class PHCRegressor:
 
         process.stdout.close()
         process.wait()
-        y = np.genfromtxt(fnameY, delimiter=' ')
+        y = np.genfromtxt(fname_y, delimiter=' ')
         return y
 
     def get_params(self):
