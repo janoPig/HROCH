@@ -6,10 +6,10 @@ from HROCH import PHCRegressor
 from xgboost import XGBRegressor
 
 
-# ((X0 & X15) | (X3 & X18)) & (X22 | X25)
+# ((X0 & X15) | (!X3 & X18)) & (X22 | X25)
 X = np.random.uniform(low=0.0, high=1.0, size=(10000, 40))
 A = X[:, 0] * X[:, 15]
-B = X[:, 3] * X[:, 18]
+B = (1.0 - X[:, 3]) * X[:, 18]
 C = A + B - A * B  # A or b
 D = X[:, 22] + X[:, 25] - X[:, 22] * X[:, 25]
 y = C * D
@@ -23,13 +23,12 @@ test_mse = metrics.mean_squared_error(y_predicted, y_test)
 test_r2 = metrics.r2_score(y_predicted, y_test)
 print(f'XGBClassifier: mse= {test_mse} r2= {test_r2}')
 
-reg = PHCRegressor(timeLimit=5.0, problem='fuzzy', stoppingCriteria=1e-12)
+reg = PHCRegressor(time_limit=5.0, problem='fuzzy', stopping_criteria=1e-12, random_state=43)
 reg.fit(X_train, y_train)
 
 # predict
 y_predicted = reg.predict(X_test)
 test_mse = metrics.mean_squared_error(y_predicted, y_test)
 test_r2 = metrics.r2_score(y_predicted, y_test)
-# get equation
-eq = sp.parse_expr(reg.sexpr)
-print(f'PHCRegressor: mse= {test_mse} r2= {test_r2} eq= {str(eq)} ')
+
+print(f'PHCRegressor: mse= {test_mse} r2= {test_r2} eq= {str(reg.sexpr)} ')

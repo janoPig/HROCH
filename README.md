@@ -15,7 +15,15 @@
 - Support mathematic equations and fuzzy logic operators.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
+- Speedup search by using feature importances computed from bbox model
 - [CLI](README_CLI.md)
+
+|**supported instructions**||
+| ----------- | ----------- |
+|**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
+|**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
+|**other**|nop, max, min, abs, floor, ceil, lt, gt, lte, gte|
+|**fuzzy**|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
 
 ## Dependencies
 

@@ -31,7 +31,7 @@ jobs:
       - name: Install
         run: |
           pip install pandas
-          pip install sklearn
+          pip install scikit-learn
           pip install sympy
           pip install pyyaml
           pip install .
