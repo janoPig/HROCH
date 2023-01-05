@@ -18,7 +18,7 @@
 - Speedup search by using feature importances computed from bbox model
 - [CLI](README_CLI.md)
 
-|**supported instructions**||
+|**Supported instructions**||
 | ----------- | ----------- |
 |**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
 |**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
