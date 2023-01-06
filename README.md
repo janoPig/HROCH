@@ -12,7 +12,7 @@
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Support mathematic equations and fuzzy logic [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/SymbolicFuzzy.ipynb) operators.
+- Support mathematic equations and fuzzy logic operators.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
@@ -38,6 +38,8 @@ pip install HROCH
 
 ## Usage
 
+[Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
+
 ```python
 from HROCH import PHCRegressor
 
@@ -45,6 +47,7 @@ reg = PHCRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f6
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
+
 
 ## Performance
 
