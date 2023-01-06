@@ -1,19 +1,26 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 ldesc = """
 # HROCH  
 
-**High optimized symbolic regression.**
+**[The fastest symbolic regression algorithm in the world.](#performance)**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Good results with noise data.
 - Support mathematic equations and fuzzy logic operators.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
-- CLI
+- Speedup search by using feature importances computed from bbox model
+- [CLI](README_CLI.md)
+
+|**supported instructions**||
+| ----------- | ----------- |
+|**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
+|**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
+|**other**|nop, max, min, abs, floor, ceil, lt, gt, lte, gte|
+|**fuzzy**|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
 
 ## Dependencies
 
@@ -31,11 +38,9 @@ pip install HROCH
 ```python
 from HROCH import PHCRegressor
 
-reg = PHCRegressor(numThreads=8, timeLimit=60.0, problem='math', precision='f64')
+reg = PHCRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
-# print symbolic expression
-print(reg.sexpr)
 ```
 
 ## Performance
@@ -49,7 +54,7 @@ Approximate comparison with methods tested in [srbench](https://cavalab.org/srbe
 |MRGP     |14893            |3177      |0.931     |0.000        |0.000           |0.998853549755939|
 |Operon   |2093             |70        |0.862     |0.655        |0.392           |0.990832974928022|
 |AIFeynman|26822            |121       |0.785     |0.689        |0.680           |0.923670858619585|
-|__HROCH__|__42__               |__17__        |__0.781__     |__0.679__        |__0.633__           |__0.988862822072670__|
+|__HROCH__|__42__      |__17__    |__0.781__ |__0.679__    |__0.633__       |__0.988862822072670__|
 |SBP-GP   |28944            |487       |0.737     |0.388        |0.246           |0.994645420032544|
 |GP-GOMEA |3677             |34        |0.716     |0.539        |0.504           |0.996850949284431|
 |AFP_FE   |17682            |41        |0.591     |0.315        |0.185           |0.985876419645066|
@@ -90,9 +95,9 @@ setup(
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10'],
-    packages=['HROCH'],
+    packages=find_packages(
+        exclude=["*.ci-test", "*.tests.*", "tests.*", "tests"]),
     license='MIT',
-    setup_requires=['setuptools_scm'],
     include_package_data=True,
     install_requires=['numpy'],
 )

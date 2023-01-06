@@ -1,0 +1,7 @@
+recursive-exclude ci-test *
+recursive-exclude examples *
+recursive-exclude docs *
+recursive-exclude .github *
+exclude .gitignore
+exclude CODE_OF_CONDUCT.md
+exclude CONTRIBUTING.md
