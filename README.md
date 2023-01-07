@@ -48,6 +48,21 @@ reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
 
+## Changelog
+
+### v1.2
+
+- Features probability as input parameter
+- Custom instructions set
+- Parallel hilclimbing parameters
+  
+### v1.1
+
+- Improved late acceptance hillclimbing
+
+### v1.0
+
+- First release
 
 ## Performance
 
