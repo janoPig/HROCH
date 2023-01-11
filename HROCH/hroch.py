@@ -152,7 +152,7 @@ class PHCRegressor:
         y = np.genfromtxt(fname_y, delimiter=' ')
         return y
 
-    def get_params(self):
+    def get_params(self, deep=True):
         return {'num_threads': self.num_threads,
                 'time_limit': self.time_limit,
                 'iter_limit': self.iter_limit,
