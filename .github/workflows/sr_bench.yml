@@ -1,0 +1,4 @@
+name: SRBench
+
+on:
+  workflow_dispatch:
