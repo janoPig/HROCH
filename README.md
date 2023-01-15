@@ -67,5 +67,10 @@ yp = reg.predict(X_test)
 
 ## SRBench
 
-![output](https://user-images.githubusercontent.com/75015989/212184959-c462beae-d145-48ad-adc9-52aaefc2a380.png)
+### Symbolic solution rate
+
+![image](https://user-images.githubusercontent.com/75015989/212561560-39393068-8d72-48f4-b11c-7a14db029faf.png)
+
+
+
 
