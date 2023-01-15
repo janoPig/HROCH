@@ -9,10 +9,10 @@ Data [PMLB](https://github.com/EpistasisLab/pmlb)
 SRBench test 120 black-box and 133 ground-truth datasets(119 feynman + 14 strogatz). Every dataset is tested for 10 random seeds, 
 ground-truth datasets are testes for 4 values of noise[0, 0.001, 0.01, 0.1]. That's together (120+133*4)*10 = 6520 runs of symbolic regressor. 
 
-__On local computer__ this script [srbench.sh](https://github.com/janoPig/HROCH/blob/a892dedb18b67491b7b4ebb3c704d6b092a424bd/benchmarks/srbench.sh) (requires miniconda)
+__On local computer__ this script [srbench.sh](benchmarks/srbench.sh) (requires miniconda)
 Run time is reduced to 1 second per sample. Total 6520s / number of used cores + benchmark overhead.
 
-__With github workflow__ [sr_bench.yml](https://github.com/janoPig/HROCH/blob/a892dedb18b67491b7b4ebb3c704d6b092a424bd/.github/workflows/sr_bench.yml)
+__With github workflow__ [sr_bench.yml](.github/workflows/sr_bench.yml)
 Results are stored in bbox_result and gt_result artifacts. There are 4 choises PHCRegressor, PHCRegressor1, PHCRegressor2, PHCRegressor3 with defined time 
 per sample to 1s, 10s, 1m, 5m. Total run time from 47 min to 17 hours. 
   
