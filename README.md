@@ -65,7 +65,7 @@ yp = reg.predict(X_test)
 - First release
 
 
-## SRBench
+## [SRBench](https://github.com/janoPig/HROCH/blob/c953f5d205a58b89aef1a0b156ba72b979bcf682/benchmarks/SRBench.md)
 
 ### Symbolic solution rate
 
