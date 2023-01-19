@@ -4,7 +4,7 @@ from setuptools import setup
 ldesc = """
 # HROCH  
 
-**[The fastest symbolic regression algorithm in the world.](#performance)**
+**High-Performance python symbolic regression library based on parallel late acceptance hill-climbing**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
@@ -13,9 +13,9 @@ ldesc = """
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
-- [CLI](README_CLI.md)
+- CLI
 
-|**supported instructions**||
+|**Supported instructions**||
 | ----------- | ----------- |
 |**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
 |**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
@@ -35,6 +35,8 @@ pip install HROCH
 
 ## Usage
 
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
+
 ```python
 from HROCH import PHCRegressor
 
@@ -43,35 +45,33 @@ reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
 
-## Performance
+## Changelog
 
-### Feynman dataset
+### v1.2
 
-Approximate comparison with methods tested in [srbench](https://cavalab.org/srbench/results/#results-for-ground-truth-problems).
+- Features probability as input parameter
+- Custom instructions set
+- Parallel hilclimbing parameters
+  
+### v1.1
 
-|Algorithm|Training time (s)|Model size|R2 > 0.999|R2 > 0.999999|R2 > 0.999999999|R2 mean          |
-|---------|----------------:|---------:|:--------:|:-----------:|:--------------:|:---------------:|
-|MRGP     |14893            |3177      |0.931     |0.000        |0.000           |0.998853549755939|
-|Operon   |2093             |70        |0.862     |0.655        |0.392           |0.990832974928022|
-|AIFeynman|26822            |121       |0.785     |0.689        |0.680           |0.923670858619585|
-|__HROCH__|__42__      |__17__    |__0.781__ |__0.679__    |__0.633__       |__0.988862822072670__|
-|SBP-GP   |28944            |487       |0.737     |0.388        |0.246           |0.994645420032544|
-|GP-GOMEA |3677             |34        |0.716     |0.539        |0.504           |0.996850949284431|
-|AFP_FE   |17682            |41        |0.591     |0.315        |0.185           |0.985876419645066|
-|EPLEX    |10599            |56        |0.470     |0.121        |0.082           |0.991763792716299|
-|AFP      |2895             |37        |0.448     |0.263        |0.159           |0.968488776363814|
-|FEAT     |1561             |195       |0.397     |0.121        |0.112           |0.932465581448533|
-|gplearn  |3716             |78        |0.328     |0.151        |0.151           |0.901020570640627|
-|ITEA     |1435             |21        |0.276     |0.233        |0.224           |0.911713461958873|
-|DSR      |615              |15        |0.250     |0.207        |0.207           |0.875784840006460|
-|BSR      |28800            |25        |0.108     |0.073        |0.043           |0.693995349495648|
-|FFX      |19               |268       |0.000     |0.000        |0.000           |0.908164756903951|
+- Improved late acceptance hillclimbing
+
+### v1.0
+
+- First release
+
+
+## SRBench
+
+
+![image](https://user-images.githubusercontent.com/75015989/212561560-39393068-8d72-48f4-b11c-7a14db029faf.png)
 
 """
 
 setup(
     name='HROCH',
-    version='1.2.0',
+    version='1.2.1',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
