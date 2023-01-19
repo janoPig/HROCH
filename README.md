@@ -7,7 +7,7 @@
 |[![Strogatz - windows](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml)|[results.csv](ci-test/results/strogatz_win.csv)|[![Strogatz - linux](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml)|[results.csv](ci-test/results/strogatz_linux.csv)|
 |[![Feynman - windows](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml)|[results.csv](ci-test/results/feynman_win.csv)|[![Feynman - linux](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml)|[results.csv](ci-test/results/feynman_linux.csv)|
 
-**[The fastest symbolic regression algorithm in the world.](#performance)**
+**High-Performance python symbolic regression library based on parallel late acceptance hill-climbing**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
@@ -65,9 +65,8 @@ yp = reg.predict(X_test)
 - First release
 
 
-## [SRBench](benchmarks/SRBench.md)
+## SRBench[*](benchmarks/SRBench.md)
 
-### Symbolic solution rate
 
 ![image](https://user-images.githubusercontent.com/75015989/212561560-39393068-8d72-48f4-b11c-7a14db029faf.png)
 
