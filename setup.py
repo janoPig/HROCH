@@ -71,7 +71,7 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.2.1',
+    version='1.2.2',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
@@ -98,5 +98,5 @@ setup(
     packages=['HROCH'],
     license='MIT',
     include_package_data=True,
-    install_requires=['numpy'],
+    install_requires=['numpy', 'scikit-learn'],
 )
