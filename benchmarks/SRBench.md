@@ -22,7 +22,8 @@ per sample to 1s, 10s, 1m, 5m. Total run time from 47 min to 17 hours.
 
 ### Results for Ground-truth Problems
 
-![image](https://user-images.githubusercontent.com/75015989/212563885-45126499-11f9-4af9-8502-003e5d7fbf33.png)
+![image](https://user-images.githubusercontent.com/75015989/213884843-ff14dcb3-ecfd-4e03-b566-3629c465c971.png)
+
 
 #### Effect of running time for HROCH
 
@@ -33,23 +34,31 @@ per sample to 1s, 10s, 1m, 5m. Total run time from 47 min to 17 hours.
 
 How often a method finds a model symbolically equivalent to the ground-truth process
 
-![image](https://user-images.githubusercontent.com/75015989/212563341-190f1746-1a29-49fe-8e5b-15dabfb555c9.png)
+![image](https://user-images.githubusercontent.com/75015989/213884898-b0f27cde-64cd-4f4b-9b0d-86489425a05c.png)
 
 
 #### Accuracy Solutions
 
 How often a method finds a model with test set R2>0.999
 
-![image](https://user-images.githubusercontent.com/75015989/212563450-f7affb67-a5b5-44a1-9b49-656b581a4865.png)
+![image](https://user-images.githubusercontent.com/75015989/213884914-d0f35304-8bc8-4b25-b399-9a40d007b053.png)
 
 
 ### Results for Black-box Regression
 
-![image](https://user-images.githubusercontent.com/75015989/212563809-a500e179-16a4-4e18-a2ab-1b7b697bb2b3.png)
+![image](https://user-images.githubusercontent.com/75015989/213884778-d4658242-9943-4c92-80fb-5a0397e5482b.png)
+
 
 #### Accuracy-Complexity Trade-offs
 
 Considering the accuracy and simplicity of models simultaneously, this figure illustrates the trade-offs made by each method. 
 Methods lower and to the left produce models with better trade-offs between accuracy and simplicity. 
 
-![image](https://user-images.githubusercontent.com/75015989/212563824-3deb3ef8-33a0-411f-ab54-6391ce6687c3.png)
+![image](https://user-images.githubusercontent.com/75015989/213884730-d4920bbd-9529-48c5-9c33-5061384160a1.png)
+
+
+#### Compare with bbox regressors
+
+![image](https://user-images.githubusercontent.com/75015989/213885323-a7902c5f-dcd3-4a39-a32c-7921e599324d.png)
+
+
