@@ -11,7 +11,7 @@ from sklearn.metrics import r2_score
 class TestFeatures(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         self.params = [{'num_threads': 1, 'time_limit': 0.0, 'iter_limit': 1000, 'random_state': 42},
-                       {'num_threads': 2, 'time_limit': 0.0, 'iter_limit': 1000, 'random_state': 42}]
+                       {'num_threads': 2, 'time_limit': 0.0, 'iter_limit': 1000, 'random_state': 42, 'verbose':True}]
         super(TestFeatures, self).__init__(*args, **kwargs)
 
     def test_random_state(self):
