@@ -1,11 +1,6 @@
 # HROCH  
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/HROCH) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=janoPig_HROCH&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=janoPig_HROCH) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml)
-
-| Windows |Results|Linux|Results|
-| ----------- | ----------- | ----------- | ----------- |
-|[![Strogatz - windows](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_win.yml)|[results.csv](ci-test/results/strogatz_win.csv)|[![Strogatz - linux](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/strogatz_test_linux.yml)|[results.csv](ci-test/results/strogatz_linux.csv)|
-|[![Feynman - windows](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_win.yml)|[results.csv](ci-test/results/feynman_win.csv)|[![Feynman - linux](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/feynman_test_linux.yml)|[results.csv](ci-test/results/feynman_linux.csv)|
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml)
 
 **High-Performance python symbolic regression library based on parallel late acceptance hill-climbing**
 
@@ -64,12 +59,6 @@ yp = reg.predict(X_test)
 
 - First release
 
-
 ## SRBench[*](benchmarks/SRBench.md)
 
 ![image](https://user-images.githubusercontent.com/75015989/213885483-c1ecadb5-2bd1-4c57-9371-0be86c911f26.png)
-
-
-
-
-
