@@ -66,6 +66,10 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     |__fuzzy__|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
 
     *_nop - no operation_
+    
+    *_inv - inverse_ $(-x)$
+    
+    *_minv - multiplicative inverse_ $(1/x)$
 
     *_lt, gt, lte, gte - <, >, <=, >=_
 
