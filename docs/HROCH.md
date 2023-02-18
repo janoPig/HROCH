@@ -46,6 +46,19 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     - __'simple:'__ Restricted math to [nop, add, sub, mul, div, sq2]
     - __'fuzzy':__: [Dyadic Operators based on a Hyperbolic Paraboloid](https://commons.wikimedia.org/wiki/Fuzzy_operator#Dyadic_Operators_based_on_a_Hyperbolic_Paraboloid) [f_and, f_or, f_xor, f_not]
 
+    ```python
+    simple = {'nop': 0.01, 'add': 1.0, 'sub': 1.0,
+          'mul': 1.0, 'div': 0.1, 'sq2': 0.05}
+
+    math = {'nop': 0.01, 'add': 1.0, 'sub': 1.0, 'mul': 1.0,
+            'div': 0.1, 'sq2': 0.05, 'pow': 0.001, 'exp': 0.001,
+            'log': 0.001, 'sqrt': 0.1, 'sin': 0.005, 'cos': 0.005,
+            'tan': 0.001, 'asin': 0.001, 'acos': 0.001, 'atan': 0.001,
+            'sinh': 0.001, 'cosh': 0.001, 'tanh': 0.001}
+
+    fuzzy = {'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0}
+    ```
+
   - __Custom set of instructions with mutation probability.__
   
      Probability is calculated as the given value divided by the sum of all probabilities.
@@ -158,7 +171,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 
     __Parameters:__
 
-  - __X__ Training data.
+  - __X__ Samples.
 
     __Returns:__ Returns predicted values.
 
