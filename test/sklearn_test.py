@@ -25,9 +25,6 @@ class TestSklearn(unittest.TestCase):
 
         self.assertEqual(y_pred.shape[0], y_test.shape[0])
 
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg.dir.cleanup()
-
     def test_fit_predict_dataframe(self):
         X, y = load_breast_cancer(return_X_y=True)
         X_train, X_test, y_train, y_test = train_test_split(
@@ -42,9 +39,6 @@ class TestSklearn(unittest.TestCase):
 
         self.assertEqual(y_pred.shape[0], y_test.shape[0])
 
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg.dir.cleanup()
-
     def test_score(self):
         X, y = load_breast_cancer(return_X_y=True)
         X_train, X_test, y_train, y_test = train_test_split(
@@ -55,6 +49,3 @@ class TestSklearn(unittest.TestCase):
         score = reg.score(X_test, y_test)
         expected_score = r2_score(y_test, reg.predict(X_test))
         self.assertAlmostEqual(score, expected_score, delta=1e-6)
-
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg.dir.cleanup()

@@ -1,7 +1,6 @@
 # PHCRegressor
 
-Symbolic Regressor based parallel hill climbing algorithm with late acceptance. Unlike genetic programming, no crossover operation is performed. Thus, each individual is independent of the others. Several techniques avoid getting stuck in the local minimum. Parallelism. More parallel runs means a better chance of reaching the global minimum, even if it means a slower run. Late acceptance, which allows for some degradation steps. Mutation in 3 steps. Each individual is mutated multiple times during an iteration, regardless of its fitness value, allowing some hurdles to be skipped.
-
+Symbolic Regressor based on parallel hill climbing algorithm. Unlike genetic programming, no crossover operation is performed. Thus, each individual is independent of the others.
 ---
 
 ## __Parameters__
@@ -28,9 +27,6 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 - __iter_limit : int, default=0__
 
     Iterations limit. If is set to 0 there is no limit and the algorithm runs until some other condition is met.
-- __stopping_criteria : float, default=0.0__
-
-    Error when search stop before time limit or iter_limit. Exactly it mean $1.0 - R^2$ value. stopping_criteria = 0.001 stops the serch when is found solution with score better as $R^2 = 0.999$
 
 ### __Controlling search space__
 
@@ -73,15 +69,17 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 
     |__supported instructions__||
     | ----------- | ----------- |
-    |__math__|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
+    |__math__|add, sub, mul, div, pdiv, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
     |__goniometric__|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
     |__other__|nop, max, min, abs, floor, ceil, lt, gt, lte, gte|
     |__fuzzy__|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
 
     *_nop - no operation_
-    
+
+    *_pdiv - protested division_
+
     *_inv - inverse_ $(-x)$
-    
+
     *_minv - multiplicative inverse_ $(1/x)$
 
     *_lt, gt, lte, gte - <, >, <=, >=_
@@ -101,7 +99,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 - __const_size: int, default=8__
 
     Maximum alloved constants in symbolic model, accept also 0.
-- __code_size: int, default=32__
+- __code_min_size, code_max_size: int, default=32__
 
    Each symbolic model in PHCRegressor is internally represented as a linear code. For example $x_1*(x_2 + 0.1)^2$  can be represented as a linear program with code:
 
@@ -111,17 +109,51 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     y = x1*x5
     ```
 
-    code_size parameter controls the maximum allowed size of such a linear program.
+    code_min_size and code_max_size parameters controls the minimum/maximum allowed size of such a linear program.
+
+- __init_const_min: float, default=-1.0__
+  
+    Lower range for initializing constants.
+- __init_const_max: float, default=1.0__
+  
+    Upper range for initializing constants.
+- __init_predefined_const_prob: float, default=0.0__
+
+    Probability of selecting one of the predefined constants during initialization.
+- __init_predefined_const_set: list of floats, default=[]__
+
+    Predefined constants used during initialization.
+- __clip_min: float, default=0.0__
+
+    Lower limit for calculated values. If both values (clip_min and clip_max) are the same, then no clip is performed.
+- __clip_max: float, default=0.0__
+
+    Upper limit for calculated values. If both values (clip_min and clip_max) are the same, then no clip is performed.
+- __const_min: float, default=-1e30__
+
+    Lower bound for constants used in generated equations.
+- __const_max: float, default=1e30__
+  
+    Upper bound for constants used in generated equations.
+- __predefined_const_prob: float, default=0.0__
+
+    Probability of selecting one of the predefined constants during equations search.
+- __predefined_const_set: list of floats, default=[]__
+
+    Predefined constants used during equations search.
 
 ### __Other__
 
+- __metric: str, default='MSE'__
+
+    Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
+- __transformation: str, default=None__
+
+    Final transformation for computed value. Choose from { None, 'LOGISTIC', 'PSEUDOLOG', 'ORDINAL'}
 - __random_state: int, default=0__
 
     Random generator seed. If 0 then random generator will be initialized by system time.
-- __save_model: bool, default=False__
-
-    Save whole search model. Allow continue fit task.
-- __verbose: bool, default=False__
+- __verbose: int, default=0__
 
     Controls the verbosity when fitting and predicting.
 
@@ -172,6 +204,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     __Parameters:__
 
   - __X__ Samples.
+  - __id__ (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
 
     __Returns:__ Returns predicted values.
 
@@ -193,6 +226,10 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 - __set_params(**params)__
 
     Set the parameters of this estimator.
+
+- __get_models()__
+
+    Return list of equations from all paralel hillclimbers.
 
 ---
 

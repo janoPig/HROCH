@@ -4,20 +4,20 @@ from setuptools import setup
 ldesc = """
 # HROCH  
 
-**High-Performance python symbolic regression library based on parallel late acceptance hill-climbing**
+**High-Performance python symbolic regression library based on parallel hill-climbing**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Support mathematic equations and fuzzy logic operators.
+- Support for mathematic and fuzzy logic operators.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
-- CLI
+- Support for simple classification tasks
 
 |**Supported instructions**||
 | ----------- | ----------- |
-|**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
+|**math**|add, sub, mul, div, pdiv, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
 |**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
 |**other**|nop, max, min, abs, floor, ceil, lt, gt, lte, gte|
 |**fuzzy**|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
@@ -26,6 +26,7 @@ ldesc = """
 
 - AVX2 instructions set(all modern CPU support this)
 - numpy
+- sklearn
 
 ## Installation
 
@@ -35,7 +36,9 @@ pip install HROCH
 
 ## Usage
 
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
+[Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
+
+[Documentation](docs/HROCH.md)
 
 ```python
 from HROCH import PHCRegressor
@@ -46,6 +49,18 @@ yp = reg.predict(X_test)
 ```
 
 ## Changelog
+
+### v1.3
+
+- Public c++ sources
+- Commanline interface changed to cpython
+- Support for classification score logloss and accuracy
+- Support for final transformations:
+  - ordinal regression
+  - logistic function
+  - clipping
+- Acess to equations from all paralel hillclimbers
+- User defined constants
 
 ### v1.2
 
@@ -61,9 +76,7 @@ yp = reg.predict(X_test)
 
 - First release
 
-
 ## SRBench
-
 
 ![image](https://user-images.githubusercontent.com/75015989/212561560-39393068-8d72-48f4-b11c-7a14db029faf.png)
 
@@ -71,7 +84,7 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.2.2',
+    version='1.3.0',
     description='Symbolic regression',
     long_description=ldesc,
     long_description_content_type="text/markdown",
@@ -94,7 +107,8 @@ setup(
                  'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
-                 'Programming Language :: Python :: 3.10'],
+                 'Programming Language :: Python :: 3.10',
+                 'Programming Language :: Python :: 3.11'],
     packages=['HROCH'],
     license='MIT',
     include_package_data=True,

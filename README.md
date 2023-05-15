@@ -2,28 +2,33 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml)
 
-**High-Performance python symbolic regression library based on parallel late acceptance hill-climbing**
+**High-Performance python symbolic regression library based on parallel hill-climbing**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Support mathematic equations and fuzzy logic operators.
+- Support for mathematic and fuzzy logic operators.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
-- [CLI](README_CLI.md)
+- Support for simple classification tasks
 
 |**Supported instructions**||
 | ----------- | ----------- |
-|**math**|add, sub, mul, div, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
+|**math**|add, sub, mul, div, pdiv, inv, minv, sq2, pow, exp, log, sqrt, cbrt, aq|
 |**goniometric**|sin, cos, tan, asin, acos, atan, sinh, cosh, tanh|
 |**other**|nop, max, min, abs, floor, ceil, lt, gt, lte, gte|
 |**fuzzy**|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
+
+## Sources
+
+C++20 source code available in separate repo [sr_core](<https://github.com/janoPig/sr_core>)
 
 ## Dependencies
 
 - AVX2 instructions set(all modern CPU support this)
 - numpy
+- sklearn
 
 ## Installation
 
@@ -46,6 +51,18 @@ yp = reg.predict(X_test)
 ```
 
 ## Changelog
+
+### v1.3
+
+- Public c++ sources
+- Commanline interface changed to cpython
+- Support for classification score logloss and accuracy
+- Support for final transformations:
+  - ordinal regression
+  - logistic function
+  - clipping
+- Acess to equations from all paralel hillclimbers
+- User defined constants
 
 ### v1.2
 
