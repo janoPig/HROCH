@@ -30,10 +30,6 @@ class TestFeatures(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(y_pred1, y_pred2, decimal=6)
 
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg1.dir.cleanup()
-        reg2.dir.cleanup()
-
     def test_random_state_mt(self):
         X, y = load_breast_cancer(return_X_y=True)
         X_train, X_test, y_train, y_test = train_test_split(
@@ -49,10 +45,6 @@ class TestFeatures(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(y_pred1, y_pred2, decimal=6)
 
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg1.dir.cleanup()
-        reg2.dir.cleanup()
-
     def test_random_state_mt2(self):
         X, y = load_breast_cancer(return_X_y=True)
         X_train, X_test, y_train, y_test = train_test_split(
@@ -67,7 +59,3 @@ class TestFeatures(unittest.TestCase):
         y_pred2 = reg2.predict(X_test)
 
         np.testing.assert_array_almost_equal(y_pred1, y_pred2, decimal=6)
-
-        # ResourceWarning: Implicitly cleaning up TemporaryDirectory
-        reg1.dir.cleanup()
-        reg2.dir.cleanup()
