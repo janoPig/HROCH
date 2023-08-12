@@ -78,7 +78,7 @@ yp = reg.predict(X_test)
 
 ## SRBench
 
-![image](https://user-images.githubusercontent.com/75015989/212561560-39393068-8d72-48f4-b11c-7a14db029faf.png)
+![image](https://github.com/janoPig/HROCH/assets/75015989/3fa087dc-8caf-4301-86d7-4e79a4e84402)
 
 """
 

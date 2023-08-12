@@ -80,4 +80,4 @@ yp = reg.predict(X_test)
 
 ## SRBench[*](benchmarks/SRBench.md)
 
-![image](https://user-images.githubusercontent.com/75015989/213885483-c1ecadb5-2bd1-4c57-9371-0be86c911f26.png)
+![image](https://github.com/janoPig/HROCH/assets/75015989/3fa087dc-8caf-4301-86d7-4e79a4e84402)
