@@ -64,6 +64,9 @@ yp = reg.predict(X_test)
 - Acess to equations from all paralel hillclimbers
 - User defined constants
 
+<details>
+<summary>Older versions</summary>
+
 ### v1.2
 
 - Features probability as input parameter
@@ -77,6 +80,8 @@ yp = reg.predict(X_test)
 ### v1.0
 
 - First release
+</details>
+
 
 ## SRBench[*](benchmarks/SRBench.md)
 
