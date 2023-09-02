@@ -55,7 +55,10 @@ class FitParams(ctypes.Structure):
                 ("predefined_const_count", ctypes.c_uint),
                 ("predefined_const_set", DoublePointer),
                 ('problem', ctypes.c_char_p),
-                ('feature_probs', ctypes.c_char_p)]
+                ('feature_probs', ctypes.c_char_p),
+                ("cw0", ctypes.c_double),
+                ("cw1", ctypes.c_double),
+                ]
 
 
 class PredictParams(ctypes.Structure):
@@ -120,7 +123,7 @@ math = {'nop': 0.01, 'add': 1.0, 'sub': 1.0, 'mul': 1.0,
 fuzzy = {'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0}
 
 
-class PHCRegressor(BaseEstimator, RegressorMixin):
+class PHCRegressor(BaseEstimator):
     """
     Parallel Hill Climbing symbolic Regression
 
@@ -149,10 +152,6 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
         - feature_probs (any, optional), default=None:
 
             `reg = PHCRegressor(feature_probs=[1.0,1.0, 0.01])`
-
-        - save_model (bool, optional), default=False:
-
-            Save whole search model. Allow continue fit task.
 
         - random_state (int, optional), default=0:
 
@@ -245,7 +244,8 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
                  const_min: float = -1e30,
                  const_max: float = 1e30,
                  predefined_const_prob: float = 0.0,
-                 predefined_const_set: list = []
+                 predefined_const_set: list = [],
+                 cw: list = [1.0, 1.0],
                  ):
 
         if not precision in ['f32', 'f64']:
@@ -254,6 +254,10 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
         if num_threads <= 0:
             raise ValueError(
                 "num_threads parameter must be greather that zero")
+
+        if len(cw) != 2:
+            raise ValueError(
+                "cw parameter incorrect")
 
         self.num_threads = num_threads
         self.time_limit = time_limit
@@ -281,6 +285,7 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
         self.const_max = const_max
         self.predefined_const_prob = predefined_const_prob
         self.predefined_const_set = predefined_const_set
+        self.cw = cw
 
         self.handle = None
 
@@ -335,7 +340,11 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
             predefined_const_set=numpy.ascontiguousarray(self.predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
                 self.predefined_const_set) > 0 else None,
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
-            feature_probs=self.__feature_probs_to_string(self.feature_probs).encode('utf-8'))
+            feature_probs=self.__feature_probs_to_string(
+                self.feature_probs).encode('utf-8'),
+            cw0=self.cw[0],
+            cw1=self.cw[1],
+        )
 
         if self.precision == 'f32':
             ret = FitData32(self.handle, _x, _y,
@@ -355,6 +364,7 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
 
         Args:
             - X (numpy.ndarray): Samples.
+            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
 
         Returns:
             numpy.ndarray: Returns predicted values.
@@ -425,6 +435,14 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
             return 2
         elif metric == 'LOGLOSS':
             return 4
+        elif metric == 'LOGLOSS1':
+            return 11
+        elif metric == 'LOGLOSS2':
+            return 12
+        elif metric == 'LOGLOSS3':
+            return 13
+        elif metric == 'LOGITAPPROX':
+            return 20
         return 0
 
     def __parse_transformation(self, transformation: str):

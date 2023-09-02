@@ -1,0 +1,201 @@
+from .hroch import PHCRegressor, math
+from sklearn.base import ClassifierMixin
+import numpy as numpy
+
+
+class NLLRegressor(PHCRegressor, ClassifierMixin):
+    """
+    Non Linear Logistic Regressor
+
+    Parameters:
+        - num_threads (int, optional), default=8:
+
+            Number of used threads.
+
+        - time_limit (float, optional), default=5.0:
+
+            Timeout in seconds. If is set to 0 there is no limit and the algorithm runs until some other condition is met.
+
+        - iter_limit (int, optional), default=0:
+
+            Iterations limit. If is set to 0 there is no limit and the algorithm runs until some other condition is met.
+
+        - precision (str, optional), default='f32':
+
+            'f64' or 'f32'. Internal floating number representation. 32bit AVX2 instructions are 2x faster as 64bit.
+
+        - problem (any, optional), default=math:
+
+            Predefined instructions sets math or custom defines set of instructions with mutation probability.
+            `reg = FuzzyRegressor(problem={'add':10.0, 'mul':10.0, 'gt':1.0, 'lt':1.0, 'nop':1.0})`
+
+        - feature_probs (any, optional), default=None:
+
+            `reg = FuzzyRegressor(feature_probs=[1.0,1.0, 0.01])`
+
+        - random_state (int, optional), default=0:
+
+            Random generator seed. If 0 then random generator will be initialized by system time.
+
+        - verbose (int, optional), default=0:
+
+            Controls the verbosity when fitting and predicting.
+
+        - pop_size (int, optional), default=64:
+
+            Number of individuals in the population.
+
+        - pop_sel (int, optional), default=4:
+
+            Tournament selection.
+
+        - const_size (int, optional), default=8:
+
+            Maximum alloved constants in symbolic model, accept also 0.
+
+        - code_min_size (int, optional), default=32:
+
+            Minimum allowed equation size.
+
+        - code_max_size (int, optional), default=32:
+
+            Maximum allowed equation size.
+
+        - init_const_min (float, optional), default=-1.0:
+
+            Lower range for initializing constants.
+
+        - init_const_max (float, optional), default=1.0:
+
+            Upper range for initializing constants.
+
+        - init_predefined_const_prob (float, optional), default=0.0:
+
+            Probability of selecting one of the predefined constants during initialization.
+
+        - init_predefined_const_set (list of floats, optional) default=[]:
+
+            Predefined constants used during initialization.
+
+        - const_min (float, optional) default=-1e30:
+
+            Lower bound for constants used in generated equations.
+
+        - const_max (float, optional) default=1e30:
+
+            Upper bound for constants used in generated equations.
+
+        - predefined_const_prob (float, optional), default=0.0:
+
+            Probability of selecting one of the predefined constants during equations search.
+
+        - predefined_const_set (list of floats, optional) default=[]:
+
+            Predefined constants used during equations search.
+    """
+
+    SCALE = 1.0e6
+
+    def __init__(self,
+                 num_threads: int = 8,
+                 time_limit: float = 5.0,
+                 iter_limit: int = 0,
+                 precision: str = 'f32',
+                 problem: any = math,
+                 feature_probs: any = None,
+                 save_model: bool = False,
+                 random_state: int = 0,
+                 verbose: int = 0,
+                 pop_size: int = 64,
+                 pop_sel: int = 4,
+                 const_size: int = 8,
+                 code_min_size: int = 32,
+                 code_max_size: int = 32,
+                 init_const_min: float = -1.0,
+                 init_const_max: float = 1.0,
+                 init_predefined_const_prob: float = 0.0,
+                 init_predefined_const_set: list = [],
+                 const_min: float = -1e30,
+                 const_max: float = 1e30,
+                 predefined_const_prob: float = 0.0,
+                 predefined_const_set: list = [],
+                 metric: str = 'LogLoss',
+                 transformation='LOGISTIC',
+                 cw: list = [1.0, 1.0],
+                 ):
+
+        super(NLLRegressor, self).__init__(
+            num_threads=num_threads,
+            time_limit=time_limit,
+            iter_limit=iter_limit,
+            precision=precision,
+            problem=problem,
+            feature_probs=feature_probs,
+            save_model=save_model,
+            random_state=random_state,
+            verbose=verbose,
+            pop_size=pop_size,
+            pop_sel=pop_sel,
+            const_size=const_size,
+            code_min_size=code_min_size,
+            code_max_size=code_max_size,
+            init_const_min=init_const_min,
+            init_const_max=init_const_max,
+            init_predefined_const_prob=init_predefined_const_prob,
+            init_predefined_const_set=init_predefined_const_set,
+            const_min=const_min,
+            const_max=const_max,
+            predefined_const_prob=predefined_const_prob,
+            predefined_const_set=predefined_const_set,
+            clip_min=3e-7 if metric.upper() != 'LOGITAPPROX' else 0.0,
+            clip_max=1.0-3e-7 if metric.upper() != 'LOGITAPPROX' else 0.0,
+            transformation=transformation,
+            metric=metric,
+            cw=cw
+        )
+
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+        """Fit symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Training data.
+            - y (numpy.ndarray): Target values.
+
+            !!!In the current version, the sample_weight parameter is ignored!!!
+            - sample_weight : array-like, shape = [n_samples], optional
+            Weights applied to individual samples.
+        """
+
+        super(NLLRegressor, self).fit(X, y)
+        return self
+
+    def predict(self, X: numpy.ndarray, id=None):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+
+        Returns:
+            numpy.ndarray: Returns predicted values.
+        """
+        preds = super(NLLRegressor, self).predict(X, id)
+        if self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
+            preds = 1.0/(1.0+numpy.exp(-preds))
+        return (preds > 0.5)*1.0
+
+    def predict_proba(self, X: numpy.ndarray, id=None):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+
+        Returns:
+            numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
+        """
+        preds = super(NLLRegressor, self).predict(X, id)
+        if self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
+            preds = 1.0/(1.0+numpy.exp(-preds))
+        proba = numpy.vstack([1 - preds, preds]).T
+        return proba
