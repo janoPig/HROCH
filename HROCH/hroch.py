@@ -67,7 +67,8 @@ class MathModel(ctypes.Structure):
     _fields_ = [("id", ctypes.c_uint64),
                 ("score", ctypes.c_double),
                 ("partial_score", ctypes.c_double),
-                ('str_representation', ctypes.c_char_p)]
+                ('str_representation', ctypes.c_char_p),
+                ('str_code_representation', ctypes.c_char_p)]
 
 
 # void * CreateSolver(solver_params * params)
@@ -384,7 +385,7 @@ class PHCRegressor(BaseEstimator, RegressorMixin):
         for i in range(self.num_threads*self.pop_size):
             GetModel(self.handle, i, model)
             models.append((model.id, model.score, model.partial_score,
-                          model.str_representation.decode('ascii')))
+                          model.str_representation.decode('ascii'), model.str_code_representation.decode('ascii')))
         return models
 
     def __problem_to_string(self, problem: any):
