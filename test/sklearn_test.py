@@ -1,5 +1,5 @@
 import HROCH
-from HROCH import PHCRegressor
+from HROCH import SymbolicRegressor
 import unittest
 import numpy as np
 import pandas as pd
@@ -19,7 +19,7 @@ class TestSklearn(unittest.TestCase):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=self.params['random_state'])
 
-        reg = PHCRegressor(**self.params)
+        reg = SymbolicRegressor(**self.params)
         reg.fit(X_train, y_train)
         y_pred = reg.predict(X_test)
 
@@ -33,7 +33,7 @@ class TestSklearn(unittest.TestCase):
         X_train_df = pd.DataFrame(X_train)
         X_test_df = pd.DataFrame(X_test)
 
-        reg = PHCRegressor(**self.params)
+        reg = SymbolicRegressor(**self.params)
         reg.fit(X_train_df, y_train)
         y_pred = reg.predict(X_test_df)
 
@@ -44,7 +44,7 @@ class TestSklearn(unittest.TestCase):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=self.params['random_state'])
 
-        reg = PHCRegressor(**self.params)
+        reg = SymbolicRegressor(**self.params)
         reg.fit(X_train, y_train)
         score = reg.score(X_test, y_test)
         expected_score = r2_score(y_test, reg.predict(X_test))

@@ -1,5 +1,5 @@
 import HROCH
-from HROCH import PHCRegressor
+from HROCH import SymbolicRegressor
 import unittest
 import numpy as np
 import pandas as pd
@@ -10,9 +10,10 @@ from sklearn.metrics import r2_score
 
 class TestFeatures(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        self.params = [{'num_threads': 1, 'time_limit': 0.0, 'iter_limit': 1000, 'random_state': 42, 'verbose':True, 'save_model':True},
-                       {'num_threads': 2, 'time_limit': 0.0, 'iter_limit': 100000, 'random_state': 42, 'verbose':True, 'save_model':True},
-                       {'num_threads': 8, 'time_limit': 0.0, 'iter_limit': 100000, 'random_state': 42, 'verbose':True, 'save_model':True}]
+        self.params = [{'num_threads': 1, 'time_limit': 0.0, 'iter_limit': 1000, 'random_state': 42, 'verbose': True, 'save_model': True},
+                       {'num_threads': 2, 'time_limit': 0.0, 'iter_limit': 100000,
+                           'random_state': 42, 'verbose': True, 'save_model': True},
+                       {'num_threads': 8, 'time_limit': 0.0, 'iter_limit': 100000, 'random_state': 42, 'verbose': True, 'save_model': True}]
         super(TestFeatures, self).__init__(*args, **kwargs)
 
     def test_random_state(self):
@@ -20,11 +21,11 @@ class TestFeatures(unittest.TestCase):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
-        reg1 = PHCRegressor(**self.params[0])
+        reg1 = SymbolicRegressor(**self.params[0])
         reg1.fit(X_train, y_train)
         y_pred1 = reg1.predict(X_test)
 
-        reg2 = PHCRegressor(**self.params[0])
+        reg2 = SymbolicRegressor(**self.params[0])
         reg2.fit(X_train, y_train)
         y_pred2 = reg2.predict(X_test)
 
@@ -35,11 +36,11 @@ class TestFeatures(unittest.TestCase):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
-        reg1 = PHCRegressor(**self.params[1])
+        reg1 = SymbolicRegressor(**self.params[1])
         reg1.fit(X_train, y_train)
         y_pred1 = reg1.predict(X_test)
 
-        reg2 = PHCRegressor(**self.params[1])
+        reg2 = SymbolicRegressor(**self.params[1])
         reg2.fit(X_train, y_train)
         y_pred2 = reg2.predict(X_test)
 
@@ -50,11 +51,11 @@ class TestFeatures(unittest.TestCase):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
-        reg1 = PHCRegressor(**self.params[1])
+        reg1 = SymbolicRegressor(**self.params[1])
         reg1.fit(X_train, y_train)
         y_pred1 = reg1.predict(X_test)
 
-        reg2 = PHCRegressor(**self.params[1])
+        reg2 = SymbolicRegressor(**self.params[1])
         reg2.fit(X_train, y_train)
         y_pred2 = reg2.predict(X_test)
 

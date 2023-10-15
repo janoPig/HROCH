@@ -63,7 +63,8 @@ class FitParams(ctypes.Structure):
 
 class PredictParams(ctypes.Structure):
     _fields_ = [("id", ctypes.c_uint64),
-                ("verbose", ctypes.c_uint32)]
+                ("verbose", ctypes.c_uint32),
+                ]
 
 
 class MathModel(ctypes.Structure):
@@ -71,13 +72,21 @@ class MathModel(ctypes.Structure):
                 ("score", ctypes.c_double),
                 ("partial_score", ctypes.c_double),
                 ('str_representation', ctypes.c_char_p),
-                ('str_code_representation', ctypes.c_char_p)]
+                ('str_code_representation', ctypes.c_char_p),
+                ("used_constants_count", ctypes.c_uint32),
+                ("used_constants", DoublePointer),
+                ]
 
 
 # void * CreateSolver(solver_params * params)
 CreateSolver = lib.CreateSolver
 CreateSolver.argtypes = [ctypes.POINTER(Params)]
 CreateSolver.restype = ctypes.c_void_p
+
+# void DeleteSolver(void *hsolver)
+DeleteSolver = lib.DeleteSolver
+DeleteSolver.argtypes = [ctypes.c_void_p]
+DeleteSolver.restype = None
 
 # int FitData[32/64](void *hsolver, const [float/double] *X, const [float/double] *y, unsigned int rows, unsigned int xcols, fit_params *params)
 FitData32 = lib.FitData32
@@ -106,10 +115,16 @@ GetBestModel = lib.GetBestModel
 GetBestModel.argtypes = [ctypes.c_void_p, ctypes.POINTER(MathModel)]
 GetBestModel.restype = ctypes.c_int
 
+# int GetModel(void *hsolver, unsigned long long id, math_model *model)
 GetModel = lib.GetModel
 GetModel.argtypes = [ctypes.c_void_p,
                      ctypes.c_uint64, ctypes.POINTER(MathModel)]
 GetModel.restype = ctypes.c_int
+
+# void FreeModel(math_model *model)
+FreeModel = lib.FreeModel
+FreeModel.argtypes = [ctypes.POINTER(MathModel)]
+FreeModel.restype = None
 
 simple = {'nop': 0.01, 'add': 1.0, 'sub': 1.0,
           'mul': 1.0, 'div': 0.1, 'sq2': 0.05}
@@ -278,16 +293,24 @@ class PHCRegressor(BaseEstimator):
         self.init_const_min = init_const_min
         self.init_const_max = init_const_max
         self.init_predefined_const_prob = init_predefined_const_prob
-        self.init_predefined_const_set = init_predefined_const_set
+        self.init_predefined_const_count = len(init_predefined_const_set)
+        self.init_predefined_const_set = numpy.ascontiguousarray(init_predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
+            init_predefined_const_set) > 0 else None
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.const_min = const_min
         self.const_max = const_max
         self.predefined_const_prob = predefined_const_prob
-        self.predefined_const_set = predefined_const_set
+        self.predefined_const_count = len(predefined_const_set)
+        self.predefined_const_set = numpy.ascontiguousarray(predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
+            predefined_const_set) > 0 else None
         self.cw = cw
 
         self.handle = None
+
+    def __del__(self):
+        if self.handle is not None:
+            DeleteSolver(self.handle)
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """Fit symbolic model.
@@ -313,10 +336,8 @@ class PHCRegressor(BaseEstimator):
                             init_const_min=self.init_const_min,
                             init_const_max=self.init_const_max,
                             init_predefined_const_prob=self.init_predefined_const_prob,
-                            init_predefined_const_count=len(
-                                self.init_predefined_const_set),
-                            init_predefined_const_set=numpy.ascontiguousarray(self.init_predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
-                                self.init_predefined_const_set) > 0 else None,
+                            init_predefined_const_count=self.init_predefined_const_count,
+                            init_predefined_const_set=self.init_predefined_const_set,
                             )
             self.handle = CreateSolver(ctypes.pointer(params))
 
@@ -336,9 +357,8 @@ class PHCRegressor(BaseEstimator):
             const_min=self.const_min,
             const_max=self.const_max,
             predefined_const_prob=self.predefined_const_prob,
-            predefined_const_count=len(self.predefined_const_set),
-            predefined_const_set=numpy.ascontiguousarray(self.predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
-                self.predefined_const_set) > 0 else None,
+            predefined_const_count=self.predefined_const_count,
+            predefined_const_set=self.predefined_const_set,
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
             feature_probs=self.__feature_probs_to_string(
                 self.feature_probs).encode('utf-8'),
@@ -358,6 +378,7 @@ class PHCRegressor(BaseEstimator):
         model = MathModel()
         GetBestModel(self.handle, model)
         self.sexpr = model.str_representation.decode('ascii')
+        FreeModel(model)
 
     def predict(self, X: numpy.ndarray, id=None):
         """Predict using the symbolic model.
@@ -396,6 +417,8 @@ class PHCRegressor(BaseEstimator):
             GetModel(self.handle, i, model)
             models.append((model.id, model.score, model.partial_score,
                           model.str_representation.decode('ascii'), model.str_code_representation.decode('ascii')))
+
+            FreeModel(model)
         return models
 
     def __problem_to_string(self, problem: any):
