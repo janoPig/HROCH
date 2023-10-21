@@ -1,5 +1,6 @@
 from .hroch import PHCRegressor, math
 from sklearn.base import ClassifierMixin
+from sklearn.metrics import log_loss
 import numpy as numpy
 
 
@@ -122,6 +123,9 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
                  metric: str = 'LogLoss',
                  transformation='LOGISTIC',
                  cw: list = [1.0, 1.0],
+                 opt_metric=log_loss,
+                 opt_minimize=True,
+                 opt_params={'method': 'Nelder-Mead'},
                  ):
 
         super(NLLRegressor, self).__init__(
@@ -151,7 +155,10 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             clip_max=1.0-3e-7 if metric.upper() != 'LOGITAPPROX' else 0.0,
             transformation=transformation,
             metric=metric,
-            cw=cw
+            cw=cw,
+            opt_metric=opt_metric,
+            opt_minimize=opt_minimize,
+            opt_params=opt_params,
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):

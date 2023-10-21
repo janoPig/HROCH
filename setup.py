@@ -27,6 +27,7 @@ ldesc = """
 - AVX2 instructions set(all modern CPU support this)
 - numpy
 - sklearn
+- scipy
 
 ## Installation
 
@@ -112,5 +113,5 @@ setup(
     packages=['HROCH'],
     license='MIT',
     include_package_data=True,
-    install_requires=['numpy', 'scikit-learn'],
+    install_requires=['numpy', 'scikit-learn', 'scipy'],
 )

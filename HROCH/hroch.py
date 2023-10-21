@@ -1,8 +1,10 @@
 
 import os
 import numpy as numpy
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.metrics import log_loss, mean_squared_error
+import scipy.optimize as opt
 import ctypes
 import platform
 
@@ -74,8 +76,162 @@ class MathModel(ctypes.Structure):
                 ('str_representation', ctypes.c_char_p),
                 ('str_code_representation', ctypes.c_char_p),
                 ("used_constants_count", ctypes.c_uint32),
-                ("used_constants", DoublePointer),
+                ("used_constants", ctypes.POINTER(ctypes.c_double)),
                 ]
+
+
+class ParsedMathModel:
+    def __init__(self, m: MathModel) -> None:
+        self.id = m.id
+        self.score = m.score
+        self.partial_score = m.partial_score
+        self.str_representation = m.str_representation.decode('ascii')
+        self.str_code_representation = m.str_code_representation.decode(
+            'ascii')
+        self.coeffs = numpy.zeros(m.used_constants_count)
+        for i in range(m.used_constants_count):
+            self.coeffs[i] = m.used_constants[i]
+
+        self.method_name = self.str_code_representation[4:self.str_code_representation.find(
+            '(')]
+        exec(self.str_code_representation)
+        self.method = locals()[self.method_name]
+
+
+class MathModelBase(BaseEstimator):
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
+        self.m = m
+        self.opt_metric = opt_metric
+        self.opt_minimize = opt_minimize
+        self.opt_params = opt_params
+
+    def predict(self, X: numpy.ndarray):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+
+        Returns:
+            numpy.ndarray: Returns predicted values.
+        """
+        check_is_fitted(self)
+        X = check_array(X, accept_sparse=False)
+
+        preds = self.m.method(X, self.m.coeffs)
+
+        if type(preds) is not numpy.ndarray:
+            preds = numpy.full(len(X), preds)
+
+        return preds
+
+
+class RegressorMathModel(MathModelBase, RegressorMixin):
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
+        super().__init__(m, opt_metric, opt_minimize, opt_params)
+
+    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=mean_squared_error):
+        preds = self.m.method(X, self.m.coeffs if c is None else c)
+
+        if type(preds) is not numpy.ndarray:
+            preds = numpy.full(len(y), preds)
+
+        val = 1e30
+        if not numpy.isnan(numpy.sum(preds)):
+            val = metric(y, preds)
+        return val if self.opt_minimize else -val
+
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+        """Fit constants in symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Training data.
+            - y (numpy.ndarray): Target values.
+
+            !!!In the current version, the sample_weight parameter is ignored!!!
+            - sample_weight : array-like, shape = [n_samples], optional
+            Weights applied to individual samples.
+        """
+
+        def objective(c):
+            return self.eval(X, y, c=c, metric=self.opt_metric)
+
+        if len(self.m.coeffs) > 0:
+            result = opt.minimize(objective, self.m.coeffs, **self.opt_params)
+
+            for i in range(len(self.m.coeffs)):
+                self.m.coeffs[i] = result.x[i]
+
+        self.is_fitted_ = True
+        return self
+
+
+class ClassifierMathModel(MathModelBase, ClassifierMixin):
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
+        super().__init__(m, opt_metric, opt_minimize, opt_params)
+
+    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=log_loss):
+        preds = self.m.method(X, self.m.coeffs if c is None else c)
+        preds = 1.0/(1.0+numpy.exp(-preds))
+
+        if type(preds) is not numpy.ndarray:
+            preds = numpy.full(len(y), preds)
+
+        val = 1e30
+        if not numpy.isnan(numpy.sum(preds)):
+            val = metric(y, preds)
+        return val if self.opt_minimize else -val
+
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+        """Fit constants in symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Training data.
+            - y (numpy.ndarray): Target values.
+
+            !!!In the current version, the sample_weight parameter is ignored!!!
+            - sample_weight : array-like, shape = [n_samples], optional
+            Weights applied to individual samples.
+        """
+
+        def objective(c):
+            return self.eval(X, y, c=c, metric=self.opt_metric)
+
+        if len(self.m.coeffs) > 0:
+            result = opt.minimize(objective, self.m.coeffs, **self.opt_params)
+
+            for i in range(len(self.m.coeffs)):
+                self.m.coeffs[i] = result.x[i]
+
+        self.is_fitted_ = True
+        return self
+
+    def predict(self, X: numpy.ndarray):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+
+        Returns:
+            numpy.ndarray: Returns predicted values.
+        """
+        preds = super().predict(X)
+        preds = 1.0/(1.0+numpy.exp(-preds))
+        return (preds > 0.5)*1.0
+
+    def predict_proba(self, X: numpy.ndarray, id=None):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+
+        Returns:
+            numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
+        """
+        preds = super().predict(X)
+        preds = 1.0/(1.0+numpy.exp(-preds))
+        proba = numpy.vstack([1 - preds, preds]).T
+        return proba
 
 
 # void * CreateSolver(solver_params * params)
@@ -261,6 +417,9 @@ class PHCRegressor(BaseEstimator):
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
                  cw: list = [1.0, 1.0],
+                 opt_metric=mean_squared_error,
+                 opt_minimize=True,
+                 opt_params={'method': 'Nelder-Mead'}
                  ):
 
         if not precision in ['f32', 'f64']:
@@ -305,6 +464,9 @@ class PHCRegressor(BaseEstimator):
         self.predefined_const_set = numpy.ascontiguousarray(predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
             predefined_const_set) > 0 else None
         self.cw = cw
+        self.opt_metric = opt_metric
+        self.opt_minimize = opt_minimize
+        self.opt_params = opt_params
 
         self.handle = None
 
@@ -411,13 +573,12 @@ class PHCRegressor(BaseEstimator):
 
     def get_models(self):
         check_is_fitted(self)
-        model = MathModel()
+
         models = []
         for i in range(self.num_threads*self.pop_size):
+            model = MathModel()
             GetModel(self.handle, i, model)
-            models.append((model.id, model.score, model.partial_score,
-                          model.str_representation.decode('ascii'), model.str_code_representation.decode('ascii')))
-
+            models.append(self.__create_model(model))
             FreeModel(model)
         return models
 
@@ -482,3 +643,9 @@ class PHCRegressor(BaseEstimator):
         elif transformation == 'ORDINAL':
             return 4
         return 0
+
+    def __create_model(self, m: MathModel):
+        if __class__.__name__ == 'SymbolicRegressor':
+            return RegressorMathModel(ParsedMathModel(m), self.opt_metric, self.opt_minimize, self.opt_params)
+        else:
+            return ClassifierMathModel(ParsedMathModel(m), self.opt_metric, self.opt_minimize, self.opt_params)

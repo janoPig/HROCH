@@ -1,5 +1,6 @@
 from .hroch import PHCRegressor, math
 from sklearn.base import RegressorMixin
+from sklearn.metrics import mean_squared_error
 import numpy as numpy
 
 
@@ -136,7 +137,10 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
                  const_min: float = -1e30,
                  const_max: float = 1e30,
                  predefined_const_prob: float = 0.0,
-                 predefined_const_set: list = []
+                 predefined_const_set: list = [],
+                 opt_metric=mean_squared_error,
+                 opt_minimize=True,
+                 opt_params={'method': 'Nelder-Mead'},
                  ):
         super(SymbolicRegressor, self).__init__(
             num_threads=num_threads,
@@ -164,7 +168,10 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
             const_min=const_min,
             const_max=const_max,
             predefined_const_prob=predefined_const_prob,
-            predefined_const_set=predefined_const_set
+            predefined_const_set=predefined_const_set,
+            opt_metric=opt_metric,
+            opt_minimize=opt_minimize,
+            opt_params=opt_params,
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):

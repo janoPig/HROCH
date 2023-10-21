@@ -11,3 +11,6 @@ build
 HROCH.egg-info
 tmp
 dist
+# local devel tests
+test_reg.py
+test_clf.py
