@@ -139,8 +139,11 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
                  opt_metric=mean_squared_error,
-                 opt_minimize=True,
+                 opt_greater_is_better=False,
                  opt_params={'method': 'Nelder-Mead'},
+                 cv: bool = True,
+                 cv_params={},
+                 cv_select: str = 'mean',
                  ):
         super(SymbolicRegressor, self).__init__(
             num_threads=num_threads,
@@ -170,8 +173,11 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
             predefined_const_prob=predefined_const_prob,
             predefined_const_set=predefined_const_set,
             opt_metric=opt_metric,
-            opt_minimize=opt_minimize,
+            opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
+            cv=cv,
+            cv_params=cv_params,
+            cv_select=cv_select,
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):

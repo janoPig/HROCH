@@ -124,8 +124,11 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
                  transformation='LOGISTIC',
                  cw: list = [1.0, 1.0],
                  opt_metric=log_loss,
-                 opt_minimize=True,
+                 opt_greater_is_better=False,
                  opt_params={'method': 'Nelder-Mead'},
+                 cv: bool = True,
+                 cv_params={},
+                 cv_select: str = 'mean',
                  ):
 
         super(NLLRegressor, self).__init__(
@@ -157,8 +160,11 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             metric=metric,
             cw=cw,
             opt_metric=opt_metric,
-            opt_minimize=opt_minimize,
+            opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
+            cv=cv,
+            cv_params=cv_params,
+            cv_select=cv_select,
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
@@ -187,7 +193,7 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             numpy.ndarray: Returns predicted values.
         """
         preds = super(NLLRegressor, self).predict(X, id)
-        if self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
+        if not self.cv and self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
             preds = 1.0/(1.0+numpy.exp(-preds))
         return (preds > 0.5)*1.0
 
@@ -202,7 +208,7 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
         """
         preds = super(NLLRegressor, self).predict(X, id)
-        if self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
+        if not self.cv and self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
             preds = 1.0/(1.0+numpy.exp(-preds))
         proba = numpy.vstack([1 - preds, preds]).T
         return proba

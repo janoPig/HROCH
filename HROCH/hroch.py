@@ -3,7 +3,8 @@ import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.metrics import log_loss, mean_squared_error
+from sklearn.metrics import log_loss, mean_squared_error, make_scorer
+from sklearn.model_selection import cross_validate
 import scipy.optimize as opt
 import ctypes
 import platform
@@ -99,13 +100,13 @@ class ParsedMathModel:
 
 
 class MathModelBase(BaseEstimator):
-    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
+    def __init__(self, m: ParsedMathModel, parent_params, opt_metric) -> None:
         self.m = m
+        self.parent_params = parent_params
         self.opt_metric = opt_metric
-        self.opt_minimize = opt_minimize
-        self.opt_params = opt_params
+        self.is_fitted_ = True
 
-    def predict(self, X: numpy.ndarray):
+    def _predict(self, X: numpy.ndarray, c=None, transform=True):
         """Predict using the symbolic model.
 
         Args:
@@ -117,28 +118,40 @@ class MathModelBase(BaseEstimator):
         check_is_fitted(self)
         X = check_array(X, accept_sparse=False)
 
-        preds = self.m.method(X, self.m.coeffs)
+        preds = self.m.method(X, self.m.coeffs if c is None else c)
 
         if type(preds) is not numpy.ndarray:
             preds = numpy.full(len(X), preds)
 
-        return preds
+        return self.__transform(preds) if transform else preds
+
+    def __transform(self, y):
+        transformation = self.parent_params['transformation']
+        if transformation == 'LOGISTIC':
+            y = 1.0/(1.0+numpy.exp(-y))
+        elif transformation == 'ORDINAL':
+            y = numpy.round(y)
+
+        clip_min = self.parent_params['clip_min']
+        clip_max = self.parent_params['clip_max']
+
+        if clip_max > clip_min:
+            y = numpy.clip(y, clip_min, clip_max)
+
+        return y
 
 
 class RegressorMathModel(MathModelBase, RegressorMixin):
-    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
-        super().__init__(m, opt_metric, opt_minimize, opt_params)
+    def __init__(self, m: ParsedMathModel, parent_params, opt_metric) -> None:
+        super().__init__(m, parent_params, opt_metric)
 
-    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=mean_squared_error):
-        preds = self.m.method(X, self.m.coeffs if c is None else c)
-
-        if type(preds) is not numpy.ndarray:
-            preds = numpy.full(len(y), preds)
+    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=mean_squared_error, sample_weight=None):
+        preds = self._predict(X, c=self.m.coeffs if c is None else c)
 
         val = 1e30
         if not numpy.isnan(numpy.sum(preds)):
-            val = metric(y, preds)
-        return val if self.opt_minimize else -val
+            val = metric(y, preds, sample_weight=sample_weight)
+        return -val if self.parent_params['opt_greater_is_better'] else val
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
         """Fit constants in symbolic model.
@@ -146,17 +159,16 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         Args:
             - X (numpy.ndarray): Training data.
             - y (numpy.ndarray): Target values.
-
-            !!!In the current version, the sample_weight parameter is ignored!!!
             - sample_weight : array-like, shape = [n_samples], optional
             Weights applied to individual samples.
         """
 
         def objective(c):
-            return self.eval(X, y, c=c, metric=self.opt_metric)
+            return self.eval(X, y, c=c, metric=self.opt_metric, sample_weight=sample_weight)
 
         if len(self.m.coeffs) > 0:
-            result = opt.minimize(objective, self.m.coeffs, **self.opt_params)
+            result = opt.minimize(objective, self.m.coeffs,
+                                  **self.parent_params['opt_params'])
 
             for i in range(len(self.m.coeffs)):
                 self.m.coeffs[i] = result.x[i]
@@ -164,22 +176,21 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         self.is_fitted_ = True
         return self
 
+    def predict(self, X: numpy.ndarray):
+        return self._predict(X)
+
 
 class ClassifierMathModel(MathModelBase, ClassifierMixin):
-    def __init__(self, m: ParsedMathModel, opt_metric, opt_minimize, opt_params) -> None:
-        super().__init__(m, opt_metric, opt_minimize, opt_params)
+    def __init__(self, m: ParsedMathModel, parent_params, opt_metric) -> None:
+        super().__init__(m, parent_params, opt_metric)
 
-    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=log_loss):
-        preds = self.m.method(X, self.m.coeffs if c is None else c)
-        preds = 1.0/(1.0+numpy.exp(-preds))
-
-        if type(preds) is not numpy.ndarray:
-            preds = numpy.full(len(y), preds)
+    def eval(self, X: numpy.ndarray, y: numpy.ndarray, c=None, metric=log_loss, sample_weight=None):
+        preds = self._predict(X, c=self.m.coeffs if c is None else c)
 
         val = 1e30
         if not numpy.isnan(numpy.sum(preds)):
-            val = metric(y, preds)
-        return val if self.opt_minimize else -val
+            val = metric(y, preds, sample_weight=sample_weight)
+        return -val if self.parent_params['opt_greater_is_better'] else val
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
         """Fit constants in symbolic model.
@@ -187,17 +198,21 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         Args:
             - X (numpy.ndarray): Training data.
             - y (numpy.ndarray): Target values.
-
-            !!!In the current version, the sample_weight parameter is ignored!!!
             - sample_weight : array-like, shape = [n_samples], optional
             Weights applied to individual samples.
         """
+
+        if sample_weight is None:
+            cw = self.parent_params['cw']
+            if len(cw) == 2 and cw[0] != cw[1]:
+                sample_weight = numpy.array(cw)[y]
 
         def objective(c):
             return self.eval(X, y, c=c, metric=self.opt_metric)
 
         if len(self.m.coeffs) > 0:
-            result = opt.minimize(objective, self.m.coeffs, **self.opt_params)
+            result = opt.minimize(objective, self.m.coeffs,
+                                  **self.parent_params['opt_params'])
 
             for i in range(len(self.m.coeffs)):
                 self.m.coeffs[i] = result.x[i]
@@ -214,8 +229,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         Returns:
             numpy.ndarray: Returns predicted values.
         """
-        preds = super().predict(X)
-        preds = 1.0/(1.0+numpy.exp(-preds))
+        preds = self._predict(X)
         return (preds > 0.5)*1.0
 
     def predict_proba(self, X: numpy.ndarray, id=None):
@@ -228,10 +242,22 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         Returns:
             numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
         """
-        preds = super().predict(X)
-        preds = 1.0/(1.0+numpy.exp(-preds))
+        preds = self._predict(X)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+
+
+class ProbaClf(ClassifierMathModel):
+    """
+    Wrapper for cross validation
+    """
+
+    def __init__(self, clf: ClassifierMathModel) -> None:
+        super().__init__(clf.m, clf.parent_params, clf.opt_metric)
+        self.clf = clf
+
+    def predict(self, X):
+        return ClassifierMathModel.predict_proba(self, X)[:, 1]
 
 
 # void * CreateSolver(solver_params * params)
@@ -418,8 +444,11 @@ class PHCRegressor(BaseEstimator):
                  predefined_const_set: list = [],
                  cw: list = [1.0, 1.0],
                  opt_metric=mean_squared_error,
-                 opt_minimize=True,
-                 opt_params={'method': 'Nelder-Mead'}
+                 opt_greater_is_better=False,
+                 opt_params={'method': 'Nelder-Mead'},
+                 cv: bool = True,
+                 cv_params={},
+                 cv_select: str = 'mean',
                  ):
 
         if not precision in ['f32', 'f64']:
@@ -465,8 +494,11 @@ class PHCRegressor(BaseEstimator):
             predefined_const_set) > 0 else None
         self.cw = cw
         self.opt_metric = opt_metric
-        self.opt_minimize = opt_minimize
+        self.opt_greater_is_better = opt_greater_is_better
         self.opt_params = opt_params
+        self.cv = cv
+        self.cv_params = cv_params
+        self.cv_select = cv_select
 
         self.handle = None
 
@@ -537,12 +569,58 @@ class PHCRegressor(BaseEstimator):
 
         self.is_fitted_ = True if ret == 0 else False
 
-        model = MathModel()
-        GetBestModel(self.handle, model)
-        self.sexpr = model.str_representation.decode('ascii')
-        FreeModel(model)
+        if not self.is_fitted_:
+            return
+
+        if self.cv:
+            self.models = self.__get_models()
+            for m in self.models:
+                est = m if self._estimator_type == 'regressor' else ProbaClf(
+                    m)
+
+                m.cv_results = cross_validate(
+                    estimator=est, X=X, y=y, n_jobs=self.num_threads, scoring=make_scorer(self.opt_metric), **self.cv_params)
+                if self.cv_select == 'mean':
+                    m.cv_score = numpy.mean(m.cv_results['test_score'])
+                elif self.cv_select == 'median':
+                    m.cv_score = numpy.median(m.cv_results['test_score'])
+
+                if numpy.isnan(m.cv_score):
+                    m.cv_score = -1e30 if self.opt_greater_is_better else 1e30
+
+                # fit final coeffs from whole data
+                m.fit(X, y)
+
+            self.models.sort(
+                key=lambda x: -x.cv_score if self.opt_greater_is_better else x.cv_score)
+            self.sexpr = self.models[0].m.str_representation
+
+        else:
+            model = MathModel()
+            GetBestModel(self.handle, model)
+            self.sexpr = model.str_representation.decode('ascii')
+            FreeModel(model)
 
     def predict(self, X: numpy.ndarray, id=None):
+        """Predict using the symbolic model.
+
+        Args:
+            - X (numpy.ndarray): Samples.
+            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+
+        Returns:
+            numpy.ndarray: Returns predicted values.
+        """
+        check_is_fitted(self)
+
+        if self.cv:
+            m = self.models[0] if id is None else next(
+                (x for x in self.models if x.m.id == id), None)
+            return m._predict(X)
+        else:
+            return self._predict(X, id)
+
+    def _predict(self, X: numpy.ndarray, id=None):
         """Predict using the symbolic model.
 
         Args:
@@ -571,9 +649,7 @@ class PHCRegressor(BaseEstimator):
                       X.shape[0], X.shape[1], ctypes.pointer(params))
         return _y
 
-    def get_models(self):
-        check_is_fitted(self)
-
+    def __get_models(self):
         models = []
         for i in range(self.num_threads*self.pop_size):
             model = MathModel()
@@ -581,6 +657,12 @@ class PHCRegressor(BaseEstimator):
             models.append(self.__create_model(model))
             FreeModel(model)
         return models
+
+    def get_models(self):
+        check_is_fitted(self)
+        if not hasattr(self, 'models'):
+            self.models = self.__get_models()
+        return self.models
 
     def __problem_to_string(self, problem: any):
         if isinstance(problem, str):
@@ -645,7 +727,7 @@ class PHCRegressor(BaseEstimator):
         return 0
 
     def __create_model(self, m: MathModel):
-        if __class__.__name__ == 'SymbolicRegressor':
-            return RegressorMathModel(ParsedMathModel(m), self.opt_metric, self.opt_minimize, self.opt_params)
+        if self._estimator_type == 'regressor':
+            return RegressorMathModel(ParsedMathModel(m), self.__dict__.copy(), self.opt_metric)
         else:
-            return ClassifierMathModel(ParsedMathModel(m), self.opt_metric, self.opt_minimize, self.opt_params)
+            return ClassifierMathModel(ParsedMathModel(m), self.__dict__.copy(), self.opt_metric)

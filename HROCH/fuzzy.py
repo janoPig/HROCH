@@ -1,5 +1,6 @@
 from .hroch import PHCRegressor, fuzzy
 from sklearn.base import ClassifierMixin
+from sklearn.metrics import log_loss
 import numpy as numpy
 
 
@@ -125,7 +126,14 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
                  init_predefined_const_prob: float = 0.0,
                  init_predefined_const_set: list = [],
                  predefined_const_prob: float = 0.0,
-                 predefined_const_set: list = []
+                 predefined_const_set: list = [],
+                 cw: list = [1.0, 1.0],
+                 opt_metric=log_loss,
+                 opt_greater_is_better=False,
+                 opt_params={'method': 'Nelder-Mead'},
+                 cv: bool = True,
+                 cv_params={},
+                 cv_select: str = 'mean',
                  ):
         super(FuzzyRegressor, self).__init__(
             num_threads=num_threads,
@@ -148,12 +156,19 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
             init_const_max=1.0,
             init_predefined_const_prob=init_predefined_const_prob,
             init_predefined_const_set=init_predefined_const_set,
-            clip_min=0.0,
-            clip_max=0.0,
+            clip_min=3e-7,
+            clip_max=1.0-3e-7,
             const_min=0.0,
             const_max=1.0,
             predefined_const_prob=predefined_const_prob,
-            predefined_const_set=predefined_const_set
+            predefined_const_set=predefined_const_set,
+            cw=cw,
+            opt_metric=opt_metric,
+            opt_greater_is_better=opt_greater_is_better,
+            opt_params=opt_params,
+            cv=cv,
+            cv_params=cv_params,
+            cv_select=cv_select,
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
