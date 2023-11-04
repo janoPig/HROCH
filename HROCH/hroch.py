@@ -481,17 +481,13 @@ class PHCRegressor(BaseEstimator):
         self.init_const_min = init_const_min
         self.init_const_max = init_const_max
         self.init_predefined_const_prob = init_predefined_const_prob
-        self.init_predefined_const_count = len(init_predefined_const_set)
-        self.init_predefined_const_set = numpy.ascontiguousarray(init_predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
-            init_predefined_const_set) > 0 else None
+        self.init_predefined_const_set = init_predefined_const_set
         self.clip_min = clip_min
         self.clip_max = clip_max
         self.const_min = const_min
         self.const_max = const_max
         self.predefined_const_prob = predefined_const_prob
-        self.predefined_const_count = len(predefined_const_set)
-        self.predefined_const_set = numpy.ascontiguousarray(predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(
-            predefined_const_set) > 0 else None
+        self.predefined_const_set = predefined_const_set
         self.cw = cw
         self.opt_metric = opt_metric
         self.opt_greater_is_better = opt_greater_is_better
@@ -515,6 +511,7 @@ class PHCRegressor(BaseEstimator):
         """
 
         if self.handle is None:
+            init_predefined_const_set = numpy.ascontiguousarray(self.init_predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(self.init_predefined_const_set) > 0 else None
             params = Params(random_state=self.random_state,
                             num_threads=self.num_threads,
                             precision=1 if self.precision == 'f32' else 2,
@@ -530,8 +527,8 @@ class PHCRegressor(BaseEstimator):
                             init_const_min=self.init_const_min,
                             init_const_max=self.init_const_max,
                             init_predefined_const_prob=self.init_predefined_const_prob,
-                            init_predefined_const_count=self.init_predefined_const_count,
-                            init_predefined_const_set=self.init_predefined_const_set,
+                            init_predefined_const_count=len(self.init_predefined_const_set),
+                            init_predefined_const_set=init_predefined_const_set,
                             )
             self.handle = CreateSolver(ctypes.pointer(params))
 
@@ -542,6 +539,8 @@ class PHCRegressor(BaseEstimator):
         _y = numpy.ascontiguousarray(
             y.astype('float32' if self.precision == 'f32' else 'float64'))
 
+        predefined_const_set = numpy.ascontiguousarray(self.predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(self.predefined_const_set) > 0 else None
+
         fit_params = FitParams(
             time_limit=round(self.time_limit*1000),
             verbose=self.verbose,
@@ -551,8 +550,8 @@ class PHCRegressor(BaseEstimator):
             const_min=self.const_min,
             const_max=self.const_max,
             predefined_const_prob=self.predefined_const_prob,
-            predefined_const_count=self.predefined_const_count,
-            predefined_const_set=self.predefined_const_set,
+            predefined_const_count=len(self.predefined_const_set),
+            predefined_const_set=predefined_const_set,
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
             feature_probs=self.__feature_probs_to_string(
                 self.feature_probs).encode('utf-8'),
