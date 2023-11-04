@@ -64,7 +64,7 @@ jobs:
                 cd srbench
                 git clone https://github.com/janoPig/srbench.git
                 cd srbench
-                git checkout workflow
+                git checkout workflow_1_4
 
                 # current branch
                 line_old='git+https://github.com/janoPig/HROCH.git'
