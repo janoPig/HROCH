@@ -8,6 +8,7 @@ from sklearn.model_selection import cross_validate
 import scipy.optimize as opt
 import ctypes
 import platform
+import re
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if platform.system() == "Windows":
@@ -80,6 +81,18 @@ class MathModel(ctypes.Structure):
                 ("used_constants", ctypes.POINTER(ctypes.c_double)),
                 ]
 
+def apply_const(s, c):
+    pattern = r'\b(c\d+)\b'
+
+    def replace_coef(match):
+        symbol = match.group(1)
+        index = int(symbol[1:])
+        value = c[index]
+        if value < 0:
+            return f'({value})'
+        return str(value)
+    
+    return re.sub(pattern, replace_coef, s)
 
 class ParsedMathModel:
     def __init__(self, m: MathModel) -> None:
@@ -139,6 +152,10 @@ class MathModelBase(BaseEstimator):
             y = numpy.clip(y, clip_min, clip_max)
 
         return y
+    
+    @property
+    def equation(self):
+        return apply_const(self.m.str_representation, self.m.coeffs)
 
 
 class RegressorMathModel(MathModelBase, RegressorMixin):
@@ -502,6 +519,10 @@ class PHCRegressor(BaseEstimator):
         if self.handle is not None:
             DeleteSolver(self.handle)
 
+    @property
+    def equation(self):
+        return self.sexpr
+
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """Fit symbolic model.
 
@@ -592,13 +613,13 @@ class PHCRegressor(BaseEstimator):
 
             self.models.sort(
                 key=lambda x: -x.cv_score if self.opt_greater_is_better else x.cv_score)
-            self.sexpr = self.models[0].m.str_representation
-
+            self.sexpr = self.models[0].equation
         else:
-            model = MathModel()
-            GetBestModel(self.handle, model)
-            self.sexpr = model.str_representation.decode('ascii')
-            FreeModel(model)
+            m = MathModel()
+            GetBestModel(self.handle, m)
+            model = self.__create_model(m)
+            self.sexpr = apply_const(model.m.str_representation, model.m.coeffs)
+            FreeModel(m)
 
     def predict(self, X: numpy.ndarray, id=None):
         """Predict using the symbolic model.
