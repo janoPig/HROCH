@@ -1,2 +1,3 @@
 - Select best cv score(how to compare models by error and std dev?)
-- Chage trained coefs in equation string representation.
+- Balanced class weights
+- Search strategy to solve overfitting
