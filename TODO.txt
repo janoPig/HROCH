@@ -1,3 +1,4 @@
 - Select best cv score(how to compare models by error and std dev?)
 - Balanced class weights
 - Search strategy to solve overfitting
+- investigate gt results for noise data for cv and ols(maybe add complexity to score comparsion, or extended simplification)

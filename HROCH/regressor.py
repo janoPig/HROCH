@@ -186,11 +186,9 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
         Args:
             - X (numpy.ndarray): Training data.
             - y (numpy.ndarray): Target values.
-
-            !!!In the current version, the sample_weight parameter is ignored!!!
             - sample_weight : array-like, shape = [n_samples], optional
             Weights applied to individual samples.
         """
 
-        super(SymbolicRegressor, self).fit(X, y)
+        super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight)
         return self

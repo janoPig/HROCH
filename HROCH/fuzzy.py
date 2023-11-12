@@ -177,13 +177,11 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         Args:
             - X (numpy.ndarray): Training data. Values must be in the range 0.0 to 1.0.
             - y (numpy.ndarray): Target values.
-
-            !!!In the current version, the sample_weight parameter is ignored!!!
             - sample_weight : array-like, shape = [n_samples], optional
             Weights applied to individual samples.
         """
 
-        super(FuzzyRegressor, self).fit(X, y)
+        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight)
         return self
 
     def predict(self, X: numpy.ndarray, id=None):
