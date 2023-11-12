@@ -127,7 +127,7 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
                  init_predefined_const_set: list = [],
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
-                 cw: list = [1.0, 1.0],
+                 class_weight: list = [1.0, 1.0],
                  opt_metric=log_loss,
                  opt_greater_is_better=False,
                  opt_params={'method': 'Nelder-Mead'},
@@ -162,7 +162,7 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
             const_max=1.0,
             predefined_const_prob=predefined_const_prob,
             predefined_const_set=predefined_const_set,
-            cw=cw,
+            class_weight=class_weight,
             opt_metric=opt_metric,
             opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
@@ -177,13 +177,11 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         Args:
             - X (numpy.ndarray): Training data. Values must be in the range 0.0 to 1.0.
             - y (numpy.ndarray): Target values.
-
-            !!!In the current version, the sample_weight parameter is ignored!!!
             - sample_weight : array-like, shape = [n_samples], optional
             Weights applied to individual samples.
         """
 
-        super(FuzzyRegressor, self).fit(X, y)
+        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight)
         return self
 
     def predict(self, X: numpy.ndarray, id=None):

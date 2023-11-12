@@ -220,7 +220,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         """
 
         if sample_weight is None:
-            cw = self.parent_params['cw']
+            cw = self.parent_params['class_weight']
             if len(cw) == 2 and cw[0] != cw[1]:
                 sample_weight = numpy.array(cw)[y]
 
@@ -287,15 +287,15 @@ DeleteSolver = lib.DeleteSolver
 DeleteSolver.argtypes = [ctypes.c_void_p]
 DeleteSolver.restype = None
 
-# int FitData[32/64](void *hsolver, const [float/double] *X, const [float/double] *y, unsigned int rows, unsigned int xcols, fit_params *params)
+# int FitData[32/64](void *hsolver, const [float/double] *X, const [float/double] *y, unsigned int rows, unsigned int xcols, fit_params *params, const [float/double] *sw)
 FitData32 = lib.FitData32
 FitData32.argtypes = [ctypes.c_void_p, FloatDPointer, FloatPointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams)]
+                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams), FloatPointer, ctypes.c_uint]
 FitData32.restype = ctypes.c_int
 
 FitData64 = lib.FitData64
 FitData64.argtypes = [ctypes.c_void_p, DoubleDPointer, DoublePointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams)]
+                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams), DoublePointer, ctypes.c_uint]
 FitData64.restype = ctypes.c_int
 
 # int Predict[32/64](void * hsolver, const [float/double] *X, [float/double] *y, unsigned int rows, unsigned int xcols, predict_params * params)
@@ -459,7 +459,7 @@ class PHCRegressor(BaseEstimator):
                  const_max: float = 1e30,
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
-                 cw: list = [1.0, 1.0],
+                 class_weight: list = [1.0, 1.0],
                  opt_metric=mean_squared_error,
                  opt_greater_is_better=False,
                  opt_params={'method': 'Nelder-Mead'},
@@ -475,9 +475,9 @@ class PHCRegressor(BaseEstimator):
             raise ValueError(
                 "num_threads parameter must be greather that zero")
 
-        if len(cw) != 2:
+        if len(class_weight) != 2:
             raise ValueError(
-                "cw parameter incorrect")
+                "class_weight parameter incorrect")
 
         self.num_threads = num_threads
         self.time_limit = time_limit
@@ -505,7 +505,7 @@ class PHCRegressor(BaseEstimator):
         self.const_max = const_max
         self.predefined_const_prob = predefined_const_prob
         self.predefined_const_set = predefined_const_set
-        self.cw = cw
+        self.class_weight = class_weight
         self.opt_metric = opt_metric
         self.opt_greater_is_better = opt_greater_is_better
         self.opt_params = opt_params
@@ -523,12 +523,13 @@ class PHCRegressor(BaseEstimator):
     def equation(self):
         return self.sexpr
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None):
         """Fit symbolic model.
 
         Args:
             - X (numpy.ndarray): Training data.
             - y (numpy.ndarray): Target values.
+            - sample_weight(numpy.ndarray): Individual weights for each sample.
         """
 
         if self.handle is None:
@@ -559,6 +560,13 @@ class PHCRegressor(BaseEstimator):
             'float32' if self.precision == 'f32' else 'float64')
         _y = numpy.ascontiguousarray(
             y.astype('float32' if self.precision == 'f32' else 'float64'))
+        
+        _sw = numpy.ndarray(shape=(0,), dtype=numpy.float32 if self.precision == 'f32' else numpy.float64)
+        _sw_len = 0 if sample_weight is None else len(sample_weight)
+        if sample_weight is not None:
+            if len(sample_weight) != len(y):
+                raise ValueError("sample_weight len incorrect")
+            _sw = numpy.ascontiguousarray(sample_weight.astype('float32' if self.precision == 'f32' else 'float64'))
 
         predefined_const_set = numpy.ascontiguousarray(self.predefined_const_set).astype('float64').ctypes.data_as(DoublePointer) if len(self.predefined_const_set) > 0 else None
 
@@ -576,16 +584,16 @@ class PHCRegressor(BaseEstimator):
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
             feature_probs=self.__feature_probs_to_string(
                 self.feature_probs).encode('utf-8'),
-            cw0=self.cw[0],
-            cw1=self.cw[1],
+            cw0=self.class_weight[0],
+            cw1=self.class_weight[1],
         )
 
         if self.precision == 'f32':
             ret = FitData32(self.handle, _x, _y,
-                            X.shape[0], X.shape[1], ctypes.pointer(fit_params))
+                            X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
         elif self.precision == 'f64':
             ret = FitData64(self.handle, _x, _y,
-                            X.shape[0], X.shape[1], ctypes.pointer(fit_params))
+                            X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
 
         self.is_fitted_ = True if ret == 0 else False
 
