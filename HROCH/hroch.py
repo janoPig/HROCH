@@ -605,14 +605,17 @@ class PHCRegressor(BaseEstimator):
             for m in self.models:
                 est = m if self._estimator_type == 'regressor' else ProbaClf(
                     m)
-
-                m.cv_results = cross_validate(
-                    estimator=est, X=X, y=y, n_jobs=self.num_threads, scoring=make_scorer(self.opt_metric), **self.cv_params)
-                if self.cv_select == 'mean':
-                    m.cv_score = numpy.mean(m.cv_results['test_score'])
-                elif self.cv_select == 'median':
-                    m.cv_score = numpy.median(m.cv_results['test_score'])
-
+                
+                try:
+                    m.cv_results = cross_validate(
+                        estimator=est, X=X, y=y, n_jobs=self.num_threads, scoring=make_scorer(self.opt_metric), **self.cv_params)
+                    if self.cv_select == 'mean':
+                        m.cv_score = numpy.mean(m.cv_results['test_score'])
+                    elif self.cv_select == 'median':
+                        m.cv_score = numpy.median(m.cv_results['test_score'])
+                except Exception as ex:
+                    m.cv_score = numpy.nan
+                
                 if numpy.isnan(m.cv_score):
                     m.cv_score = -1e30 if self.opt_greater_is_better else 1e30
 
