@@ -171,7 +171,7 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
             cv_select=cv_select,
         )
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit symbolic model.
 
         Args:
@@ -184,10 +184,10 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         self.classes_ = numpy.unique(y)
         self.n_classes_ = len(self.classes_)
 
-        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight)
+        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
 
-    def predict(self, X: numpy.ndarray, id=None):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -197,10 +197,10 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         Returns:
             numpy.ndarray: Returns predicted values.
         """
-        preds = super(FuzzyRegressor, self).predict(X, id)
+        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         return (preds > 0.5)*1.0
 
-    def predict_proba(self, X: numpy.ndarray, id=None):
+    def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -210,6 +210,6 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         Returns:
             numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
         """
-        preds = super(FuzzyRegressor, self).predict(X, id)
+        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba

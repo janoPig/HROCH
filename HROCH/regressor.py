@@ -180,7 +180,7 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
             cv_select=cv_select,
         )
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit symbolic model.
 
         Args:
@@ -190,5 +190,5 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
             Weights applied to individual samples.
         """
 
-        super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight)
+        super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self

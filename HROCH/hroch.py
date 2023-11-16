@@ -119,7 +119,7 @@ class MathModelBase(BaseEstimator):
         self.opt_metric = opt_metric
         self.is_fitted_ = True
 
-    def _predict(self, X: numpy.ndarray, c=None, transform=True):
+    def _predict(self, X: numpy.ndarray, c=None, transform=True, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -129,7 +129,8 @@ class MathModelBase(BaseEstimator):
             numpy.ndarray: Returns predicted values.
         """
         check_is_fitted(self)
-        X = check_array(X, accept_sparse=False)
+        if check_input:
+            X = check_array(X, accept_sparse=False)
 
         preds = self.m.method(X, self.m.coeffs if c is None else c)
 
@@ -170,7 +171,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
             val = metric(y, preds, sample_weight=sample_weight)
         return -val if self.parent_params['opt_greater_is_better'] else val
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit constants in symbolic model.
 
         Args:
@@ -209,7 +210,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
             val = metric(y, preds, sample_weight=sample_weight)
         return -val if self.parent_params['opt_greater_is_better'] else val
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit constants in symbolic model.
 
         Args:
@@ -237,7 +238,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         self.is_fitted_ = True
         return self
 
-    def predict(self, X: numpy.ndarray):
+    def predict(self, X: numpy.ndarray, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -246,10 +247,10 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         Returns:
             numpy.ndarray: Returns predicted values.
         """
-        preds = self._predict(X)
+        preds = self._predict(X, check_input=check_input)
         return (preds > 0.5)*1.0
 
-    def predict_proba(self, X: numpy.ndarray, id=None):
+    def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -259,7 +260,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         Returns:
             numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
         """
-        preds = self._predict(X)
+        preds = self._predict(X, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
 
@@ -273,8 +274,8 @@ class ProbaClf(ClassifierMathModel):
         super().__init__(clf.m, clf.parent_params, clf.opt_metric)
         self.clf = clf
 
-    def predict(self, X):
-        return ClassifierMathModel.predict_proba(self, X)[:, 1]
+    def predict(self, X, check_input=True):
+        return ClassifierMathModel.predict_proba(self, X, check_input=check_input)[:, 1]
 
 
 # void * CreateSolver(solver_params * params)
@@ -523,7 +524,7 @@ class PHCRegressor(BaseEstimator):
     def equation(self):
         return self.sexpr
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None):
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None, check_input=True):
         """Fit symbolic model.
 
         Args:
@@ -554,7 +555,8 @@ class PHCRegressor(BaseEstimator):
                             )
             self.handle = CreateSolver(ctypes.pointer(params))
 
-        X, y = check_X_y(X, y, accept_sparse=False)
+        if check_input:
+            X, y = check_X_y(X, y, accept_sparse=False)
 
         _x = numpy.ascontiguousarray(X.T).astype(
             'float32' if self.precision == 'f32' else 'float64')
@@ -620,7 +622,7 @@ class PHCRegressor(BaseEstimator):
                     m.cv_score = -1e30 if self.opt_greater_is_better else 1e30
 
                 # fit final coeffs from whole data
-                m.fit(X, y)
+                m.fit(X, y, check_input=False)
 
             self.models.sort(
                 key=lambda x: -x.cv_score if self.opt_greater_is_better else x.cv_score)
@@ -632,7 +634,7 @@ class PHCRegressor(BaseEstimator):
             self.sexpr = apply_const(model.m.str_representation, model.m.coeffs)
             FreeModel(m)
 
-    def predict(self, X: numpy.ndarray, id=None):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -647,11 +649,11 @@ class PHCRegressor(BaseEstimator):
         if self.cv:
             m = self.models[0] if id is None else next(
                 (x for x in self.models if x.m.id == id), None)
-            return m._predict(X)
+            return m._predict(X, check_input=check_input)
         else:
-            return self._predict(X, id)
+            return self._predict(X, id, check_input=check_input)
 
-    def _predict(self, X: numpy.ndarray, id=None):
+    def _predict(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.
 
         Args:
@@ -662,7 +664,9 @@ class PHCRegressor(BaseEstimator):
             numpy.ndarray: Returns predicted values.
         """
         check_is_fitted(self)
-        X = check_array(X, accept_sparse=False)
+
+        if check_input:
+            X = check_array(X, accept_sparse=False)
 
         _x = numpy.ascontiguousarray(X.T).astype(
             'float32' if self.precision == 'f32' else 'float64')
