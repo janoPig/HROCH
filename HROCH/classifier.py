@@ -177,6 +177,9 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             Weights applied to individual samples.
         """
 
+        self.classes_ = numpy.unique(y)
+        self.n_classes_ = len(self.classes_)
+
         super(NLLRegressor, self).fit(X, y, sample_weight=sample_weight)
         return self
 
