@@ -558,6 +558,9 @@ class PHCRegressor(BaseEstimator):
         if check_input:
             X, y = check_X_y(X, y, accept_sparse=False)
 
+        if y.ndim != 1:
+            y = y.reshape(-1)
+
         _x = numpy.ascontiguousarray(X.T).astype(
             'float32' if self.precision == 'f32' else 'float64')
         _y = numpy.ascontiguousarray(
