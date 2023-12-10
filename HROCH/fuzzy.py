@@ -131,7 +131,7 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
                  opt_metric=log_loss,
                  opt_greater_is_better=False,
                  opt_params={'method': 'Nelder-Mead'},
-                 cv: bool = True,
+                 cv: bool = False,
                  cv_params={},
                  cv_select: str = 'mean',
                  ):
