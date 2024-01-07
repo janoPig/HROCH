@@ -227,6 +227,6 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
         return proba
 
 class SymbolicClassifier(OneVsRestClassifier):
-    def __init__(self, n_jobs=None, _verbose=0, **kwargs):
-        super(SymbolicClassifier, self).__init__(estimator=NLLRegressor(**kwargs), n_jobs=n_jobs, verbose=_verbose)  
+    def __init__(self, n_jobs=None, verbose=0, **kwargs):
+        super().__init__(estimator=NLLRegressor(**kwargs), n_jobs=n_jobs, verbose=verbose)  
     
