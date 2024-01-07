@@ -11,6 +11,9 @@ import scipy.optimize as opt
 import ctypes
 import platform
 import re
+import warnings
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if platform.system() == "Windows":
@@ -144,7 +147,7 @@ class MathModelBase(BaseEstimator):
     def __transform(self, y):
         transformation = self.parent_params['transformation']
         if transformation == 'LOGISTIC':
-            y = 1.0/(1.0+numpy.exp(-y))
+            y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-100.0, a_max=100.0)))
         elif transformation == 'ORDINAL':
             y = numpy.round(y)
 
@@ -440,6 +443,8 @@ class PHCRegressor(BaseEstimator):
             Predefined constants used during equations search.
     """
 
+    LARGE_FLOAT = 1e30
+
     def __init__(self,
                  num_threads: int = 8,
                  time_limit: float = 5.0,
@@ -463,8 +468,8 @@ class PHCRegressor(BaseEstimator):
                  init_predefined_const_set: list = [],
                  clip_min: float = 0.0,
                  clip_max: float = 0.0,
-                 const_min: float = -1e30,
-                 const_max: float = 1e30,
+                 const_min: float = -LARGE_FLOAT,
+                 const_max: float = LARGE_FLOAT,
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
                  class_weight: list = [1.0, 1.0],
@@ -608,25 +613,32 @@ class PHCRegressor(BaseEstimator):
 
         if self.cv:
             self.models = self.__get_models()
+            best_model_score = self.models[0].m.score
+            invalid_score = self.LARGE_FLOAT*(-self.opt_metric._sign)
             for m in self.models:
+                if m.m.score > best_model_score*2.0:
+                    m.cv_score = invalid_score
+                    continue
                 try:
                     m.cv_results = cross_validate(
-                        estimator=m, X=X, y=y, n_jobs=self.num_threads, scoring=self.opt_metric, **self.cv_params)
+                        estimator=m, X=X, y=y, n_jobs=None, error_score=invalid_score, scoring=self.opt_metric, **self.cv_params)
                     if self.cv_select == 'mean':
                         m.cv_score = numpy.mean(m.cv_results['test_score'])
                     elif self.cv_select == 'median':
                         m.cv_score = numpy.median(m.cv_results['test_score'])
                 except Exception as ex:
-                    m.cv_score = numpy.nan
+                    m.cv_score = invalid_score
                 
                 if numpy.isnan(m.cv_score):
-                    m.cv_score = -1e30 if self.opt_greater_is_better else 1e30
+                    m.cv_score = invalid_score
+
+                m.cv_score *= self.opt_metric._sign
 
                 # fit final coeffs from whole data
                 m.fit(X, y, check_input=False)
 
             self.models.sort(
-                key=lambda x: -x.cv_score if self.opt_greater_is_better else x.cv_score)
+                key=lambda x: x.cv_score*(-self.opt_metric._sign))
             self.sexpr = self.models[0].equation
         else:
             m = MathModel()
@@ -692,7 +704,7 @@ class PHCRegressor(BaseEstimator):
             GetModel(self.handle, i, model)
             models.append(self.__create_model(model))
             FreeModel(model)
-        return models
+        return sorted(models, key=lambda x: x.m.score)
 
     def get_models(self):
         check_is_fitted(self)

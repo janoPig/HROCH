@@ -4,6 +4,7 @@ from sklearn.metrics import log_loss, make_scorer
 from sklearn.utils import compute_class_weight
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
+from sklearn.multiclass import OneVsRestClassifier
 import numpy as numpy
 
 
@@ -97,8 +98,6 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
 
             Predefined constants used during equations search.
     """
-
-    SCALE = 1.0e6
 
     def __init__(self,
                  num_threads: int = 8,
@@ -226,3 +225,8 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             preds = 1.0/(1.0+numpy.exp(-preds))
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+
+class SymbolicClassifier(OneVsRestClassifier):
+    def __init__(self, n_jobs=None, _verbose=0, **kwargs):
+        super(SymbolicClassifier, self).__init__(estimator=NLLRegressor(**kwargs), n_jobs=n_jobs, verbose=_verbose)  
+    
