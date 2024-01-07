@@ -595,8 +595,8 @@ class PHCRegressor(BaseEstimator):
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
             feature_probs=self.__feature_probs_to_string(
                 self.feature_probs).encode('utf-8'),
-            cw0=self.class_weight_[0],
-            cw1=self.class_weight_[1],
+            cw0=self.class_weight_[0] if hasattr(self, 'class_weight_') else 1.0,
+            cw1=self.class_weight_[1] if hasattr(self, 'class_weight_') else 1.0,
         )
 
         if self.precision == 'f32':

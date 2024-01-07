@@ -173,7 +173,6 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
             predefined_const_prob=predefined_const_prob,
             predefined_const_set=predefined_const_set,
             opt_metric=opt_metric,
-            opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
             cv=cv,
             cv_params=cv_params,
