@@ -52,7 +52,7 @@ class TestSklearn(unittest.TestCase):
         reg.fit(self.X_train, self.y_train)
         y = reg.predict_proba(self.X_test)
 
-        reg_cw = NLLRegressor(**self.params, class_weight=[1.0, 2.0])
+        reg_cw = NLLRegressor(**self.params, class_weight={0:1.0, 1:2.0})
         reg_cw.fit(self.X_train, self.y_train)
         y_cw = reg_cw.predict_proba(self.X_test)
 

@@ -1,6 +1,9 @@
 from .hroch import PHCRegressor, math
 from sklearn.base import ClassifierMixin
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, make_scorer
+from sklearn.utils import compute_class_weight
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.preprocessing import LabelEncoder
 import numpy as numpy
 
 
@@ -122,9 +125,8 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
                  predefined_const_set: list = [],
                  metric: str = 'LogLoss',
                  transformation='LOGISTIC',
-                 class_weight: list = [1.0, 1.0],
-                 opt_metric=log_loss,
-                 opt_greater_is_better=False,
+                 class_weight=None,
+                 opt_metric=make_scorer(log_loss, greater_is_better=False, needs_proba=True),
                  opt_params={'method': 'Nelder-Mead'},
                  cv: bool = False,
                  cv_params={},
@@ -160,7 +162,6 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             metric=metric,
             class_weight=class_weight,
             opt_metric=opt_metric,
-            opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
             cv=cv,
             cv_params=cv_params,
@@ -177,10 +178,22 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
             Weights applied to individual samples.
         """
 
-        self.classes_ = numpy.unique(y)
+        check_classification_targets(y)
+        enc = LabelEncoder()
+        y_ind = enc.fit_transform(y)
+        self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
+        if self.n_classes_ != 2:
+            raise ValueError(
+                "This solver needs samples of 2 classes"
+                " in the data, but the data contains"
+                " %r classes"
+                % self.n_classes_
+            )
 
-        super(NLLRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
+        self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
+
+        super(NLLRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
     def predict(self, X: numpy.ndarray, id=None, check_input=True):
@@ -196,7 +209,7 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
         preds = super(NLLRegressor, self).predict(X, id, check_input=check_input)
         if not self.cv and self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
             preds = 1.0/(1.0+numpy.exp(-preds))
-        return (preds > 0.5)*1.0
+        return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
         """Predict using the symbolic model.

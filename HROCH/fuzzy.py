@@ -1,6 +1,6 @@
 from .hroch import PHCRegressor, fuzzy
 from sklearn.base import ClassifierMixin
-from sklearn.metrics import log_loss
+from sklearn.metrics import log_loss, make_scorer
 import numpy as numpy
 
 
@@ -127,9 +127,8 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
                  init_predefined_const_set: list = [],
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
-                 class_weight: list = [1.0, 1.0],
-                 opt_metric=log_loss,
-                 opt_greater_is_better=False,
+                 class_weight = None,
+                 opt_metric=make_scorer(log_loss, greater_is_better=False, needs_proba=True),
                  opt_params={'method': 'Nelder-Mead'},
                  cv: bool = False,
                  cv_params={},
@@ -164,7 +163,6 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
             predefined_const_set=predefined_const_set,
             class_weight=class_weight,
             opt_metric=opt_metric,
-            opt_greater_is_better=opt_greater_is_better,
             opt_params=opt_params,
             cv=cv,
             cv_params=cv_params,
