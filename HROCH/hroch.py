@@ -463,7 +463,7 @@ class PHCRegressor(BaseEstimator):
                  const_max: float = LARGE_FLOAT,
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
-                 class_weight: list = [1.0, 1.0],
+                 class_weight = None,
                  opt_metric=make_scorer(mean_squared_error, greater_is_better=False),
                  opt_params={'method': 'Nelder-Mead'},
                  cv: bool = False,

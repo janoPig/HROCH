@@ -1,6 +1,6 @@
 from .hroch import PHCRegressor, math
 from sklearn.base import RegressorMixin
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, make_scorer
 import numpy as numpy
 
 
@@ -138,8 +138,7 @@ class SymbolicRegressor(PHCRegressor, RegressorMixin):
                  const_max: float = 1e30,
                  predefined_const_prob: float = 0.0,
                  predefined_const_set: list = [],
-                 opt_metric=mean_squared_error,
-                 opt_greater_is_better=False,
+                 opt_metric=make_scorer(mean_squared_error, greater_is_better=False),
                  opt_params={'method': 'Nelder-Mead'},
                  cv: bool = False,
                  cv_params={},
