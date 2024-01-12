@@ -178,6 +178,8 @@ class NLLRegressor(PHCRegressor, ClassifierMixin):
         """
 
         check_classification_targets(y)
+        if y.ndim != 1:
+            y = y.reshape(-1)
         enc = LabelEncoder()
         y_ind = enc.fit_transform(y)
         self.classes_ = enc.classes_
