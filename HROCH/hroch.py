@@ -169,7 +169,9 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         super().__init__(m, parent_params, opt_metric)
 
     def eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
-        return metric(self, X, y, sample_weight=sample_weight)
+        if not c is None:
+            self.m.coeffs = c
+        return -metric(self, X, y, sample_weight=sample_weight)
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit constants in symbolic model.
@@ -203,7 +205,9 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         super().__init__(m, parent_params, opt_metric)
 
     def eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
-        return metric(self, X, y, sample_weight=sample_weight)
+        if not c is None:
+            self.m.coeffs = c
+        return -metric(self, X, y, sample_weight=sample_weight)
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
         """Fit constants in symbolic model.
@@ -273,19 +277,6 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         preds = self._predict(X, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
-
-
-class ProbaClf(ClassifierMathModel):
-    """
-    Wrapper for cross validation
-    """
-
-    def __init__(self, clf: ClassifierMathModel) -> None:
-        super().__init__(clf.m, clf.parent_params, clf.opt_metric)
-        self.clf = clf
-
-    def predict(self, X, check_input=True):
-        return ClassifierMathModel.predict_proba(self, X, check_input=check_input)[:, 1]
 
 
 # void * CreateSolver(solver_params * params)
