@@ -53,6 +53,8 @@ jobs:
         id: pmlb
         
       - name: Install SRBench
+        env:
+          REPO: ${{ github.event.inputs.repository }}@${{ github.event.inputs.commit }}
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
                 echo "Install SRBench"
