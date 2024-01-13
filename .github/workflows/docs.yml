@@ -28,7 +28,7 @@ jobs:
       - run: pip install pdoc
       # ADJUST THIS: build your documentation into docs/.
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
-      - run: python -m pdoc HROCH -o out --docformat numpy --math
+      - run: python -m pdoc HROCH -o docs --docformat numpy --math
 
       - uses: actions/upload-pages-artifact@v3
         with:
