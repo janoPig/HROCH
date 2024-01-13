@@ -72,9 +72,8 @@ jobs:
                 # clone srbench
                 mkdir srbench
                 cd srbench
-                git clone --depth 1 https://github.com/janoPig/srbench.git
+                git clone --branch git_workflow --depth 1 https://github.com/janoPig/srbench.git
                 cd srbench
-                git checkout git_workflow
 
                 # current branch
                 line_old='git+https://github.com/BRANCH_PLACEHOLDER'
