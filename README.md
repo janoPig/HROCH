@@ -52,6 +52,16 @@ yp = reg.predict(X_test)
 
 ## Changelog
 
+### v1.4
+
+- Classificators:
+  - NonlinearLogisticRegressor for a binary classification
+  - SymbolicClassifier for multiclass classification
+  - FuzzyRegressor for a special binary classification
+
+<details>
+<summary>Older versions</summary>
+
 ### v1.3
 
 - Public c++ sources
@@ -63,9 +73,6 @@ yp = reg.predict(X_test)
   - clipping
 - Acess to equations from all paralel hillclimbers
 - User defined constants
-
-<details>
-<summary>Older versions</summary>
 
 ### v1.2
 
