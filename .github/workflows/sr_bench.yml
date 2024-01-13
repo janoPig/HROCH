@@ -3,6 +3,14 @@ name: SRBench
 on:
   workflow_dispatch:
     inputs:
+      repository:
+          required: true
+          type: choice
+          options: 
+          - https://github.com/janoPig/HROCH.git
+      commit:
+          required: true
+          type: string 
       regressor:
         required: true
         type: choice
@@ -48,7 +56,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
                 echo "Install SRBench"
-                echo "git+$REPO"
                 pwd
                 # clone pmlb
                 #git clone https://github.com/janoPig/pmlb.git
@@ -63,7 +70,7 @@ jobs:
                 # clone srbench
                 mkdir srbench
                 cd srbench
-                git clone https://github.com/janoPig/srbench.git
+                git clone --depth 1 https://github.com/janoPig/srbench.git
                 cd srbench
                 git checkout git_workflow
 
