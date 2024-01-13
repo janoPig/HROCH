@@ -3,14 +3,22 @@ name: SRBench
 on:
   workflow_dispatch:
     inputs:
+      repository:
+          required: true
+          type: choice
+          options: 
+          - https://github.com/janoPig/HROCH.git
+      commit:
+          required: true
+          type: string 
       regressor:
         required: true
         type: choice
         options: 
-        - PHCRegressor
-        - PHCRegressor1
-        - PHCRegressor2
-        - PHCRegressor3
+        - HROCH_1s
+        - HROCH_10s
+        - HROCH_1m
+        - HROCH_5m
 
 env: 
   CACHE_NUMBER: 0
@@ -45,6 +53,8 @@ jobs:
         id: pmlb
         
       - name: Install SRBench
+        env:
+          REPO: ${{ github.event.inputs.repository }}@${{ github.event.inputs.commit }}
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
                 echo "Install SRBench"
@@ -62,13 +72,12 @@ jobs:
                 # clone srbench
                 mkdir srbench
                 cd srbench
-                git clone https://github.com/janoPig/srbench.git
+                git clone --branch git_workflow --depth 1 https://github.com/janoPig/srbench.git
                 cd srbench
-                git checkout workflow
 
                 # current branch
-                line_old='git+https://github.com/janoPig/HROCH.git'
-                line_new=$(echo "git+https://github.com/janoPig/HROCH.git@$GITHUB_SHA")
+                line_old='git+https://github.com/BRANCH_PLACEHOLDER'
+                line_new=$(echo "git+$REPO")
                 sed -i "s%$line_old%$line_new%g" environment.yml
 
                 # install enviroment

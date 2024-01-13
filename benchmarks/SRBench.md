@@ -13,8 +13,7 @@ __On local computer__ this script [srbench.sh](srbench.sh) (requires miniconda)
 Run time is reduced to 1 second per sample. Total 6520s / number of used cores + benchmark overhead.
 
 __With github workflow__ [sr_bench.yml](../.github/workflows/sr_bench.yml)
-Results are stored in bbox_result and gt_result artifacts. There are 4 choises PHCRegressor, PHCRegressor1, PHCRegressor2, PHCRegressor3 with defined time
-per sample to 1s, 10s, 1m, 5m. Total run time from 47 min to 17 hours.
+Results are stored in bbox_result and gt_result artifacts. There are 4 choises HROCH_1s, HROCH_10s, HROCH_1m, HROCH_5m with defined time per sample to 1s, 10s, 1m, 5m. Total run time from 47 min to 17 hours.
   
 ## Benchmarking Results
 

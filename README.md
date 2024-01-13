@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml)
 
-**High-Performance python symbolic regression library based on parallel hill-climbing**
+**High-Performance python symbolic regression library based on parallel local search**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
@@ -40,17 +40,27 @@ pip install HROCH
 
 [Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
 
-[Documentation](docs/HROCH.md)
+[Documentation](https://janopig.github.io/HROCH/HROCH.html)
 
 ```python
-from HROCH import PHCRegressor
+from HROCH import SymbolicRegressor
 
-reg = PHCRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
+reg = SymbolicRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
 
 ## Changelog
+
+### v1.4
+
+- Classificators:
+  - NonlinearLogisticRegressor for a binary classification
+  - SymbolicClassifier for multiclass classification
+  - FuzzyRegressor for a special binary classification
+
+<details>
+<summary>Older versions</summary>
 
 ### v1.3
 
@@ -63,9 +73,6 @@ yp = reg.predict(X_test)
   - clipping
 - Acess to equations from all paralel hillclimbers
 - User defined constants
-
-<details>
-<summary>Older versions</summary>
 
 ### v1.2
 
@@ -80,8 +87,8 @@ yp = reg.predict(X_test)
 ### v1.0
 
 - First release
-</details>
 
+</details>
 
 ## SRBench[*](benchmarks/SRBench.md)
 

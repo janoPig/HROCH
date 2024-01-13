@@ -18,7 +18,7 @@ conda activate srbench
 
 cd experiment
 # black-box experiment
-python analyze.py ../../../pmlb/datasets -n_trials 10 -ml PHCRegressor -results ../results_blackbox -skip_tuning --noskips --local -n_jobs 10 -job_limit 100000
+python analyze.py ../../../pmlb/datasets -n_trials 10 -ml SymbolicRegressor -results ../results_blackbox -skip_tuning --noskips --local -n_jobs 10 -job_limit 100000
 
 # submit the ground-truth dataset experiment. 
 for data in "../../../pmlb/datasets/strogatz_" "../../../pmlb/datasets/feynman_" ; do # feynman and strogatz datasets
@@ -26,7 +26,7 @@ for data in "../../../pmlb/datasets/strogatz_" "../../../pmlb/datasets/feynman_"
         python analyze.py \
             $data"*" \
             -results ../results_sym_data \
-            -ml PHCRegressor \
+            -ml SymbolicRegressor \
             --noskips \
             --local \
             -target_noise $TN \
@@ -50,7 +50,7 @@ for data in "../../../pmlb/datasets/strogatz_" "../../../pmlb/datasets/feynman_"
             $data"*" \
             -results ../results_sym_data \
             -target_noise $TN \
-            -ml PHCRegressor \
+            -ml SymbolicRegressor \
             --local \
             -sym_data \
             -n_trials 10 \

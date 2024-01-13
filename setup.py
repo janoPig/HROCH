@@ -4,16 +4,15 @@ from setuptools import setup
 ldesc = """
 # HROCH  
 
-**High-Performance python symbolic regression library based on parallel hill-climbing**
+**High-Performance c++ symbolic regression library based on parallel local search**
 
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Support for mathematic and fuzzy logic operators.
+- Support for regression, classification and fuzzy math.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
-- Support for simple classification tasks
 
 |**Supported instructions**||
 | ----------- | ----------- |
@@ -27,6 +26,7 @@ ldesc = """
 - AVX2 instructions set(all modern CPU support this)
 - numpy
 - sklearn
+- scipy
 
 ## Installation
 
@@ -38,17 +38,24 @@ pip install HROCH
 
 [Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
 
-[Documentation](docs/HROCH.md)
+[Documentation](https://janopig.github.io/HROCH/HROCH.html)
 
 ```python
-from HROCH import PHCRegressor
+from HROCH import SymbolicRegressor
 
-reg = PHCRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
+reg = SymbolicRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```
 
 ## Changelog
+
+### v1.4
+
+- Classificators:
+  - NonlinearLogisticRegressor for a binary classification
+  - SymbolicClassifier for multiclass classification
+  - FuzzyRegressor for a special binary classification
 
 ### v1.3
 
@@ -84,20 +91,20 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.3.0',
-    description='Symbolic regression',
+    version='1.4.0',
+    description='Symbolic regression and classification',
     long_description=ldesc,
     long_description_content_type="text/markdown",
     author='Jano',
     author_email='hroch.regression@gmail.com',
     url='https://github.com/janoPig/HROCH/',
     project_urls={
-        'Documentation': 'https://github.com/janoPig/HROCH/tree/main/docs',
+        'Documentation': 'https://janopig.github.io/HROCH/HROCH.html',
         'Source': 'https://github.com/janoPig/HROCH',
         'Tracker': 'https://github.com/janoPig/HROCH/issues',
     },
 
-    keywords=['machine-learning', 'numpy', 'symbolic-regression', 'fuzzy'],
+    keywords=['machine-learning', 'numpy', 'symbolic-regression', 'fuzzy', 'classification'],
     classifiers=['Operating System :: Microsoft :: Windows',
                  'Operating System :: POSIX :: Linux',
                  'Topic :: Scientific/Engineering :: Artificial Intelligence',
@@ -108,9 +115,10 @@ setup(
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10',
-                 'Programming Language :: Python :: 3.11'],
+                 'Programming Language :: Python :: 3.11',
+                 'Programming Language :: Python :: 3.12'],
     packages=['HROCH'],
     license='MIT',
     include_package_data=True,
-    install_requires=['numpy', 'scikit-learn'],
+    install_requires=['numpy', 'scikit-learn', 'scipy'],
 )
