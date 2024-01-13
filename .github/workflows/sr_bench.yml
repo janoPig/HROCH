@@ -67,8 +67,8 @@ jobs:
                 git checkout git_workflow
 
                 # current branch
-                line_old='git+https://github.com/janoPig/HROCH.git'
-                line_new=$(echo "git+https://github.com/janoPig/HROCH.git@$GITHUB_SHA")
+                line_old='git+https://github.com/BRANCH_PLACEHOLDER'
+                line_new=$(echo "git+$REPO")
                 sed -i "s%$line_old%$line_new%g" environment.yml
 
                 # install enviroment
