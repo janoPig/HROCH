@@ -1,6 +1,6 @@
-# PHCRegressor
+# SymbolicRegressor
 
-Symbolic Regressor based on parallel hill climbing algorithm. Unlike genetic programming, no crossover operation is performed. Thus, each individual is independent of the others.
+Symbolic regressor based on parallel hill climbing algorithm. Unlike genetic programming, no crossover operation is performed. Thus, each individual is independent of the others
 ---
 
 ## __Parameters__
@@ -63,7 +63,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
      # add, mul probability 10/23, lt, gt, nop probablity 1/23
     instr_set = {'add':10.0, 'mul':10.0, 'gt':1.0, 'lt':1.0, 'nop':1.0}
 
-    reg = PHCRegressor(problem=instr_set)
+    reg = SymbolicRegressor(problem=instr_set)
     reg.fit(train_X, train_y)
     ```
 
@@ -92,7 +92,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     # x1 probability 1.0/2.01, x2 probablity 1.0/2.01, x3 probablity 0.01/2.01
     probs=[1.0,1.0, 0.01]
 
-    reg = PHCRegressor(feature_probs=fprobs)
+    reg = SymbolicRegressor(feature_probs=fprobs)
     reg.fit(train_X, train_y)
     ```
 
@@ -101,7 +101,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     Maximum alloved constants in symbolic model, accept also 0.
 - __code_min_size, code_max_size: int, default=32__
 
-   Each symbolic model in PHCRegressor is internally represented as a linear code. For example $x_1*(x_2 + 0.1)^2$  can be represented as a linear program with code:
+   Each symbolic model in SymbolicRegressor is internally represented as a linear code. For example $x_1*(x_2 + 0.1)^2$  can be represented as a linear program with code:
 
     ```python
     x4 = x2 + 0.1
@@ -149,7 +149,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
     Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
 - __transformation: str, default=None__
 
-    Final transformation for computed value. Choose from { None, 'LOGISTIC', 'PSEUDOLOG', 'ORDINAL'}
+    Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
 - __random_state: int, default=0__
 
     Random generator seed. If 0 then random generator will be initialized by system time.
@@ -178,7 +178,7 @@ The algorithm stops if any stopping condition is met. It can solve many cases in
 
         return new_model
 
-    reg = PHCRegressor()
+    reg = SymbolicRegressor()
     reg.fit(X_train, y_train)
     print(f'eq: {get_eq(X, reg.sexpr)}')
     ```

@@ -1,138 +1,134 @@
-from .hroch import PHCRegressor, fuzzy
+from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import log_loss, make_scorer
 import numpy as numpy
+from typing import Iterable
 
-
-class FuzzyRegressor(PHCRegressor, ClassifierMixin):
+class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     """
     Fuzzy Regressor
 
-    Parameters:
-        - num_threads (int, optional), default=8:
+    Parameters
+    ----------
+    num_threads : int, default=1
+        Number of used threads.
 
-            Number of used threads.
+    time_limit : float, default=5.0
+        Timeout in seconds. If is set to 0 there is no limit and the algorithm runs until iter_limit is met.
 
-        - time_limit (float, optional), default=5.0:
+    iter_limit : int, default=0
+        Iterations limit. If is set to 0 there is no limit and the algorithm runs until time_limit is met.
 
-            Timeout in seconds. If is set to 0 there is no limit and the algorithm runs until some other condition is met.
+    precision : str, default='f32'
+        'f64' or 'f32'. Internal floating number representation.
 
-        - iter_limit (int, optional), default=0:
+    problem : str or dict, default='math'
+        Predefined instructions sets 'math' or 'simple' or 'fuzzy' or custom defines set of instructions with mutation probability.
+        ```python
+        problem={'f_and':10.0, 'f_or':10.0, 'f_xor':1.0, 'f_not':1.0, 'nop':1.0}
+        ```
 
-            Iterations limit. If is set to 0 there is no limit and the algorithm runs until some other condition is met.
+        |**supported instructions**||
+        |-|-|
+        |**other**|nop|
+        |**fuzzy**|f_and, f_or, f_xor, f_impl, f_not, f_nand, f_nor, f_nxor, f_nimpl|
 
-        - precision (str, optional), default='f32':
+    feature_probs : array of shape (n_features,), default=None
+        The probability that a mutation will select a feature.
 
-            'f64' or 'f32'. Internal floating number representation. 32bit AVX2 instructions are 2x faster as 64bit.
+    random_state : int, default=0
+        Random generator seed. If 0 then random generator will be initialized by system time.
 
-        - problem (any, optional), default=fuzzy:
+    verbose : int, default=0
+        Controls the verbosity when fitting and predicting.
 
-            Predefined instructions sets fuzzy or custom defines set of instructions with mutation probability.
-            `reg = FuzzyRegressor(problem={'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0})`
+    metric : str, default='LogLoss'
+        Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
 
-        - feature_probs (any, optional), default=None:
+    transformation : str, default='LOGISTIC'
+        Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
 
-            `reg = FuzzyRegressor(feature_probs=[1.0,1.0, 0.01])`
+    code_settings : dict, default SymbolicSolver.CODE_SETTINGS
+        ```python
+        code_settings = {'min_size': 32, 'max_size':32, 'const_size':8}
+        ```
+        - 'const_size' : (int) Maximum alloved constants in symbolic model, accept also 0.
+        - 'min_size': (int) Minimum allowed equation size(as a linear program).
+        - 'max_size' : (int) Maximum allowed equation size(as a linear program).
+        
+    population_settings : dict, default SymbolicSolver.POPULATION_SETTINGS
+        ```python
+        population_settings = {'size': 64, 'tournament':4}
+        ```
+        - 'size' : (int) Number of individuals in the population.
+        - 'tournament' : (int) Tournament selection.
 
-        - random_state (int, optional), default=0:
+    init_const_settings : dict, default FuzzyRegressor.INIT_CONST_SETTINGS
+        ```python
+        init_const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
+        ```
+        - 'const_min' : (float) Lower range for initializing constants.
+        - 'const_max' : (float) Upper range for initializing constants.
+        - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during initialization.
+        - 'predefined_const_set' : (array of floats) Predefined constants used during initialization.
 
-            Random generator seed. If 0 then random generator will be initialized by system time.
+    const_settings : dict, default FuzzyRegressor.CONST_SETTINGS
+        ```python
+        const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
+        ```
+        - 'const_min' : (float) Lower range for constants used in equations.
+        - 'const_max' : (float) Upper range for constants used in equations.
+        - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during search process(mutation).
+        - 'predefined_const_set' : (array of floats) Predefined constants used during search process(mutation).
 
-        - verbose (int, optional), default=0:
+    target_clip : array, default SymbolicSolver.CLASSIFICATION_TARGET_CLIP
+        Array of two float values clip_min and clip_max, default None
+        ```python
+        target_clip=[3e-7, 1.0-3e-7]
+        ```
+    class_weight : dict or 'balanced', default=None
+        Weights associated with classes in the form ``{class_label: weight}``.
+        If not given, all classes are supposed to have weight one.
 
-            Controls the verbosity when fitting and predicting.
+        The "balanced" mode uses the values of y to automatically adjust
+        weights inversely proportional to class frequencies in the input data
+        as ``n_samples / (n_classes * np.bincount(y))``.
 
-        - pop_size (int, optional), default=64:
+        Note that these weights will be multiplied with sample_weight (passed
+        through the fit method) if sample_weight is specified.
 
-            Number of individuals in the population.
-
-        - pop_sel (int, optional), default=4:
-
-            Tournament selection.
-
-        - const_size (int, optional), default=8:
-
-            Maximum alloved constants in symbolic model, accept also 0.
-
-        - code_min_size (int, optional), default=32:
-
-            Minimum allowed equation size.
-
-        - code_max_size (int, optional), default=32:
-
-            Maximum allowed equation size.
-
-        - metric (str, optional), default='LogLoss':
-
-            Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
-
-        - init_const_min (float, optional), default=0.0:
-
-            Lower range for initializing constants.
-
-        - init_const_max (float, optional), default=1.0:
-
-            Upper range for initializing constants.
-
-        - init_predefined_const_prob (float, optional), default=0.0:
-
-            Probability of selecting one of the predefined constants during initialization.
-
-        - init_predefined_const_set (list of floats, optional) default=[]:
-
-            Predefined constants used during initialization.
-
-        - clip_min (float, optional) default=0.0:
-
-            Lower limit for calculated values. If both values (clip_min and clip_max) are the same, then no clip is performed.
-
-        - clip_max (float, optional) default=0.0:
-
-            Upper limit for calculated values. If both values (clip_min and clip_max) are the same, then no clip is performed.
-
-        - const_min (float, optional) default=0.0:
-
-            Lower bound for constants used in generated equations.
-
-        - const_max (float, optional) default=1.0:
-
-            Upper bound for constants used in generated equations.
-
-        - predefined_const_prob (float, optional), default=0.0:
-
-            Probability of selecting one of the predefined constants during equations search.
-
-        - predefined_const_set (list of floats, optional) default=[]:
-
-            Predefined constants used during equations search.
+    cv_params : dict, default SymbolicSolver.CLASSIFICATION_CV_PARAMS
+        ```python
+        cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+        ```
+        - 'n' : (int) Crossvalidate n top models
+        - 'cv_params' : (dict) Parameters passed to scikit-learn cross_validate method
+        - select : (str) Best model selection method choose from 'mean'or 'median'
+        - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
+        - opt_metric : (make_scorer) Scoring method
     """
+    
+    FUZZY_INIT_CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
+    FUZZY_CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
 
     def __init__(self,
-                 num_threads: int = 8,
+                 num_threads: int = 1,
                  time_limit: float = 5.0,
                  iter_limit: int = 0,
                  precision: str = 'f32',
-                 problem: any = fuzzy,
+                 problem: any = 'fuzzy',
                  feature_probs: any = None,
-                 save_model: bool = False,
                  random_state: int = 0,
                  verbose: int = 0,
-                 pop_size: int = 64,
-                 pop_sel: int = 4,
-                 const_size: int = 8,
-                 code_min_size: int = 32,
-                 code_max_size: int = 32,
                  metric: str = 'LogLoss',
-                 init_predefined_const_prob: float = 0.0,
-                 init_predefined_const_set: list = [],
-                 predefined_const_prob: float = 0.0,
-                 predefined_const_set: list = [],
+                 transformation: str = 'LOGISTIC',
+                 code_settings : dict = SymbolicSolver.CODE_SETTINGS,
+                 population_settings: dict = SymbolicSolver.POPULATION_SETTINGS,
+                 init_const_settings : dict = FUZZY_INIT_CONST_SETTINGS,
+                 const_settings : dict = FUZZY_CONST_SETTINGS,
+                 target_clip: Iterable = SymbolicSolver.CLASSIFICATION_TARGET_CLIP,
                  class_weight = None,
-                 opt_metric=make_scorer(log_loss, greater_is_better=False, needs_proba=True),
-                 opt_params={'method': 'Nelder-Mead'},
-                 cv: bool = False,
-                 cv_params={},
-                 cv_select: str = 'mean',
+                 cv_params=SymbolicSolver.CLASSIFICATION_CV_PARAMS
                  ):
         super(FuzzyRegressor, self).__init__(
             num_threads=num_threads,
@@ -141,42 +137,44 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
             precision=precision,
             problem=problem,
             feature_probs=feature_probs,
-            save_model=save_model,
             random_state=random_state,
             verbose=verbose,
-            pop_size=pop_size,
-            pop_sel=pop_sel,
-            const_size=const_size,
-            code_min_size=code_min_size,
-            code_max_size=code_max_size,
             metric=metric,
-            transformation=None,
-            init_const_min=0.0,
-            init_const_max=1.0,
-            init_predefined_const_prob=init_predefined_const_prob,
-            init_predefined_const_set=init_predefined_const_set,
-            clip_min=3e-7,
-            clip_max=1.0-3e-7,
-            const_min=0.0,
-            const_max=1.0,
-            predefined_const_prob=predefined_const_prob,
-            predefined_const_set=predefined_const_set,
+            transformation=transformation,
+            code_settings=code_settings,
+            population_settings=population_settings,
+            init_const_settings=init_const_settings,
+            const_settings=const_settings,
+            target_clip=target_clip,
             class_weight=class_weight,
-            opt_metric=opt_metric,
-            opt_params=opt_params,
-            cv=cv,
-            cv_params=cv_params,
-            cv_select=cv_select,
+            cv_params=cv_params
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
-        """Fit symbolic model.
+        """
+        Fit the symbolic models according to the given training data. 
 
-        Args:
-            - X (numpy.ndarray): Training data. Values must be in the range 0.0 to 1.0.
-            - y (numpy.ndarray): Target values.
-            - sample_weight : array-like, shape = [n_samples], optional
-            Weights applied to individual samples.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Training vector, where `n_samples` is the number of samples and
+            `n_features` is the number of features. Should be in the range [0, 1].
+
+        y : numpy.ndarray of shape (n_samples,)
+            Target vector relative to X. Needs samples of 2 classes.
+
+        sample_weight : numpy.ndarray of shape (n_samples,) default=None
+            Array of weights that are assigned to individual samples.
+            If not provided, then each sample is given unit weight.
+
+        check_input : bool, default=True
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you're doing.
+
+        Returns
+        -------
+        self
+            Fitted estimator.
         """
 
         self.classes_ = numpy.unique(y)
@@ -186,27 +184,46 @@ class FuzzyRegressor(PHCRegressor, ClassifierMixin):
         return self
 
     def predict(self, X: numpy.ndarray, id=None, check_input=True):
-        """Predict using the symbolic model.
+        """
+        Predict class for X.
 
-        Args:
-            - X (numpy.ndarray): Samples.
-            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            The input samples.
+            
+        id : int
+            Model id, default=None. id can be obtained from get_models method. If its None prediction use the best model.
 
-        Returns:
-            numpy.ndarray: Returns predicted values.
+        check_input : bool, default=True
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you're doing.
+
+        Returns
+        -------
+        y : numpy.ndarray of shape (n_samples,)
+            The predicted classes.
         """
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         return (preds > 0.5)*1.0
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
-        """Predict using the symbolic model.
+        """
+        Predict class probabilities for X.
 
-        Args:
-            - X (numpy.ndarray): Samples.
-            - id (int) Hillclimber id, default=None. id can be obtained from get_models method. If its none prediction use best hillclimber.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
 
-        Returns:
-            numpy.ndarray, shape = [n_samples, n_classes]: The class probabilities of the input samples.
+        check_input : bool, default=True
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you're doing.
+
+        Returns
+        -------
+        p : ndarray of shape (n_samples, n_classes)
+            The class probabilities of the input samples. The order of the
+            classes corresponds to that in the attribute :term:`classes_`.
         """
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T

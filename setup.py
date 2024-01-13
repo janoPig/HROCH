@@ -42,9 +42,9 @@ pip install HROCH
 [Documentation](docs/HROCH.md)
 
 ```python
-from HROCH import PHCRegressor
+from HROCH import SymbolicRegressor
 
-reg = PHCRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
+reg = SymbolicRegressor(num_threads=8, time_limit=60.0, problem='math', precision='f64')
 reg.fit(X_train, y_train)
 yp = reg.predict(X_test)
 ```

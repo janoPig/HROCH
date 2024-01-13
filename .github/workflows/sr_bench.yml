@@ -7,10 +7,10 @@ on:
         required: true
         type: choice
         options: 
-        - PHCRegressor
-        - PHCRegressor1
-        - PHCRegressor2
-        - PHCRegressor3
+        - HROCH_1s
+        - HROCH_10s
+        - HROCH_1m
+        - HROCH_5m
 
 env: 
   CACHE_NUMBER: 0
