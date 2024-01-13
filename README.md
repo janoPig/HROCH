@@ -40,7 +40,7 @@ pip install HROCH
 
 [Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
 
-[Documentation](docs/HROCH.md)
+[Documentation](https://janopig.github.io/HROCH/HROCH.html)
 
 ```python
 from HROCH import SymbolicRegressor
