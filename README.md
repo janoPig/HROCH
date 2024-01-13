@@ -1,6 +1,6 @@
 # HROCH  
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml) [![pages-build-deployment](https://github.com/janoPig/HROCH/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/janoPig/HROCH/actions/workflows/pages/pages-build-deployment)
 
 **High-Performance python symbolic regression library based on parallel local search**
 
