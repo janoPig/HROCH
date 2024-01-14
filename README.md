@@ -7,11 +7,10 @@
 - Zero hyperparameter tunning.
 - Accurate results in seconds or minutes, in contrast to slow GP-based methods.
 - Small models size.
-- Support for mathematic and fuzzy logic operators.
+- Support for regression, classification and fuzzy math.
 - Support 32 and 64 bit floating point arithmetic.
 - Work with unprotected version of math operators (log, sqrt, division)
 - Speedup search by using feature importances computed from bbox model
-- Support for simple classification tasks
 
 |**Supported instructions**||
 | ----------- | ----------- |
