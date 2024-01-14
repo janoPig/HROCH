@@ -60,6 +60,14 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
 
     transformation : str, default=None
             Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
+            
+    algo_settings : dict,  default = SymbolicSolver.ALGO_SETTINGS
+        ```python
+        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
+        ```
+        - 'neighbours_count' : (int) Number tested neighbours in each iteration
+        - 'alpha' : (float) Score worsening limit for a iteration
+        - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
 
     code_settings : dict, default SymbolicSolver.CODE_SETTINGS
         ```python
@@ -121,6 +129,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
                  verbose: int = 0,
                  metric: str = 'MSE',
                  transformation: str = None,
+                 algo_settings : dict = SymbolicSolver.ALGO_SETTINGS,
                  code_settings : dict = SymbolicSolver.CODE_SETTINGS,
                  population_settings: dict = SymbolicSolver.POPULATION_SETTINGS,
                  init_const_settings : dict = SymbolicSolver.INIT_CONST_SETTINGS,
@@ -139,6 +148,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             verbose=verbose,
             metric=metric,
             transformation=transformation,
+            algo_settings=algo_settings,
             code_settings=code_settings,
             population_settings=population_settings,
             init_const_settings=init_const_settings,
