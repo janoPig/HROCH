@@ -1,3 +1,4 @@
+from sklearn.multiclass import OneVsRestClassifier
 from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import log_loss, make_scorer
@@ -228,3 +229,10 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+class FuzzyClassifier(OneVsRestClassifier):
+    """
+    Fuzzy multiclass symbolic classificator
+    """
+    def __init__(self, n_jobs=None, verbose=0, **kwargs):
+        super().__init__(estimator=FuzzyRegressor(**kwargs), n_jobs=n_jobs, verbose=verbose)  
