@@ -1,3 +1,6 @@
+"""
+.. include:: ../README.md
+"""
 from HROCH.hroch import *
 from HROCH.regressor import SymbolicRegressor
 from HROCH.fuzzy import FuzzyRegressor, FuzzyClassifier
