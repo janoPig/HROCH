@@ -23,8 +23,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     precision : str, default='f32'
         'f64' or 'f32'. Internal floating number representation.
 
-    problem : str or dict, default='math'
-        Predefined instructions sets 'math' or 'simple' or 'fuzzy' or custom defines set of instructions with mutation probability.
+    problem : str or dict, default='fuzzy'
+        Predefined instructions sets 'fuzzy' or custom defines set of instructions with mutation probability.
         ```python
         problem={'f_and':10.0, 'f_or':10.0, 'f_xor':1.0, 'f_not':1.0, 'nop':1.0}
         ```
