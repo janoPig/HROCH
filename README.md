@@ -1,4 +1,4 @@
-# HROCH  
+# Symbolic regression and classification library  
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) [![PyPI version](https://badge.fury.io/py/HROCH.svg)](https://badge.fury.io/py/HROCH) [![Downloads](https://pepy.tech/badge/hroch)](https://pepy.tech/project/hroch) [![CodeQL](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/codeql.yml) [![Unittests](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml/badge.svg)](https://github.com/janoPig/HROCH/actions/workflows/unittests.yml) [![pages-build-deployment](https://github.com/janoPig/HROCH/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main)](https://github.com/janoPig/HROCH/actions/workflows/pages/pages-build-deployment)[![Upload Python Package](https://github.com/janoPig/HROCH/actions/workflows/python-publish.yml/badge.svg?event=release)](https://github.com/janoPig/HROCH/actions/workflows/python-publish.yml)
 
@@ -37,7 +37,7 @@ pip install HROCH
 
 ## Usage
 
-[Symbolic_Regression_Demo.ipynb](examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
+[Symbolic_Regression_Demo.ipynb](https://github.com/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)  [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/janoPig/HROCH/blob/main/examples/Symbolic_Regression_Demo.ipynb)
 
 [Documentation](https://janopig.github.io/HROCH/HROCH.html)
 
@@ -89,6 +89,8 @@ yp = reg.predict(X_test)
 
 </details>
 
-## SRBench[*](benchmarks/SRBench.md)
+## SRBench
 
-![image](https://github.com/janoPig/HROCH/assets/75015989/3fa087dc-8caf-4301-86d7-4e79a4e84402)
+[*full results*](https://github.com/janoPig/HROCH/blob/main/benchmarks/SRBench.md)
+
+<img src="https://github.com/janoPig/HROCH/assets/75015989/3fa087dc-8caf-4301-86d7-4e79a4e84402" alt="SRBench" style="width:800px;"/>
