@@ -275,7 +275,69 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 class SymbolicClassifier(OneVsRestClassifier):
     """
     OVR multiclass symbolic classificator
-    """
-    def __init__(self, n_jobs=None, verbose=0, **kwargs):
-        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs), n_jobs=n_jobs, verbose=verbose)  
     
+    Parameters
+    ----------
+    kwargs : Any
+        Parameters passed to [NonlinearLogisticRegressor](https://janopig.github.io/HROCH/HROCH.html#NonlinearLogisticRegressor) estimator
+    
+    verbose : int
+        Verbosity level for OneVsRestClassifier
+
+    """
+    def __init__(self, verbose=0, **kwargs):
+        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs), verbose=verbose)  
+    
+    def fit(self, X: numpy.ndarray, y: numpy.ndarray):
+        """
+        Fit the symbolic models according to the given training data. 
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Training vector, where `n_samples` is the number of samples and
+            `n_features` is the number of features. Should be in the range [0, 1].
+
+        y : numpy.ndarray of shape (n_samples,)
+            Target vector relative to X.
+
+        Returns
+        -------
+        self
+            Fitted estimator.
+        """
+
+        super(OneVsRestClassifier, self).fit(X, y)
+        return self
+
+    def predict(self, X: numpy.ndarray):
+        """
+        Predict class for X.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        y : numpy.ndarray of shape (n_samples,)
+            The predicted classes.
+        """
+        return super(OneVsRestClassifier, self).predict(X)
+
+    def predict_proba(self, X: numpy.ndarray):
+        """
+        Predict class probabilities for X.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+
+        Returns
+        -------
+        p : ndarray of shape (n_samples, n_classes)
+            The class probabilities of the input samples. The order of the
+            classes corresponds to that in the attribute :term:`classes_`.
+        """
+        return super(OneVsRestClassifier, self).predict_proba(X)
