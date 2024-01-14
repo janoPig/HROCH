@@ -236,7 +236,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         return self._predict(X)
     
     def __eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
-        if not c is None:
+        if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
 
@@ -246,7 +246,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         super().__init__(m, parent_params)
 
     def eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
-        if not c is None:
+        if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
 
@@ -570,7 +570,7 @@ class SymbolicSolver(BaseEstimator):
                  cv_params=REGRESSION_CV_PARAMS
                  ):
 
-        if not precision in ['f32', 'f64']:
+        if precision not in ['f32', 'f64']:
             raise ValueError("precision parameter must be 'f32' or 'f64'")
 
         if num_threads <= 0:
@@ -733,7 +733,7 @@ class SymbolicSolver(BaseEstimator):
                         m.cv_score = numpy.mean(m.cv_results['test_score'])
                     elif cv_select == 'median':
                         m.cv_score = numpy.median(m.cv_results['test_score'])
-                except Exception as ex:
+                except Exception:
                     m.cv_score = invalid_score
                 
                 if numpy.isnan(m.cv_score):

@@ -17,7 +17,7 @@ class TestFeatures(unittest.TestCase):
 
     def test_random_state(self):
         X, y = load_breast_cancer(return_X_y=True)
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_train, X_test, y_train, _ = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
         reg1 = SymbolicRegressor(**self.params[0])
@@ -32,7 +32,7 @@ class TestFeatures(unittest.TestCase):
 
     def test_random_state_mt(self):
         X, y = load_breast_cancer(return_X_y=True)
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_train, X_test, y_train, _ = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
         reg1 = SymbolicRegressor(**self.params[1])
@@ -44,17 +44,17 @@ class TestFeatures(unittest.TestCase):
         y_pred2 = reg2.predict(X_test)
 
         np.testing.assert_array_almost_equal(y_pred1, y_pred2, decimal=6)
-
+        
     def test_random_state_mt2(self):
         X, y = load_breast_cancer(return_X_y=True)
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_train, X_test, y_train, _ = train_test_split(
             X, y, test_size=0.2, random_state=42)
 
-        reg1 = SymbolicRegressor(**self.params[1])
+        reg1 = SymbolicRegressor(**self.params[2])
         reg1.fit(X_train, y_train)
         y_pred1 = reg1.predict(X_test)
 
-        reg2 = SymbolicRegressor(**self.params[1])
+        reg2 = SymbolicRegressor(**self.params[2])
         reg2.fit(X_train, y_train)
         y_pred2 = reg2.predict(X_test)
 
