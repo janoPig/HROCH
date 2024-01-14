@@ -57,6 +57,9 @@ class FitParams(ctypes.Structure):
                 ("verbose", ctypes.c_uint),
                 ("pop_sel", ctypes.c_uint),
                 ("metric", ctypes.c_uint),
+                ("neighbours_count", ctypes.c_uint),
+                ("alpha", ctypes.c_double),
+                ("beta", ctypes.c_double),
                 ("iter_limit", ctypes.c_ulonglong),
                 ("const_min", ctypes.c_double),
                 ("const_max", ctypes.c_double),
@@ -456,6 +459,14 @@ class SymbolicSolver(BaseEstimator):
 
     transformation : str, default=None
             Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
+            
+    algo_settings : dict,  default = SymbolicSolver.ALGO_SETTINGS
+        ```python
+        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
+        ```
+        - 'neighbours_count' : (int) Number tested neighbours in each iteration
+        - 'alpha' : (float) Score worsening limit for a iteration
+        - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
 
     code_settings : dict, default SymbolicSolver.CODE_SETTINGS
         ```python
@@ -528,16 +539,14 @@ class SymbolicSolver(BaseEstimator):
             'sinh': 0.001, 'cosh': 0.001, 'tanh': 0.001}
 
     FUZZY = {'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0}
-
+    
+    ALGO_SETTINGS = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
     CODE_SETTINGS = {'min_size': 32, 'max_size':32, 'const_size':8}
     POPULATION_SETTINGS = {'size': 64, 'tournament':4}
-
     INIT_CONST_SETTINGS = {'const_min':-1.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
     CONST_SETTINGS = {'const_min':-LARGE_FLOAT, 'const_max':LARGE_FLOAT, 'predefined_const_prob':0.0, 'predefined_const_set': []}
-
     REGRESSION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(mean_squared_error, greater_is_better=False)}
     CLASSIFICATION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
-    
     CLASSIFICATION_TARGET_CLIP = [3e-7, 1.0-3e-7]
 
     def __init__(self,
@@ -551,6 +560,7 @@ class SymbolicSolver(BaseEstimator):
                  verbose: int = 0,
                  metric: str = 'MSE',
                  transformation: str = None,
+                 algo_settings : dict = ALGO_SETTINGS,
                  code_settings : dict = CODE_SETTINGS,
                  population_settings: dict = POPULATION_SETTINGS,
                  init_const_settings : dict = INIT_CONST_SETTINGS,
@@ -579,6 +589,7 @@ class SymbolicSolver(BaseEstimator):
         self.population_settings = population_settings
         self.metric = metric
         self.transformation = transformation
+        self.algo_settings = algo_settings
         self.init_const_settings = init_const_settings
         self.const_settings = const_settings
         self.target_clip = target_clip
@@ -676,6 +687,9 @@ class SymbolicSolver(BaseEstimator):
             verbose=self.verbose,
             pop_sel=val(self.population_settings, 'tournament', 4),
             metric=self.__parse_metric(self.metric),
+            neighbours_count=val(self.algo_settings, 'neighbours_count', 15),
+            alpha=val(self.algo_settings, 'alpha', 0.15),
+            beta=val(self.algo_settings, 'beta', 0.5),
             iter_limit=self.iter_limit,
             const_min=val(self.const_settings, 'const_min', -self.LARGE_FLOAT),
             const_max=val(self.const_settings, 'const_max', self.LARGE_FLOAT),
