@@ -57,7 +57,7 @@ class FitParams(ctypes.Structure):
                 ("verbose", ctypes.c_uint),
                 ("pop_sel", ctypes.c_uint),
                 ("metric", ctypes.c_uint),
-                ("neighbours_count", ctypes.c_uint)
+                ("neighbours_count", ctypes.c_uint),
                 ("alpha", ctypes.c_double),
                 ("beta", ctypes.c_double),
                 ("iter_limit", ctypes.c_ulonglong),
