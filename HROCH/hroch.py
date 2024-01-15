@@ -242,6 +242,9 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
 
 
 class ClassifierMathModel(MathModelBase, ClassifierMixin):
+    """
+    A classifier class for the symbolic model.
+    """
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
 
@@ -717,9 +720,10 @@ class SymbolicSolver(BaseEstimator):
         
         n = self.cv_params['n']
         cv_select = self.cv_params['select']
+        opt_metric = self.cv_params['opt_metric']
         if n > 0:
             self.models = self.__get_models()
-            invalid_score = self.LARGE_FLOAT*(-self.opt_metric._sign)
+            invalid_score = self.LARGE_FLOAT*(-opt_metric._sign)
             i = 0
             for m in self.models:
                 i = i + 1
@@ -739,13 +743,13 @@ class SymbolicSolver(BaseEstimator):
                 if numpy.isnan(m.cv_score):
                     m.cv_score = invalid_score
 
-                m.cv_score *= self.opt_metric._sign
+                m.cv_score *= opt_metric._sign
 
                 # fit final coeffs from whole data
                 m.fit(X, y, check_input=False)
 
             self.models.sort(
-                key=lambda x: x.cv_score*(-self.opt_metric._sign))
+                key=lambda x: x.cv_score*(-opt_metric._sign))
             self.sexpr = self.models[0].equation
         else:
             m = MathModel()
