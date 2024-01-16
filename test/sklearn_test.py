@@ -1,11 +1,11 @@
 import HROCH
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
 import unittest
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, log_loss, make_scorer, roc_auc_score
 
 
 class TestSklearn(unittest.TestCase):
@@ -68,3 +68,42 @@ class TestSklearn(unittest.TestCase):
         np.testing.assert_array_almost_equal(y_swd, y, decimal=6)
         self.assertGreater(np.sum(np.abs(y_cw - y)), 0.001)
         np.testing.assert_array_almost_equal(y_cw, y_sw, decimal=6)
+        
+    def test_classifier(self):
+        params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},
+                  {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},]
+        classifiers = [NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier]
+        for p in params:
+            for clf in classifiers:
+                model = clf(**p)
+                model.fit(self.X_train, self.y_train)
+                y = model.predict(self.X_test)
+                yp = model.predict_proba(self.X_test)
+                np.testing.assert_equal(y.shape, self.y_test.shape)
+                np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
+                
+    def test_classifier_cv(self):
+        cv = {'n':2, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'L-BFGS-B'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+        params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},
+                  {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},]
+        classifiers = [NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier]
+        for p in params:
+            for clf in classifiers:
+                model = clf(**p)
+                model.fit(self.X_train, self.y_train)
+                y = model.predict(self.X_test)
+                yp = model.predict_proba(self.X_test)
+                np.testing.assert_equal(y.shape, self.y_test.shape)
+                np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
+                if clf in [SymbolicClassifier, FuzzyClassifier]:
+                    self.assertEqual(len(model.estimators_), 1)
+                    model = model.estimators_[0]
+                equations = model.get_models()[:2]
+                for eq in equations:
+                    self.assertTrue(hasattr(eq, 'cv_score'))
+                    eq.fit(self.X_train, self.y_train)
+                    y = eq.predict(self.X_test)
+                    yp = eq.predict_proba(self.X_test)
+                    np.testing.assert_equal(y.shape, self.y_test.shape)
+                    np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
+                    
