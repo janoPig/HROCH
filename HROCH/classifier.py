@@ -280,13 +280,9 @@ class SymbolicClassifier(OneVsRestClassifier):
     ----------
     kwargs : Any
         Parameters passed to [NonlinearLogisticRegressor](https://janopig.github.io/HROCH/HROCH.html#NonlinearLogisticRegressor) estimator
-    
-    verbose : int
-        Verbosity level for OneVsRestClassifier
-
     """
-    def __init__(self, verbose=0, **kwargs):
-        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs), verbose=verbose)  
+    def __init__(self, **kwargs):
+        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs))  
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """
@@ -307,7 +303,7 @@ class SymbolicClassifier(OneVsRestClassifier):
             Fitted estimator.
         """
 
-        super(OneVsRestClassifier, self).fit(X, y)
+        super().fit(X, y)
         return self
 
     def predict(self, X: numpy.ndarray):
@@ -324,7 +320,7 @@ class SymbolicClassifier(OneVsRestClassifier):
         y : numpy.ndarray of shape (n_samples,)
             The predicted classes.
         """
-        return super(OneVsRestClassifier, self).predict(X)
+        return super().predict(X)
 
     def predict_proba(self, X: numpy.ndarray):
         """
@@ -340,4 +336,4 @@ class SymbolicClassifier(OneVsRestClassifier):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        return super(OneVsRestClassifier, self).predict_proba(X)
+        return super().predict_proba(X)

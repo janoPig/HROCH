@@ -2,6 +2,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import log_loss, make_scorer
+from sklearn.utils import compute_class_weight
 import numpy as numpy
 from typing import Iterable
 
@@ -190,6 +191,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
 
         self.classes_ = numpy.unique(y)
         self.n_classes_ = len(self.classes_)
+        
+        self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
 
         super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
@@ -249,14 +252,9 @@ class FuzzyClassifier(OneVsRestClassifier):
     ----------
     kwargs : Any
         Parameters passed to [FuzzyRegressor](https://janopig.github.io/HROCH/HROCH.html#FuzzyRegressor) estimator
-        
-    verbose : int
-        Verbosity level for OneVsRestClassifier
-
     """
-    def __init__(self, verbose=0, **kwargs):
-        super().__init__(estimator=FuzzyRegressor(**kwargs), verbose=verbose)
-        
+    def __init__(self, **kwargs):
+        super().__init__(estimator=FuzzyRegressor(**kwargs))
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """
@@ -277,7 +275,7 @@ class FuzzyClassifier(OneVsRestClassifier):
             Fitted estimator.
         """
 
-        super(OneVsRestClassifier, self).fit(X, y)
+        super().fit(X, y)
         return self
 
     def predict(self, X: numpy.ndarray):
@@ -294,7 +292,7 @@ class FuzzyClassifier(OneVsRestClassifier):
         y : numpy.ndarray of shape (n_samples,)
             The predicted classes.
         """
-        return super(OneVsRestClassifier, self).predict(X)
+        return super().predict(X)
 
     def predict_proba(self, X: numpy.ndarray):
         """
@@ -310,4 +308,4 @@ class FuzzyClassifier(OneVsRestClassifier):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        return super(OneVsRestClassifier, self).predict_proba(X)
+        return super().predict_proba(X)
