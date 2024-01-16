@@ -280,13 +280,9 @@ class SymbolicClassifier(OneVsRestClassifier):
     ----------
     kwargs : Any
         Parameters passed to [NonlinearLogisticRegressor](https://janopig.github.io/HROCH/HROCH.html#NonlinearLogisticRegressor) estimator
-    
-    verbose : int
-        Verbosity level for OneVsRestClassifier
-
     """
-    def __init__(self, verbose=0, **kwargs):
-        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs), verbose=verbose)  
+    def __init__(self, **kwargs):
+        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs))  
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """

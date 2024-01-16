@@ -252,14 +252,9 @@ class FuzzyClassifier(OneVsRestClassifier):
     ----------
     kwargs : Any
         Parameters passed to [FuzzyRegressor](https://janopig.github.io/HROCH/HROCH.html#FuzzyRegressor) estimator
-        
-    verbose : int
-        Verbosity level for OneVsRestClassifier
-
     """
-    def __init__(self, verbose=0, **kwargs):
-        super().__init__(estimator=FuzzyRegressor(**kwargs), verbose=verbose)
-        
+    def __init__(self, **kwargs):
+        super().__init__(estimator=FuzzyRegressor(**kwargs))
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """
