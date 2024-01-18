@@ -1,7 +1,7 @@
 import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted, _check_sample_weight
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import log_loss, mean_squared_error, make_scorer
@@ -570,7 +570,8 @@ class SymbolicSolver(BaseEstimator):
                  const_settings : dict = CONST_SETTINGS,
                  target_clip: Iterable = None,
                  class_weight = None,
-                 cv_params=REGRESSION_CV_PARAMS
+                 cv_params : dict = REGRESSION_CV_PARAMS,
+                 warm_start : bool = False
                  ):
 
         if precision not in ['f32', 'f64']:
@@ -598,11 +599,10 @@ class SymbolicSolver(BaseEstimator):
         self.target_clip = target_clip
         self.class_weight = class_weight
         self.cv_params = cv_params
-
-        self.handle = None
+        self.warm_start = warm_start
 
     def __del__(self):
-        if self.handle is not None:
+        if hasattr(self, "handle") and self.handle is not None:
             DeleteSolver(self.handle)
 
     @property
@@ -635,13 +635,31 @@ class SymbolicSolver(BaseEstimator):
         self
             Fitted estimator.
         """
+        
+        if not self.warm_start and hasattr(self,'handle'):
+            if self.handle is not None:
+                DeleteSolver(self.handle)
+                self.handle = None
+            self.is_fitted_ = False
 
         def val(d, key, v):
             if d is not None and key in d:
                 return d[key]
             return v
+        
+        if check_input:
+            X, y = check_X_y(X, y, accept_sparse=False, multi_output=False)
+            
+        has_sw = sample_weight is not None
+        if has_sw:
+            sample_weight = _check_sample_weight(
+                sample_weight, X, dtype=X.dtype, only_non_negative=True
+            )
 
-        if self.handle is None:
+        if y.ndim != 1:
+            y = y.reshape(-1)
+
+        if not hasattr(self, "handle") or self.handle is None:
             tmp = val(self.init_const_settings, 'predefined_const_set', [])
             init_predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
             params = Params(random_state=self.random_state,
@@ -663,12 +681,6 @@ class SymbolicSolver(BaseEstimator):
                             init_predefined_const_set=init_predefined_const_set,
                             )
             self.handle = CreateSolver(ctypes.pointer(params))
-
-        if check_input:
-            X, y = check_X_y(X, y, accept_sparse=False)
-
-        if y.ndim != 1:
-            y = y.reshape(-1)
 
         _x = numpy.ascontiguousarray(X.T).astype(
             'float32' if self.precision == 'f32' else 'float64')

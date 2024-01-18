@@ -151,7 +151,8 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
                  const_settings : dict = SymbolicSolver.CONST_SETTINGS,
                  target_clip: Iterable = SymbolicSolver.CLASSIFICATION_TARGET_CLIP,
                  class_weight = None,
-                 cv_params=SymbolicSolver.CLASSIFICATION_CV_PARAMS
+                 cv_params=SymbolicSolver.CLASSIFICATION_CV_PARAMS,
+                 warm_start : bool = False
                  ):
 
         super(NonlinearLogisticRegressor, self).__init__(
@@ -172,7 +173,8 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
             const_settings=const_settings,
             target_clip=target_clip,
             class_weight=class_weight,
-            cv_params=cv_params
+            cv_params=cv_params,
+            warm_start=warm_start
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):

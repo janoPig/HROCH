@@ -135,7 +135,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
                  init_const_settings : dict = SymbolicSolver.INIT_CONST_SETTINGS,
                  const_settings : dict = SymbolicSolver.CONST_SETTINGS,
                  target_clip: Iterable = None,
-                 cv_params=SymbolicSolver.REGRESSION_CV_PARAMS
+                 cv_params=SymbolicSolver.REGRESSION_CV_PARAMS,
+                 warm_start : bool = False
                  ):
         super(SymbolicRegressor, self).__init__(
             num_threads=num_threads,
@@ -155,7 +156,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             const_settings=const_settings,
             target_clip=target_clip,
             class_weight=None,
-            cv_params=cv_params
+            cv_params=cv_params,
+            warm_start=warm_start
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):

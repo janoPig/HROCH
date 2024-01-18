@@ -6,6 +6,9 @@ import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, log_loss, make_scorer, roc_auc_score
+from sklearn.utils.estimator_checks import check_estimator
+from sklearn.svm import SVC
+
 
 
 class TestSklearn(unittest.TestCase):
