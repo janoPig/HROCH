@@ -4,12 +4,11 @@ from sklearn.utils.estimator_checks import check_estimator
 
 
 skipped_tests = {
-    'check_sample_weights_invariance': [{'kind': 'zeros'}], # currently not possible, remove samples + nonderministic?
-    'check_estimators_pickle' : [{}, {'readonly_memmap': True}], # cant pickle handle
+    'check_sample_weights_invariance': [{'kind': 'zeros'}], # mixing samples in this test leads to inconsistent results for small iter_limit
     'check_parameters_default_constructible' : [{}], # TODO: fixme: dict in parameters
 }
 
-common_params = {'iter_limit':1000, 'time_limit':0.0, 'random_state':42}
+common_params = {'iter_limit':1000, 'time_limit':0.0, 'random_state':42, 'num_threads':1}
 binary_estimators = [SymbolicRegressor, NonlinearLogisticRegressor, FuzzyRegressor, RegressorMathModel, ClassifierMathModel]
 class TestSklearnCheck(unittest.TestCase):
     def __test_estimator(self, estimator):

@@ -259,7 +259,10 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         return proba
     
     def _more_tags(self):
-        return {'binary_only': True, 'poor_score':True}
+        return {
+            'binary_only': True,
+            'poor_score':True, # tests from check_estimator dont have fuzzy number type
+            }
 
 
 class FuzzyClassifier(OneVsRestClassifier):
@@ -329,4 +332,6 @@ class FuzzyClassifier(OneVsRestClassifier):
         return super().predict_proba(X)
     
     def _more_tags(self):
-        return {'poor_score':True}
+        return {
+            'poor_score':True, # tests from check_estimator dont have fuzzy number type
+            }

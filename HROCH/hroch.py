@@ -118,6 +118,16 @@ class ParsedMathModel:
             '(')]
         exec(self.str_code_representation)
         self.method = locals()[self.method_name]
+        
+    def __getstate__(self):
+        all_attributes = self.__dict__.copy()
+        all_attributes.pop('method', None)
+        return all_attributes
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        exec(self.str_code_representation)
+        self.method = locals()[self.method_name]
 
 
 class MathModelBase(BaseEstimator):
@@ -655,9 +665,12 @@ class SymbolicSolver(BaseEstimator):
             sample_weight = _check_sample_weight(
                 sample_weight, X, dtype=X.dtype, only_non_negative=True
             )
-
-        if y.ndim != 1:
-            y = y.reshape(-1)
+            # mask = sample_weight != 0
+            # if len(mask) == 0:
+            #     raise ValueError("No data to fit.")
+            # X = X[mask]
+            # y = y[mask]
+            # sample_weight = sample_weight[mask]
 
         if not hasattr(self, "handle_") or self.handle_ is None:
             tmp = val(self.init_const_settings, 'predefined_const_set', [])
@@ -733,8 +746,8 @@ class SymbolicSolver(BaseEstimator):
         n = self.cv_params['n']
         cv_select = self.cv_params['select']
         opt_metric = self.cv_params['opt_metric']
+        self.models_ = self.__get_models()
         if n > 0:
-            self.models_ = self.__get_models()
             invalid_score = self.LARGE_FLOAT*(-opt_metric._sign)
             i = 0
             for m in self.models_:
@@ -762,15 +775,10 @@ class SymbolicSolver(BaseEstimator):
 
             self.models_.sort(
                 key=lambda x: x.cv_score*(-opt_metric._sign))
-            self.sexpr_ = self.models_[0].equation
-        else:
-            m = MathModel()
-            GetBestModel(self.handle_, m)
-            model = self.__create_model(m)
-            self.sexpr_ = apply_const(model.m.str_representation, model.m.coeffs)
-            FreeModel(m)
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True):
+        self.sexpr_ = self.models_[0].equation
+
+    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 
@@ -794,7 +802,7 @@ class SymbolicSolver(BaseEstimator):
         check_is_fitted(self)
         X = self._validate_data(X, accept_sparse=False, reset=False)
 
-        if self.cv_params['n'] > 0:
+        if use_parsed_model:
             m = self.models_[0] if id is None else next(
                 (x for x in self.models_ if x.m.id == id), None)
             return m._predict(X, check_input=check_input)
@@ -906,3 +914,14 @@ class SymbolicSolver(BaseEstimator):
             return RegressorMathModel(ParsedMathModel(m), self.__dict__.copy())
         else:
             return ClassifierMathModel(ParsedMathModel(m), self.__dict__.copy())
+        
+    def __getstate__(self):
+        all_attributes = self.__dict__.copy()
+        # disable warm_start because handle is not valid
+        all_attributes['warm_start'] = False
+        # store models
+        if hasattr(self,'is_fitted_') and self.is_fitted_:
+            if not hasattr(self, 'models_'):
+                all_attributes['models_'] = self.get_models()
+        all_attributes.pop('handle_', None)
+        return all_attributes
