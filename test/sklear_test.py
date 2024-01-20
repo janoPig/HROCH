@@ -5,7 +5,6 @@ from sklearn.utils.estimator_checks import check_estimator
 
 skipped_tests = {
     'check_sample_weights_invariance': [{'kind': 'zeros'}], # mixing samples in this test leads to inconsistent results for small iter_limit
-    'check_parameters_default_constructible' : [{}], # TODO: fixme: dict in parameters
 }
 
 common_params = {'iter_limit':1000, 'time_limit':0.0, 'random_state':42, 'num_threads':1}

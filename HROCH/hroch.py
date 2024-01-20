@@ -560,6 +560,7 @@ class SymbolicSolver(BaseEstimator):
     CONST_SETTINGS = {'const_min':-LARGE_FLOAT, 'const_max':LARGE_FLOAT, 'predefined_const_prob':0.0, 'predefined_const_set': []}
     REGRESSION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(mean_squared_error, greater_is_better=False)}
     CLASSIFICATION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+    REGRESSION_TARGET_CLIP = [0.0, 0.0]
     CLASSIFICATION_TARGET_CLIP = [3e-7, 1.0-3e-7]
 
     def __init__(self,
@@ -567,20 +568,20 @@ class SymbolicSolver(BaseEstimator):
                  time_limit: float = 5.0,
                  iter_limit: int = 0,
                  precision: str = 'f32',
-                 problem: any = 'math',
-                 feature_probs: any = None,
+                 problem = 'math',
+                 feature_probs = None,
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'MSE',
                  transformation: str = None,
-                 algo_settings : dict = ALGO_SETTINGS,
-                 code_settings : dict = CODE_SETTINGS,
-                 population_settings: dict = POPULATION_SETTINGS,
-                 init_const_settings : dict = INIT_CONST_SETTINGS,
-                 const_settings : dict = CONST_SETTINGS,
-                 target_clip: Iterable = None,
+                 algo_settings = None,
+                 code_settings = None,
+                 population_settings = None,
+                 init_const_settings = None,
+                 const_settings = None,
+                 target_clip = None,
                  class_weight = None,
-                 cv_params : dict = REGRESSION_CV_PARAMS,
+                 cv_params = None,
                  warm_start : bool = False
                  ):
 
@@ -671,25 +672,35 @@ class SymbolicSolver(BaseEstimator):
             # X = X[mask]
             # y = y[mask]
             # sample_weight = sample_weight[mask]
+            
+        algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS,
+        code_settings = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS
+        population_settings = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
+        init_const_settings = self.init_const_settings if self.init_const_settings is not None else self.INIT_CONST_SETTINGS
+        const_settings = self.const_settings if self.const_settings is not None else self.CONST_SETTINGS
+        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == 'regressor' else self.CLASSIFICATION_TARGET_CLIP
+        target_clip = self.target_clip if self.target_clip is not None else target_clip_
+        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == 'regressor' else self.CLASSIFICATION_CV_PARAMS
+        cv_params = self.cv_params if self.cv_params is not None else cv_params_
 
         if not hasattr(self, "handle_") or self.handle_ is None:
-            tmp = val(self.init_const_settings, 'predefined_const_set', [])
+            tmp = val(init_const_settings, 'predefined_const_set', [])
             init_predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
             params = Params(random_state=self.random_state,
                             num_threads=self.num_threads,
                             precision=1 if self.precision == 'f32' else 2,
-                            pop_size=val(self.population_settings,'size', 64),
+                            pop_size=val(population_settings,'size', 64),
                             transformation=self.__parse_transformation(
                                 self.transformation),
-                            clip_min= 0.0 if self.target_clip is None else self.target_clip[0],
-                            clip_max= 0.0 if self.target_clip is None else self.target_clip[1],
+                            clip_min=target_clip[0],
+                            clip_max=target_clip[1],
                             input_size=X.shape[1],
-                            const_size=val(self.code_settings, 'const_size', 8),
-                            code_min_size=val(self.code_settings, 'min_size', 32),
-                            code_max_size=val(self.code_settings, 'max_size', 32),
-                            init_const_min=val(self.init_const_settings, 'const_min', -1.0),
-                            init_const_max=val(self.init_const_settings, 'const_max', 1.0),
-                            init_predefined_const_prob=val(self.init_const_settings, 'predefined_const_prob', 0.0),
+                            const_size=val(code_settings, 'const_size', 8),
+                            code_min_size=val(code_settings, 'min_size', 32),
+                            code_max_size=val(code_settings, 'max_size', 32),
+                            init_const_min=val(init_const_settings, 'const_min', -1.0),
+                            init_const_max=val(init_const_settings, 'const_max', 1.0),
+                            init_predefined_const_prob=val(init_const_settings, 'predefined_const_prob', 0.0),
                             init_predefined_const_count=0 if init_predefined_const_set is None else len(init_predefined_const_set),
                             init_predefined_const_set=init_predefined_const_set,
                             )
@@ -707,21 +718,21 @@ class SymbolicSolver(BaseEstimator):
                 raise ValueError("sample_weight len incorrect")
             _sw = numpy.ascontiguousarray(sample_weight.astype('float32' if self.precision == 'f32' else 'float64'))
 
-        tmp = val(self.const_settings, 'predefined_const_set', [])
+        tmp = val(const_settings, 'predefined_const_set', [])
         predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
 
         fit_params = FitParams(
             time_limit=round(self.time_limit*1000),
             verbose=self.verbose,
-            pop_sel=val(self.population_settings, 'tournament', 4),
+            pop_sel=val(population_settings, 'tournament', 4),
             metric=self.__parse_metric(self.metric),
-            neighbours_count=val(self.algo_settings, 'neighbours_count', 15),
-            alpha=val(self.algo_settings, 'alpha', 0.15),
-            beta=val(self.algo_settings, 'beta', 0.5),
+            neighbours_count=val(algo_settings, 'neighbours_count', 15),
+            alpha=val(algo_settings, 'alpha', 0.15),
+            beta=val(algo_settings, 'beta', 0.5),
             iter_limit=self.iter_limit,
-            const_min=val(self.const_settings, 'const_min', -self.LARGE_FLOAT),
-            const_max=val(self.const_settings, 'const_max', self.LARGE_FLOAT),
-            predefined_const_prob=val(self.const_settings, 'predefined_const_prob', 0.0),
+            const_min=val(const_settings, 'const_min', -self.LARGE_FLOAT),
+            const_max=val(const_settings, 'const_max', self.LARGE_FLOAT),
+            predefined_const_prob=val(const_settings, 'predefined_const_prob', 0.0),
             predefined_const_count=0 if predefined_const_set is None else len(predefined_const_set),
             predefined_const_set=predefined_const_set,
             problem=self.__problem_to_string(self.problem).encode('utf-8'),
@@ -743,9 +754,9 @@ class SymbolicSolver(BaseEstimator):
         if not self.is_fitted_:
             return
         
-        n = self.cv_params['n']
-        cv_select = self.cv_params['select']
-        opt_metric = self.cv_params['opt_metric']
+        n = cv_params['n']
+        cv_select = cv_params['select']
+        opt_metric = cv_params['opt_metric']
         self.models_ = self.__get_models()
         if n > 0:
             invalid_score = self.LARGE_FLOAT*(-opt_metric._sign)
@@ -757,7 +768,7 @@ class SymbolicSolver(BaseEstimator):
                     continue
                 try:
                     m.cv_results = cross_validate(
-                        estimator=m, X=X, y=y, n_jobs=None, error_score=invalid_score, scoring=self.cv_params['opt_metric'], **self.cv_params['cv_params'])
+                        estimator=m, X=X, y=y, n_jobs=None, error_score=invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
                     if cv_select == 'mean':
                         m.cv_score = numpy.mean(m.cv_results['test_score'])
                     elif cv_select == 'median':
@@ -846,14 +857,15 @@ class SymbolicSolver(BaseEstimator):
 
     def __get_models(self):
         models = []
-        for i in range(self.num_threads*self.population_settings['size']):
+        population_settings = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
+        for i in range(self.num_threads*population_settings['size']):
             model = MathModel()
             GetModel(self.handle_, i, model)
             models.append(self.__create_model(model))
             FreeModel(model)
         return sorted(models, key=lambda x: x.m.score)
 
-    def __problem_to_string(self, problem: any):
+    def __problem_to_string(self, problem):
         if isinstance(problem, str):
             if problem == 'simple' or problem == 'math' or problem == 'fuzzy':
                 return problem
@@ -869,7 +881,7 @@ class SymbolicSolver(BaseEstimator):
             result = result + f'{instr} {prob};'
         return result
 
-    def __feature_probs_to_string(self, feat: any):
+    def __feature_probs_to_string(self, feat):
         result = ""
         if feat is None:
             return result
@@ -910,10 +922,20 @@ class SymbolicSolver(BaseEstimator):
         return 0
 
     def __create_model(self, m: MathModel):
+        attrib = self.__dict__.copy()
+        attrib['algo_settings'] = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS,
+        attrib['code_settings'] = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS
+        attrib['population_settings'] = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
+        attrib['init_const_settings'] = self.init_const_settings if self.init_const_settings is not None else self.INIT_CONST_SETTINGS
+        attrib['const_settings'] = self.const_settings if self.const_settings is not None else self.CONST_SETTINGS
+        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == 'regressor' else self.CLASSIFICATION_TARGET_CLIP
+        attrib['target_clip'] = self.target_clip if self.target_clip is not None else target_clip_
+        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == 'regressor' else self.CLASSIFICATION_CV_PARAMS
+        attrib['cv_params'] = self.cv_params if self.cv_params is not None else cv_params_
         if self._estimator_type == 'regressor':
-            return RegressorMathModel(ParsedMathModel(m), self.__dict__.copy())
+            return RegressorMathModel(ParsedMathModel(m), attrib)
         else:
-            return ClassifierMathModel(ParsedMathModel(m), self.__dict__.copy())
+            return ClassifierMathModel(ParsedMathModel(m), attrib)
         
     def __getstate__(self):
         all_attributes = self.__dict__.copy()

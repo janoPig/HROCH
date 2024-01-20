@@ -138,20 +138,20 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
                  time_limit: float = 5.0,
                  iter_limit: int = 0,
                  precision: str = 'f32',
-                 problem: any = 'math',
-                 feature_probs: any = None,
+                 problem = 'math',
+                 feature_probs = None,
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'LogLoss',
                  transformation: str = 'LOGISTIC',
-                 algo_settings : dict = SymbolicSolver.ALGO_SETTINGS,
-                 code_settings : dict = SymbolicSolver.CODE_SETTINGS,
-                 population_settings: dict = SymbolicSolver.POPULATION_SETTINGS,
-                 init_const_settings : dict = SymbolicSolver.INIT_CONST_SETTINGS,
-                 const_settings : dict = SymbolicSolver.CONST_SETTINGS,
-                 target_clip: Iterable = SymbolicSolver.CLASSIFICATION_TARGET_CLIP,
+                 algo_settings = None,
+                 code_settings = None,
+                 population_settings = None,
+                 init_const_settings = None,
+                 const_settings = None,
+                 target_clip = None,
                  class_weight = None,
-                 cv_params=SymbolicSolver.CLASSIFICATION_CV_PARAMS,
+                 cv_params = None,
                  warm_start : bool = False
                  ):
 
@@ -246,8 +246,6 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
             The predicted classes.
         """
         preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input)
-        if self.cv_params['n'] == 0 and self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
-            preds = 1.0/(1.0+numpy.exp(-preds))
         return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
@@ -269,8 +267,6 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
             classes corresponds to that in the attribute :term:`classes_`.
         """
         preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input)
-        if self.cv_params['n'] == 0 and self.metric is not None and self.metric.upper() == 'LOGITAPPROX':
-            preds = 1.0/(1.0+numpy.exp(-preds))
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
     
