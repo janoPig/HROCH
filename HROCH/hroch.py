@@ -602,12 +602,12 @@ class SymbolicSolver(BaseEstimator):
         self.warm_start = warm_start
 
     def __del__(self):
-        if hasattr(self, "handle") and self.handle is not None:
-            DeleteSolver(self.handle)
+        if hasattr(self, "handle_") and self.handle_ is not None:
+            DeleteSolver(self.handle_)
 
     @property
     def equation(self):
-        return self.sexpr
+        return self.sexpr_
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None, check_input=True):
         """
@@ -636,10 +636,10 @@ class SymbolicSolver(BaseEstimator):
             Fitted estimator.
         """
         
-        if not self.warm_start and hasattr(self,'handle'):
-            if self.handle is not None:
-                DeleteSolver(self.handle)
-                self.handle = None
+        if not self.warm_start and hasattr(self,'handle_'):
+            if self.handle_ is not None:
+                DeleteSolver(self.handle_)
+                self.handle_ = None
             self.is_fitted_ = False
 
         def val(d, key, v):
@@ -648,7 +648,7 @@ class SymbolicSolver(BaseEstimator):
             return v
         
         if check_input:
-            X, y = check_X_y(X, y, accept_sparse=False, multi_output=False)
+            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=True, multi_output=False)
             
         has_sw = sample_weight is not None
         if has_sw:
@@ -659,7 +659,7 @@ class SymbolicSolver(BaseEstimator):
         if y.ndim != 1:
             y = y.reshape(-1)
 
-        if not hasattr(self, "handle") or self.handle is None:
+        if not hasattr(self, "handle_") or self.handle_ is None:
             tmp = val(self.init_const_settings, 'predefined_const_set', [])
             init_predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
             params = Params(random_state=self.random_state,
@@ -680,7 +680,7 @@ class SymbolicSolver(BaseEstimator):
                             init_predefined_const_count=0 if init_predefined_const_set is None else len(init_predefined_const_set),
                             init_predefined_const_set=init_predefined_const_set,
                             )
-            self.handle = CreateSolver(ctypes.pointer(params))
+            self.handle_ = CreateSolver(ctypes.pointer(params))
 
         _x = numpy.ascontiguousarray(X.T).astype(
             'float32' if self.precision == 'f32' else 'float64')
@@ -719,10 +719,10 @@ class SymbolicSolver(BaseEstimator):
         )
 
         if self.precision == 'f32':
-            ret = FitData32(self.handle, _x, _y,
+            ret = FitData32(self.handle_, _x, _y,
                             X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
         elif self.precision == 'f64':
-            ret = FitData64(self.handle, _x, _y,
+            ret = FitData64(self.handle_, _x, _y,
                             X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
 
         self.is_fitted_ = True if ret == 0 else False
@@ -734,10 +734,10 @@ class SymbolicSolver(BaseEstimator):
         cv_select = self.cv_params['select']
         opt_metric = self.cv_params['opt_metric']
         if n > 0:
-            self.models = self.__get_models()
+            self.models_ = self.__get_models()
             invalid_score = self.LARGE_FLOAT*(-opt_metric._sign)
             i = 0
-            for m in self.models:
+            for m in self.models_:
                 i = i + 1
                 if i > n:
                     m.cv_score = invalid_score
@@ -760,14 +760,14 @@ class SymbolicSolver(BaseEstimator):
                 # fit final coeffs from whole data
                 m.fit(X, y, check_input=False)
 
-            self.models.sort(
+            self.models_.sort(
                 key=lambda x: x.cv_score*(-opt_metric._sign))
-            self.sexpr = self.models[0].equation
+            self.sexpr_ = self.models_[0].equation
         else:
             m = MathModel()
-            GetBestModel(self.handle, m)
+            GetBestModel(self.handle_, m)
             model = self.__create_model(m)
-            self.sexpr = apply_const(model.m.str_representation, model.m.coeffs)
+            self.sexpr_ = apply_const(model.m.str_representation, model.m.coeffs)
             FreeModel(m)
 
     def predict(self, X: numpy.ndarray, id=None, check_input=True):
@@ -792,10 +792,11 @@ class SymbolicSolver(BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self)
+        X = self._validate_data(X, accept_sparse=False, reset=False)
 
         if self.cv_params['n'] > 0:
-            m = self.models[0] if id is None else next(
-                (x for x in self.models if x.m.id == id), None)
+            m = self.models_[0] if id is None else next(
+                (x for x in self.models_ if x.m.id == id), None)
             return m._predict(X, check_input=check_input)
         else:
             return self._predict(X, id, check_input=check_input)
@@ -809,9 +810,9 @@ class SymbolicSolver(BaseEstimator):
         models : array of RegressorMathModel or ClassifierMathModel
         """
         check_is_fitted(self)
-        if not hasattr(self, 'models'):
-            self.models = self.__get_models()
-        return self.models
+        if not hasattr(self, 'models_'):
+            self.models_ = self.__get_models()
+        return self.models_
 
     def _predict(self, X: numpy.ndarray, id=None, check_input=True):
         check_is_fitted(self)
@@ -828,10 +829,10 @@ class SymbolicSolver(BaseEstimator):
             id if id is not None else 0xffffffff, self.verbose)
 
         if self.precision == 'f32':
-            Predict32(self.handle, _x, _y,
+            Predict32(self.handle_, _x, _y,
                       X.shape[0], X.shape[1], ctypes.pointer(params))
         elif self.precision == 'f64':
-            Predict64(self.handle, _x, _y,
+            Predict64(self.handle_, _x, _y,
                       X.shape[0], X.shape[1], ctypes.pointer(params))
         return _y
 
@@ -839,7 +840,7 @@ class SymbolicSolver(BaseEstimator):
         models = []
         for i in range(self.num_threads*self.population_settings['size']):
             model = MathModel()
-            GetModel(self.handle, i, model)
+            GetModel(self.handle_, i, model)
             models.append(self.__create_model(model))
             FreeModel(model)
         return sorted(models, key=lambda x: x.m.score)

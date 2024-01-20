@@ -1,11 +1,8 @@
-import HROCH
 from HROCH import SymbolicRegressor
 import unittest
 import numpy as np
-import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score
 
 
 class TestFeatures(unittest.TestCase):

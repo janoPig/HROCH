@@ -203,10 +203,10 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         self
             Fitted estimator.
         """
-
+        
+        if check_input:
+            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=False, multi_output=False)
         check_classification_targets(y)
-        if y.ndim != 1:
-            y = y.reshape(-1)
         enc = LabelEncoder()
         y_ind = enc.fit_transform(y)
         self.classes_ = enc.classes_
@@ -273,6 +273,9 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
             preds = 1.0/(1.0+numpy.exp(-preds))
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+    def _more_tags(self):
+        return {'binary_only': True}
 
 class SymbolicClassifier(OneVsRestClassifier):
     """
@@ -283,8 +286,8 @@ class SymbolicClassifier(OneVsRestClassifier):
     kwargs : Any
         Parameters passed to [NonlinearLogisticRegressor](https://janopig.github.io/HROCH/HROCH.html#NonlinearLogisticRegressor) estimator
     """
-    def __init__(self, **kwargs):
-        super().__init__(estimator=NonlinearLogisticRegressor(**kwargs))  
+    def __init__(self, estimator=NonlinearLogisticRegressor()):
+        super().__init__(estimator=estimator)
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """

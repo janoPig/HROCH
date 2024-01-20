@@ -3,6 +3,8 @@ from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import log_loss, make_scorer
 from sklearn.utils import compute_class_weight
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.preprocessing import LabelEncoder
 import numpy as numpy
 from typing import Iterable
 
@@ -190,13 +192,24 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         self
             Fitted estimator.
         """
-
-        self.classes_ = numpy.unique(y)
+        if check_input:
+            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+        check_classification_targets(y)
+        enc = LabelEncoder()
+        y_ind = enc.fit_transform(y)
+        self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
-        
+        if self.n_classes_ != 2:
+            raise ValueError(
+                "This solver needs samples of 2 classes"
+                " in the data, but the data contains"
+                " %r classes"
+                % self.n_classes_
+            )
+
         self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
 
-        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
+        super(FuzzyRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
     def predict(self, X: numpy.ndarray, id=None, check_input=True):
@@ -221,7 +234,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
             The predicted classes.
         """
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
-        return (preds > 0.5)*1.0
+        return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
         """
@@ -244,6 +257,9 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+    def _more_tags(self):
+        return {'binary_only': True, 'poor_score':True}
 
 
 class FuzzyClassifier(OneVsRestClassifier):
@@ -255,8 +271,8 @@ class FuzzyClassifier(OneVsRestClassifier):
     kwargs : Any
         Parameters passed to [FuzzyRegressor](https://janopig.github.io/HROCH/HROCH.html#FuzzyRegressor) estimator
     """
-    def __init__(self, **kwargs):
-        super().__init__(estimator=FuzzyRegressor(**kwargs))
+    def __init__(self, estimator=FuzzyRegressor()):
+        super().__init__(estimator=estimator)
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """
@@ -311,3 +327,6 @@ class FuzzyClassifier(OneVsRestClassifier):
             classes corresponds to that in the attribute :term:`classes_`.
         """
         return super().predict_proba(X)
+    
+    def _more_tags(self):
+        return {'poor_score':True}
