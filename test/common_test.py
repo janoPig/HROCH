@@ -1,16 +1,15 @@
-import HROCH
 from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
 import unittest
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score, log_loss, make_scorer, roc_auc_score
+from sklearn.metrics import r2_score, log_loss, make_scorer
 
 
-class TestSklearn(unittest.TestCase):
+class TestCommon(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        super(TestSklearn, self).__init__(*args, **kwargs)
+        super(TestCommon, self).__init__(*args, **kwargs)
         self.params = {'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42}
         X, y = load_breast_cancer(return_X_y=True)
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
@@ -72,10 +71,14 @@ class TestSklearn(unittest.TestCase):
     def test_classifier(self):
         params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},
                   {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},]
-        classifiers = [NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier]
         for p in params:
-            for clf in classifiers:
-                model = clf(**p)
+            classifiers = [
+            NonlinearLogisticRegressor(**p), 
+            SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
+            FuzzyRegressor(**p),
+            FuzzyClassifier(estimator=FuzzyRegressor(**p)),
+            ]
+            for model in classifiers:
                 model.fit(self.X_train, self.y_train)
                 y = model.predict(self.X_test)
                 yp = model.predict_proba(self.X_test)
@@ -86,24 +89,28 @@ class TestSklearn(unittest.TestCase):
         cv = {'n':2, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'L-BFGS-B'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
         params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},
                   {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},]
-        classifiers = [NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier]
         for p in params:
-            for clf in classifiers:
-                model = clf(**p)
+            classifiers = [
+            NonlinearLogisticRegressor(**p), 
+            SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
+            FuzzyRegressor(**p),
+            FuzzyClassifier(estimator=FuzzyRegressor(**p)),
+            ]
+            for model in classifiers:
                 model.fit(self.X_train, self.y_train)
                 y = model.predict(self.X_test)
                 yp = model.predict_proba(self.X_test)
                 np.testing.assert_equal(y.shape, self.y_test.shape)
                 np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
-                if clf in [SymbolicClassifier, FuzzyClassifier]:
+                if model.__class__ in [SymbolicClassifier, FuzzyClassifier]:
                     self.assertEqual(len(model.estimators_), 1)
-                    model = model.estimators_[0]
-                equations = model.get_models()[:2]
-                for eq in equations:
-                    self.assertTrue(hasattr(eq, 'cv_score'))
-                    eq.fit(self.X_train, self.y_train)
-                    y = eq.predict(self.X_test)
-                    yp = eq.predict_proba(self.X_test)
-                    np.testing.assert_equal(y.shape, self.y_test.shape)
-                    np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
+                    est = model.estimators_[0]
+                    equations = est.get_models()[:2]
+                    for eq in equations:
+                        self.assertTrue(hasattr(eq, 'cv_score'))
+                        eq.fit(self.X_train, self.y_train)
+                        y = eq.predict(self.X_test)
+                        yp = eq.predict_proba(self.X_test)
+                        np.testing.assert_equal(y.shape, self.y_test.shape)
+                        np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
                     

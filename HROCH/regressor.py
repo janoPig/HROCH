@@ -61,7 +61,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
     transformation : str, default=None
             Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
             
-    algo_settings : dict,  default = SymbolicSolver.ALGO_SETTINGS
+     algo_settings : dict, default = None
+        If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
         algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
         ```
@@ -69,7 +70,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         - 'alpha' : (float) Score worsening limit for a iteration
         - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
 
-    code_settings : dict, default SymbolicSolver.CODE_SETTINGS
+    code_settings : dict, default = None
+        If not defined SymbolicSolver.CODE_SETTINGS is used.
         ```python
         code_settings = {'min_size': 32, 'max_size':32, 'const_size':8}
         ```
@@ -77,14 +79,16 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
         
-    population_settings : dict, default SymbolicSolver.POPULATION_SETTINGS
+    population_settings : dict, default = None
+        If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
         population_settings = {'size': 64, 'tournament':4}
         ```
         - 'size' : (int) Number of individuals in the population.
         - 'tournament' : (int) Tournament selection.
 
-    init_const_settings : dict, default SymbolicSolver.INIT_CONST_SETTINGS
+    init_const_settings : dict, default = None
+        If not defined SymbolicSolver.INIT_CONST_SETTINGS is used.
         ```python
         init_const_settings = {'const_min':-1.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -93,7 +97,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during initialization.
         - 'predefined_const_set' : (array of floats) Predefined constants used during initialization.
 
-    const_settings : dict, default SymbolicSolver.CONST_SETTINGS
+    const_settings : dict, default = None
+        If not defined SymbolicSolver.CONST_SETTINGS is used.
         ```python
         const_settings = {'const_min':-LARGE_FLOAT, 'const_max':LARGE_FLOAT, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -107,7 +112,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         target_clip=[-1, 1]
         ```
 
-    cv_params : dict, default SymbolicSolver.REGRESSION_CV_PARAMS
+    cv_params : dict, default = None
+        If not defined SymbolicSolver.REGRESSION_CV_PARAMS is used
         ```python
         cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(mean_squared_error, greater_is_better=False)}
         ```
@@ -123,19 +129,20 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
                  time_limit: float = 5.0,
                  iter_limit: int = 0,
                  precision: str = 'f32',
-                 problem: any = 'math',
-                 feature_probs: any = None,
+                 problem = 'math',
+                 feature_probs = None,
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'MSE',
                  transformation: str = None,
-                 algo_settings : dict = SymbolicSolver.ALGO_SETTINGS,
-                 code_settings : dict = SymbolicSolver.CODE_SETTINGS,
-                 population_settings: dict = SymbolicSolver.POPULATION_SETTINGS,
-                 init_const_settings : dict = SymbolicSolver.INIT_CONST_SETTINGS,
-                 const_settings : dict = SymbolicSolver.CONST_SETTINGS,
+                 algo_settings = None,
+                 code_settings = None,
+                 population_settings = None,
+                 init_const_settings = None,
+                 const_settings = None,
                  target_clip: Iterable = None,
-                 cv_params=SymbolicSolver.REGRESSION_CV_PARAMS
+                 cv_params = None,
+                 warm_start : bool = False
                  ):
         super(SymbolicRegressor, self).__init__(
             num_threads=num_threads,
@@ -155,7 +162,8 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             const_settings=const_settings,
             target_clip=target_clip,
             class_weight=None,
-            cv_params=cv_params
+            cv_params=cv_params,
+            warm_start=warm_start
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
@@ -188,7 +196,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
     
-    def predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 
@@ -209,4 +217,4 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted values.
         """
-        return super(SymbolicRegressor, self).predict(X, id=id, check_input=check_input)
+        return super(SymbolicRegressor, self).predict(X, id=id, check_input=check_input, use_parsed_model=use_parsed_model)

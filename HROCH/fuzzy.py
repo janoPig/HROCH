@@ -3,6 +3,8 @@ from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import log_loss, make_scorer
 from sklearn.utils import compute_class_weight
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.preprocessing import LabelEncoder
 import numpy as numpy
 from typing import Iterable
 
@@ -50,7 +52,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     transformation : str, default='LOGISTIC'
         Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
         
-    algo_settings : dict,  default = SymbolicSolver.ALGO_SETTINGS
+     algo_settings : dict, default = None
+        If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
         algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
         ```
@@ -58,7 +61,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'alpha' : (float) Score worsening limit for a iteration
         - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
 
-    code_settings : dict, default SymbolicSolver.CODE_SETTINGS
+    code_settings : dict, default = None
+        If not defined SymbolicSolver.CODE_SETTINGS is used.
         ```python
         code_settings = {'min_size': 32, 'max_size':32, 'const_size':8}
         ```
@@ -66,14 +70,16 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
         
-    population_settings : dict, default SymbolicSolver.POPULATION_SETTINGS
+    population_settings : dict, default = None
+        If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
         population_settings = {'size': 64, 'tournament':4}
         ```
         - 'size' : (int) Number of individuals in the population.
         - 'tournament' : (int) Tournament selection.
 
-    init_const_settings : dict, default FuzzyRegressor.INIT_CONST_SETTINGS
+    init_const_settings : dict, default = None
+        If not defined FuzzyRegressor.INIT_CONST_SETTINGS is used.
         ```python
         init_const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -82,7 +88,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during initialization.
         - 'predefined_const_set' : (array of floats) Predefined constants used during initialization.
 
-    const_settings : dict, default FuzzyRegressor.CONST_SETTINGS
+    const_settings : dict, default = None
+        If not defined FuzzyRegressor.CONST_SETTINGS is used.
         ```python
         const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -91,8 +98,9 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during search process(mutation).
         - 'predefined_const_set' : (array of floats) Predefined constants used during search process(mutation).
 
-    target_clip : array, default SymbolicSolver.CLASSIFICATION_TARGET_CLIP
-        Array of two float values clip_min and clip_max, default None
+    target_clip : array, default = None
+        Array of two float values clip_min and clip_max.
+        If not defined SymbolicSolver.CLASSIFICATION_TARGET_CLIP is used.
         ```python
         target_clip=[3e-7, 1.0-3e-7]
         ```
@@ -107,7 +115,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         Note that these weights will be multiplied with sample_weight (passed
         through the fit method) if sample_weight is specified.
 
-    cv_params : dict, default SymbolicSolver.CLASSIFICATION_CV_PARAMS
+    cv_params : dict, default = None
+        If not defined SymbolicSolver.CLASSIFICATION_CV_PARAMS is used.
         ```python
         cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
         ```
@@ -126,20 +135,21 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
                  time_limit: float = 5.0,
                  iter_limit: int = 0,
                  precision: str = 'f32',
-                 problem: any = 'fuzzy',
-                 feature_probs: any = None,
+                 problem = 'fuzzy',
+                 feature_probs = None,
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'LogLoss',
                  transformation: str = 'LOGISTIC',
-                 algo_settings : dict = SymbolicSolver.ALGO_SETTINGS,
-                 code_settings : dict = SymbolicSolver.CODE_SETTINGS,
-                 population_settings: dict = SymbolicSolver.POPULATION_SETTINGS,
-                 init_const_settings : dict = FUZZY_INIT_CONST_SETTINGS,
-                 const_settings : dict = FUZZY_CONST_SETTINGS,
-                 target_clip: Iterable = SymbolicSolver.CLASSIFICATION_TARGET_CLIP,
+                 algo_settings = None,
+                 code_settings = None,
+                 population_settings = None,
+                 init_const_settings = None,
+                 const_settings = None,
+                 target_clip = None,
                  class_weight = None,
-                 cv_params=SymbolicSolver.CLASSIFICATION_CV_PARAMS
+                 cv_params = None,
+                 warm_start : bool = False
                  ):
         super(FuzzyRegressor, self).__init__(
             num_threads=num_threads,
@@ -159,7 +169,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
             const_settings=const_settings,
             target_clip=target_clip,
             class_weight=class_weight,
-            cv_params=cv_params
+            cv_params=cv_params,
+            warm_start=warm_start
         )
 
     def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
@@ -188,16 +199,27 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         self
             Fitted estimator.
         """
-
-        self.classes_ = numpy.unique(y)
+        if check_input:
+            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+        check_classification_targets(y)
+        enc = LabelEncoder()
+        y_ind = enc.fit_transform(y)
+        self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
-        
+        if self.n_classes_ != 2:
+            raise ValueError(
+                "This solver needs samples of 2 classes"
+                " in the data, but the data contains"
+                " %r classes"
+                % self.n_classes_
+            )
+
         self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
 
-        super(FuzzyRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
+        super(FuzzyRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
         """
         Predict class for X.
 
@@ -218,8 +240,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         y : numpy.ndarray of shape (n_samples,)
             The predicted classes.
         """
-        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
-        return (preds > 0.5)*1.0
+        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input, use_parsed_model=use_parsed_model)
+        return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
         """
@@ -242,6 +264,12 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+    def _more_tags(self):
+        return {
+            'binary_only': True,
+            'poor_score':True, # tests from check_estimator dont have fuzzy number type
+            }
 
 
 class FuzzyClassifier(OneVsRestClassifier):
@@ -250,11 +278,11 @@ class FuzzyClassifier(OneVsRestClassifier):
     
     Parameters
     ----------
-    kwargs : Any
-        Parameters passed to [FuzzyRegressor](https://janopig.github.io/HROCH/HROCH.html#FuzzyRegressor) estimator
+    estimator : FuzzyRegressor
+        Instance of FuzzyRegressor class.
     """
-    def __init__(self, **kwargs):
-        super().__init__(estimator=FuzzyRegressor(**kwargs))
+    def __init__(self, estimator=FuzzyRegressor()):
+        super().__init__(estimator=estimator)
     
     def fit(self, X: numpy.ndarray, y: numpy.ndarray):
         """
@@ -309,3 +337,8 @@ class FuzzyClassifier(OneVsRestClassifier):
             classes corresponds to that in the attribute :term:`classes_`.
         """
         return super().predict_proba(X)
+    
+    def _more_tags(self):
+        return {
+            'poor_score':True, # tests from check_estimator dont have fuzzy number type
+            }

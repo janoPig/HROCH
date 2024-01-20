@@ -53,6 +53,7 @@ yp = reg.predict(X_test)
 
 ### v1.4
 
+- sklearn compatibility
 - Classificators:
   - NonlinearLogisticRegressor for a binary classification
   - SymbolicClassifier for multiclass classification
