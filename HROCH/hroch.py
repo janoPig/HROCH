@@ -672,12 +672,6 @@ class SymbolicSolver(BaseEstimator):
             sample_weight = _check_sample_weight(
                 sample_weight, X, dtype=X.dtype, only_non_negative=True
             )
-            # mask = sample_weight != 0
-            # if len(mask) == 0:
-            #     raise ValueError("No data to fit.")
-            # X = X[mask]
-            # y = y[mask]
-            # sample_weight = sample_weight[mask]
             
         algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS,
         code_settings = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS

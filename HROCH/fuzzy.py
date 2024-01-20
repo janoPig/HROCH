@@ -219,7 +219,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         super(FuzzyRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
         """
         Predict class for X.
 
@@ -240,7 +240,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         y : numpy.ndarray of shape (n_samples,)
             The predicted classes.
         """
-        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input)
+        preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input, use_parsed_model=use_parsed_model)
         return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):

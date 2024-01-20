@@ -231,7 +231,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         super(NonlinearLogisticRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
         """
         Predict class for X.
 
@@ -252,7 +252,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         y : numpy.ndarray of shape (n_samples,)
             The predicted classes.
         """
-        preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input)
+        preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input, use_parsed_model=use_parsed_model)
         return self.classes_[(preds > 0.5).astype(int)]
 
     def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
