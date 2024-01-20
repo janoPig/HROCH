@@ -286,8 +286,8 @@ class SymbolicClassifier(OneVsRestClassifier):
     
     Parameters
     ----------
-    kwargs : Any
-        Parameters passed to [NonlinearLogisticRegressor](https://janopig.github.io/HROCH/HROCH.html#NonlinearLogisticRegressor) estimator
+    estimator : NonlinearLogisticRegressor
+        Instance of NonlinearLogisticRegressor class.
     """
     def __init__(self, estimator=NonlinearLogisticRegressor()):
         super().__init__(estimator=estimator)

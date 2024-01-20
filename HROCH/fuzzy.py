@@ -278,8 +278,8 @@ class FuzzyClassifier(OneVsRestClassifier):
     
     Parameters
     ----------
-    kwargs : Any
-        Parameters passed to [FuzzyRegressor](https://janopig.github.io/HROCH/HROCH.html#FuzzyRegressor) estimator
+    estimator : FuzzyRegressor
+        Instance of FuzzyRegressor class.
     """
     def __init__(self, estimator=FuzzyRegressor()):
         super().__init__(estimator=estimator)
