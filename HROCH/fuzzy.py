@@ -52,7 +52,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     transformation : str, default='LOGISTIC'
         Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
         
-    algo_settings : dict,  default = SymbolicSolver.ALGO_SETTINGS
+     algo_settings : dict, default = None
+        If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
         algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
         ```
@@ -60,7 +61,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'alpha' : (float) Score worsening limit for a iteration
         - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
 
-    code_settings : dict, default SymbolicSolver.CODE_SETTINGS
+    code_settings : dict, default = None
+        If not defined SymbolicSolver.CODE_SETTINGS is used.
         ```python
         code_settings = {'min_size': 32, 'max_size':32, 'const_size':8}
         ```
@@ -68,14 +70,16 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
         
-    population_settings : dict, default SymbolicSolver.POPULATION_SETTINGS
+    population_settings : dict, default = None
+        If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
         population_settings = {'size': 64, 'tournament':4}
         ```
         - 'size' : (int) Number of individuals in the population.
         - 'tournament' : (int) Tournament selection.
 
-    init_const_settings : dict, default FuzzyRegressor.INIT_CONST_SETTINGS
+    init_const_settings : dict, default = None
+        If not defined FuzzyRegressor.INIT_CONST_SETTINGS is used.
         ```python
         init_const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -84,7 +88,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during initialization.
         - 'predefined_const_set' : (array of floats) Predefined constants used during initialization.
 
-    const_settings : dict, default FuzzyRegressor.CONST_SETTINGS
+    const_settings : dict, default = None
+        If not defined FuzzyRegressor.CONST_SETTINGS is used.
         ```python
         const_settings = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
         ```
@@ -93,8 +98,9 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - 'predefined_const_prob': (float) Probability of selecting one of the predefined constants during search process(mutation).
         - 'predefined_const_set' : (array of floats) Predefined constants used during search process(mutation).
 
-    target_clip : array, default SymbolicSolver.CLASSIFICATION_TARGET_CLIP
-        Array of two float values clip_min and clip_max, default None
+    target_clip : array, default = None
+        Array of two float values clip_min and clip_max.
+        If not defined SymbolicSolver.CLASSIFICATION_TARGET_CLIP is used.
         ```python
         target_clip=[3e-7, 1.0-3e-7]
         ```
@@ -109,7 +115,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         Note that these weights will be multiplied with sample_weight (passed
         through the fit method) if sample_weight is specified.
 
-    cv_params : dict, default SymbolicSolver.CLASSIFICATION_CV_PARAMS
+    cv_params : dict, default = None
+        If not defined SymbolicSolver.CLASSIFICATION_CV_PARAMS is used.
         ```python
         cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
         ```
