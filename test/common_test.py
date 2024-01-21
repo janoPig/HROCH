@@ -113,4 +113,3 @@ class TestCommon(unittest.TestCase):
                         yp = eq.predict_proba(self.X_test)
                         np.testing.assert_equal(y.shape, self.y_test.shape)
                         np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
-                    
