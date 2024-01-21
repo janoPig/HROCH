@@ -249,6 +249,9 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
+    
+    def __str__(self):
+        return f"RegressorMathModel({self.m.str_representation})"
 
 
 class ClassifierMathModel(MathModelBase, ClassifierMixin):
@@ -367,6 +370,9 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         preds = self._predict(X, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+    def __str__(self):
+        return f"ClassifierMathModel({self.m.str_representation})"
 
 
 # void * CreateSolver(solver_params * params)
