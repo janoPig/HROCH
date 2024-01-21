@@ -252,6 +252,9 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     
     def __str__(self):
         return f"RegressorMathModel({self.m.str_representation})"
+    
+    def __repr__(self):
+        return f"RegressorMathModel({self.m.str_representation})"
 
 
 class ClassifierMathModel(MathModelBase, ClassifierMixin):
@@ -372,6 +375,9 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         return proba
     
     def __str__(self):
+        return f"ClassifierMathModel({self.m.str_representation})"
+    
+    def __repr__(self):
         return f"ClassifierMathModel({self.m.str_representation})"
 
 
