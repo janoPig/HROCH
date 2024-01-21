@@ -48,7 +48,7 @@ class TestEnsemble(unittest.TestCase):
 
     def test_bagging_classifier(self):
         for c in [NonlinearLogisticRegressor, FuzzyRegressor]:
-            ensemble_model = BaggingClassifier(estimator=NonlinearLogisticRegressor(**self.params))
+            ensemble_model = BaggingClassifier(estimator=c(**self.params))
             ensemble_model.fit(self.X_train, self.y_train)
             y_pred = ensemble_model.predict(self.X_test)
             self.assertEqual(y_pred.shape[0], self.y_test.shape[0])

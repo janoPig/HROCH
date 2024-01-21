@@ -127,8 +127,8 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         - opt_metric : (make_scorer) Scoring method
     """
     
-    FUZZY_INIT_CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
-    FUZZY_CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
+    INIT_CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
+    CONST_SETTINGS = {'const_min':0.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
 
     def __init__(self,
                  num_threads: int = 1,
