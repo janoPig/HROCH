@@ -49,7 +49,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     metric : str, default='LogLoss'
         Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
 
-    transformation : str, default='LOGISTIC'
+    transformation : str, default=None
         Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
         
      algo_settings : dict, default = None
@@ -140,7 +140,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'LogLoss',
-                 transformation: str = 'LOGISTIC',
+                 transformation: str = None,
                  algo_settings = None,
                  code_settings = None,
                  population_settings = None,
