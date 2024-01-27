@@ -930,7 +930,7 @@ class SymbolicSolver(BaseEstimator):
         elif transformation == 'PSEUDOLOG':
             return 2
         elif transformation == 'ORDINAL':
-            return 4
+            return 3
         return 0
 
     def __create_model(self, m: MathModel):
