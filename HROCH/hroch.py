@@ -57,6 +57,8 @@ class FitParams(ctypes.Structure):
                 ("verbose", ctypes.c_uint),
                 ("pop_sel", ctypes.c_uint),
                 ("metric", ctypes.c_uint),
+                ("pretest_size", ctypes.c_uint),
+                ("sample_size", ctypes.c_uint),
                 ("neighbours_count", ctypes.c_uint),
                 ("alpha", ctypes.c_double),
                 ("beta", ctypes.c_double),
@@ -163,7 +165,7 @@ class MathModelBase(BaseEstimator):
     def __transform(self, y):
         if self.transformation is not None:
             if self.transformation == 'LOGISTIC':
-                y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-100.0, a_max=100.0)))
+                y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-20.0, a_max=20.0)))
             elif self.transformation == 'ORDINAL':
                 y = numpy.round(y)
 
@@ -488,11 +490,13 @@ class SymbolicSolver(BaseEstimator):
     algo_settings : dict, default = None
         If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
-        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
+        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5, 'pretest_size':1, 'sample_size':16}
         ```
         - 'neighbours_count' : (int) Number tested neighbours in each iteration
         - 'alpha' : (float) Score worsening limit for a iteration
         - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
+        - 'pretest_size' : (int) Batch count(batch is 64 rows sample) for fast fitness preevaluating
+        - 'sample_size : (int) Number of batches of sample used to calculate the score during training
 
     code_settings : dict, default = None
         If not defined SymbolicSolver.CODE_SETTINGS is used.
@@ -571,7 +575,7 @@ class SymbolicSolver(BaseEstimator):
 
     FUZZY = {'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0}
     
-    ALGO_SETTINGS = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
+    ALGO_SETTINGS = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5, 'pretest_size':1, 'sample_size':16}
     CODE_SETTINGS = {'min_size': 32, 'max_size':32, 'const_size':8}
     POPULATION_SETTINGS = {'size': 64, 'tournament':4}
     INIT_CONST_SETTINGS = {'const_min':-1.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
@@ -738,6 +742,8 @@ class SymbolicSolver(BaseEstimator):
             verbose=self.verbose,
             pop_sel=val(population_settings, 'tournament', 4),
             metric=self.__parse_metric(self.metric),
+            pretest_size=val(algo_settings, 'pretest_size', 1),
+            sample_size=val(algo_settings, 'sample_size', 16),
             neighbours_count=val(algo_settings, 'neighbours_count', 15),
             alpha=val(algo_settings, 'alpha', 0.15),
             beta=val(algo_settings, 'beta', 0.5),
@@ -930,7 +936,7 @@ class SymbolicSolver(BaseEstimator):
         elif transformation == 'PSEUDOLOG':
             return 2
         elif transformation == 'ORDINAL':
-            return 4
+            return 3
         return 0
 
     def __create_model(self, m: MathModel):

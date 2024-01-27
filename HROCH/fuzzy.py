@@ -55,11 +55,13 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
      algo_settings : dict, default = None
         If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
-        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5}
+        algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5, 'pretest_size':1, 'sample_size':16}
         ```
         - 'neighbours_count' : (int) Number tested neighbours in each iteration
         - 'alpha' : (float) Score worsening limit for a iteration
         - 'beta' : (float) Tree breadth-wise expanding factor in a range from 0 to 1
+        - 'pretest_size' : (int) Batch count(batch is 64 rows sample) for fast fitness preevaluating
+        - 'sample_size : (int) Number of batches of sample used to calculate the score during training
 
     code_settings : dict, default = None
         If not defined SymbolicSolver.CODE_SETTINGS is used.
