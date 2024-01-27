@@ -7,7 +7,13 @@ skipped_tests = {
     'check_sample_weights_invariance': [{'kind': 'zeros'}], # mixing samples in this test leads to inconsistent results for small iter_limit
 }
 
-common_params = {'iter_limit':1000, 'time_limit':0.0, 'random_state':42, 'num_threads':1}
+common_params = {
+    'iter_limit':1000,
+    'time_limit':0.0,
+    'random_state':42,
+    'num_threads':1,
+    'problem':{'add':1.0, 'mul':1.0, 'sub':0.1}, # avoid dangerous div or sqrt
+    }
 binary_estimators = [SymbolicRegressor, NonlinearLogisticRegressor, FuzzyRegressor, RegressorMathModel, ClassifierMathModel]
 class TestSklearnCheck(unittest.TestCase):
     def __test_estimator(self, estimator):
