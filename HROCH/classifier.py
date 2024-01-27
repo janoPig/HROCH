@@ -64,8 +64,8 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
     transformation : str, default='LOGISTIC'
         Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
-        
-     algo_settings : dict, default = None
+
+    algo_settings : dict, default = None
         If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
         algo_settings = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5, 'pretest_size':1, 'sample_size':16}

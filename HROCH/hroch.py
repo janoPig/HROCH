@@ -485,8 +485,8 @@ class SymbolicSolver(BaseEstimator):
             Metric used for evaluating error. Choose from {'MSE', 'MAE', 'MSLE', 'LogLoss'}
 
     transformation : str, default=None
-            Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
-            
+        Final transformation for computed value. Choose from { None, 'LOGISTIC', 'ORDINAL'}
+
     algo_settings : dict, default = None
         If not defined SymbolicSolver.ALGO_SETTINGS is used.
         ```python
