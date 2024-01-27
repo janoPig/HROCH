@@ -163,7 +163,7 @@ class MathModelBase(BaseEstimator):
     def __transform(self, y):
         if self.transformation is not None:
             if self.transformation == 'LOGISTIC':
-                y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-100.0, a_max=100.0)))
+                y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-20.0, a_max=20.0)))
             elif self.transformation == 'ORDINAL':
                 y = numpy.round(y)
 
