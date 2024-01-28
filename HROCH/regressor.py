@@ -167,7 +167,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             warm_start=warm_start
         )
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the symbolic models according to the given training data. 
 
@@ -197,7 +197,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
     
-    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
+    def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 

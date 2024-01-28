@@ -149,7 +149,7 @@ class MathModelBase(BaseEstimator):
         self.classes_ = parent_params.get('classes_')
         self.is_fitted_ = True
 
-    def _predict(self, X: numpy.ndarray, c=None, transform=True, check_input=True):
+    def _predict(self, X, c=None, transform=True, check_input=True):
         check_is_fitted(self)
         if check_input:
             X = check_array(X, accept_sparse=False)
@@ -185,7 +185,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the model according to the given training data. 
         
@@ -226,7 +226,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         self.is_fitted_ = True
         return self
 
-    def predict(self, X: numpy.ndarray, check_input=True):
+    def predict(self, X, check_input=True):
         """
         Predict regression target for X.
 
@@ -246,7 +246,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         """
         return self._predict(X)
     
-    def __eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
+    def __eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
@@ -265,12 +265,12 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
 
-    def eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
+    def eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the model according to the given training data. 
         
@@ -332,7 +332,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         self.is_fitted_ = True
         return self
 
-    def predict(self, X: numpy.ndarray, check_input=True):
+    def predict(self, X, check_input=True):
         """
         Predict class for X.
 
@@ -353,7 +353,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         preds = self._predict(X, check_input=check_input)
         return self.classes_[(preds > 0.5).astype(int)]
 
-    def predict_proba(self, X: numpy.ndarray, check_input=True):
+    def predict_proba(self, X, check_input=True):
         """
         Predict class probabilities for X.
 
@@ -641,7 +641,7 @@ class SymbolicSolver(BaseEstimator):
     def equation(self):
         return self.sexpr_
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None, check_input=True):
+    def fit(self, X, y, sample_weight = None, check_input=True):
         """
         Fit the symbolic models according to the given training data. 
 
@@ -806,7 +806,7 @@ class SymbolicSolver(BaseEstimator):
 
         self.sexpr_ = self.models_[0].equation
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
+    def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 
@@ -850,7 +850,7 @@ class SymbolicSolver(BaseEstimator):
             self.models_ = self.__get_models()
         return self.models_
 
-    def _predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def _predict(self, X, id=None, check_input=True):
         check_is_fitted(self)
 
         if check_input:

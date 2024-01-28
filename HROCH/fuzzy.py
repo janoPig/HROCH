@@ -173,7 +173,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
             warm_start=warm_start
         )
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the symbolic models according to the given training data. 
 
@@ -219,7 +219,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         super(FuzzyRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
         return self
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
+    def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict class for X.
 
@@ -243,7 +243,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         preds = super(FuzzyRegressor, self).predict(X, id, check_input=check_input, use_parsed_model=use_parsed_model)
         return self.classes_[(preds > 0.5).astype(int)]
 
-    def predict_proba(self, X: numpy.ndarray, id=None, check_input=True):
+    def predict_proba(self, X, id=None, check_input=True):
         """
         Predict class probabilities for X.
 
@@ -284,7 +284,7 @@ class FuzzyClassifier(OneVsRestClassifier):
     def __init__(self, estimator=FuzzyRegressor()):
         super().__init__(estimator=estimator)
     
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray):
+    def fit(self, X, y):
         """
         Fit the symbolic models according to the given training data. 
 
@@ -306,7 +306,7 @@ class FuzzyClassifier(OneVsRestClassifier):
         super().fit(X, y)
         return self
 
-    def predict(self, X: numpy.ndarray):
+    def predict(self, X):
         """
         Predict class for X.
 
@@ -322,7 +322,7 @@ class FuzzyClassifier(OneVsRestClassifier):
         """
         return super().predict(X)
 
-    def predict_proba(self, X: numpy.ndarray):
+    def predict_proba(self, X):
         """
         Predict class probabilities for X.
 
