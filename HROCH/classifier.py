@@ -1,12 +1,10 @@
 from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
-from sklearn.metrics import log_loss, make_scorer
 from sklearn.utils import compute_class_weight
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.multiclass import OneVsRestClassifier
 import numpy as numpy
-from typing import Iterable
 
 
 class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):

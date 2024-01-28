@@ -1,6 +1,5 @@
 from .hroch import SymbolicSolver
 from sklearn.base import RegressorMixin
-from sklearn.metrics import mean_squared_error, make_scorer
 import numpy as numpy
 from typing import Iterable
 

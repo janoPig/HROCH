@@ -92,7 +92,7 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.4.6',
+    version='1.4.7',
     description='Symbolic regression and classification',
     long_description=ldesc,
     long_description_content_type="text/markdown",
@@ -105,7 +105,7 @@ setup(
         'Tracker': 'https://github.com/janoPig/HROCH/issues',
     },
 
-    keywords=['machine-learning', 'numpy', 'symbolic-regression', 'fuzzy', 'classification'],
+    keywords=['scikit-learn', 'symbolic-regression', 'classification', 'fuzzy-logic', 'interpretable-ml', 'machine-learning'],
     classifiers=['Operating System :: Microsoft :: Windows',
                  'Operating System :: POSIX :: Linux',
                  'Topic :: Scientific/Engineering :: Artificial Intelligence',

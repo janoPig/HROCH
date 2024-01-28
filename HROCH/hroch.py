@@ -1,12 +1,11 @@
 import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import check_array, check_is_fitted, _check_sample_weight
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import log_loss, mean_squared_error, make_scorer
 from sklearn.model_selection import cross_validate
-from typing import Iterable
 import scipy.optimize as opt
 import ctypes
 import platform
