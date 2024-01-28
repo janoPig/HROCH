@@ -1,9 +1,10 @@
 """
 .. include:: ../README.md
 """
-from HROCH.hroch import *
-from HROCH.regressor import SymbolicRegressor
-from HROCH.fuzzy import FuzzyRegressor, FuzzyClassifier
-from HROCH.classifier import NonlinearLogisticRegressor, SymbolicClassifier
+from .hroch import RegressorMathModel, ClassifierMathModel
+from .regressor import SymbolicRegressor
+from .fuzzy import FuzzyRegressor, FuzzyClassifier
+from .classifier import NonlinearLogisticRegressor, SymbolicClassifier
+from .version import __version__
 
-__all__ = ['SymbolicRegressor','NonlinearLogisticRegressor','SymbolicClassifier','FuzzyRegressor', 'FuzzyClassifier','RegressorMathModel','ClassifierMathModel']
+__all__ = ['SymbolicRegressor','NonlinearLogisticRegressor','SymbolicClassifier','FuzzyRegressor', 'FuzzyClassifier','RegressorMathModel','ClassifierMathModel', '__version__']

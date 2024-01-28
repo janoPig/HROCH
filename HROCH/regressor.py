@@ -1,6 +1,5 @@
 from .hroch import SymbolicSolver
 from sklearn.base import RegressorMixin
-from sklearn.metrics import mean_squared_error, make_scorer
 import numpy as numpy
 from typing import Iterable
 
@@ -168,20 +167,20 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             warm_start=warm_start
         )
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the symbolic models according to the given training data. 
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        sample_weight : ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -198,13 +197,13 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
     
-    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
+    def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         id : int

@@ -1,12 +1,11 @@
 import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import check_array, check_is_fitted, _check_sample_weight
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import log_loss, mean_squared_error, make_scorer
 from sklearn.model_selection import cross_validate
-from typing import Iterable
 import scipy.optimize as opt
 import ctypes
 import platform
@@ -150,7 +149,7 @@ class MathModelBase(BaseEstimator):
         self.classes_ = parent_params.get('classes_')
         self.is_fitted_ = True
 
-    def _predict(self, X: numpy.ndarray, c=None, transform=True, check_input=True):
+    def _predict(self, X, c=None, transform=True, check_input=True):
         check_is_fitted(self)
         if check_input:
             X = check_array(X, accept_sparse=False)
@@ -186,7 +185,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the model according to the given training data. 
         
@@ -194,14 +193,14 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        sample_weight : ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -227,13 +226,13 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         self.is_fitted_ = True
         return self
 
-    def predict(self, X: numpy.ndarray, check_input=True):
+    def predict(self, X, check_input=True):
         """
         Predict regression target for X.
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         check_input : bool, default=True
@@ -247,7 +246,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         """
         return self._predict(X)
     
-    def __eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
+    def __eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
@@ -266,12 +265,12 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
 
-    def eval(self, X: numpy.ndarray, y: numpy.ndarray, metric, c=None, sample_weight=None):
+    def eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         return -metric(self, X, y, sample_weight=sample_weight)
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
         Fit the model according to the given training data. 
         
@@ -279,14 +278,14 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : numpy.ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X. Needs samples of 2 classes.
 
-        sample_weight : numpy.ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -333,13 +332,13 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         self.is_fitted_ = True
         return self
 
-    def predict(self, X: numpy.ndarray, check_input=True):
+    def predict(self, X, check_input=True):
         """
         Predict class for X.
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         check_input : bool, default=True
@@ -348,19 +347,19 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Returns
         -------
-        y : numpy.ndarray of shape (n_samples,)
+        y : ndarray of shape (n_samples,)
             The predicted classes.
         """
         preds = self._predict(X, check_input=check_input)
         return self.classes_[(preds > 0.5).astype(int)]
 
-    def predict_proba(self, X: numpy.ndarray, check_input=True):
+    def predict_proba(self, X, check_input=True):
         """
         Predict class probabilities for X.
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
 
         check_input : bool, default=True
             Allow to bypass several input checking.
@@ -368,7 +367,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Returns
         -------
-        p : ndarray of shape (n_samples, n_classes)
+        T : ndarray of shape (n_samples, n_classes)
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
@@ -642,20 +641,20 @@ class SymbolicSolver(BaseEstimator):
     def equation(self):
         return self.sexpr_
 
-    def fit(self, X: numpy.ndarray, y: numpy.ndarray, sample_weight : numpy.ndarray = None, check_input=True):
+    def fit(self, X, y, sample_weight = None, check_input=True):
         """
         Fit the symbolic models according to the given training data. 
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        sample_weight : ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -807,13 +806,13 @@ class SymbolicSolver(BaseEstimator):
 
         self.sexpr_ = self.models_[0].equation
 
-    def predict(self, X: numpy.ndarray, id=None, check_input=True, use_parsed_model=True):
+    def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         id : int
@@ -851,7 +850,7 @@ class SymbolicSolver(BaseEstimator):
             self.models_ = self.__get_models()
         return self.models_
 
-    def _predict(self, X: numpy.ndarray, id=None, check_input=True):
+    def _predict(self, X, id=None, check_input=True):
         check_is_fitted(self)
 
         if check_input:
