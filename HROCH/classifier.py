@@ -190,14 +190,14 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : numpy.ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X. Needs samples of 2 classes.
 
-        sample_weight : numpy.ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -237,7 +237,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
             
         id : int
@@ -249,7 +249,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         Returns
         -------
-        y : numpy.ndarray of shape (n_samples,)
+        y : ndarray of shape (n_samples,)
             The predicted classes.
         """
         preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input, use_parsed_model=use_parsed_model)
@@ -261,7 +261,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
 
         check_input : bool, default=True
             Allow to bypass several input checking.
@@ -269,7 +269,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         Returns
         -------
-        p : ndarray of shape (n_samples, n_classes)
+        T : ndarray of shape (n_samples, n_classes)
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
@@ -298,11 +298,11 @@ class SymbolicClassifier(OneVsRestClassifier):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features. Should be in the range [0, 1].
 
-        y : numpy.ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
         Returns
@@ -320,12 +320,12 @@ class SymbolicClassifier(OneVsRestClassifier):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         Returns
         -------
-        y : numpy.ndarray of shape (n_samples,)
+        y : ndarray of shape (n_samples,)
             The predicted classes.
         """
         return super().predict(X)
@@ -336,11 +336,11 @@ class SymbolicClassifier(OneVsRestClassifier):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : narray-like of shape (n_samples, n_features)
 
         Returns
         -------
-        p : ndarray of shape (n_samples, n_classes)
+        T : ndarray of shape (n_samples, n_classes)
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """

@@ -193,14 +193,14 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        sample_weight : ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -232,7 +232,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         check_input : bool, default=True
@@ -278,14 +278,14 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : numpy.ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X. Needs samples of 2 classes.
 
-        sample_weight : numpy.ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -338,7 +338,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         check_input : bool, default=True
@@ -347,7 +347,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Returns
         -------
-        y : numpy.ndarray of shape (n_samples,)
+        y : ndarray of shape (n_samples,)
             The predicted classes.
         """
         preds = self._predict(X, check_input=check_input)
@@ -359,7 +359,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Parameters
         ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
 
         check_input : bool, default=True
             Allow to bypass several input checking.
@@ -367,7 +367,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
 
         Returns
         -------
-        p : ndarray of shape (n_samples, n_classes)
+        T : ndarray of shape (n_samples, n_classes)
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
@@ -647,14 +647,14 @@ class SymbolicSolver(BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        y : ndarray of shape (n_samples,)
+        y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        sample_weight : ndarray of shape (n_samples,) default=None
+        sample_weight : array-like of shape (n_samples,) default=None
             Array of weights that are assigned to individual samples.
             If not provided, then each sample is given unit weight.
 
@@ -812,7 +812,7 @@ class SymbolicSolver(BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The input samples.
 
         id : int
