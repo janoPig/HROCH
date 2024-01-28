@@ -228,7 +228,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
 
-        super(NonlinearLogisticRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=check_input)
+        super(NonlinearLogisticRegressor, self).fit(X, y_ind, sample_weight=sample_weight, check_input=False)
         return self
 
     def predict(self, X, id=None, check_input=True, use_parsed_model=True):
