@@ -688,7 +688,7 @@ class SymbolicSolver(BaseEstimator):
                 sample_weight, X, dtype=X.dtype, only_non_negative=True
             )
             
-        algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS,
+        algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS
         code_settings = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS
         population_settings = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
         init_const_settings = self.init_const_settings if self.init_const_settings is not None else self.INIT_CONST_SETTINGS
