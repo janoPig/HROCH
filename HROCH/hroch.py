@@ -791,7 +791,7 @@ class SymbolicSolver(BaseEstimator):
                     continue
                 try:
                     m.cv_results = cross_validate(
-                        estimator=m, X=X, y=y, n_jobs=None, error_score=invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
+                        estimator=m, X=X, y=y, n_jobs=None, error_score=opt_metric._sign*invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
                     if cv_select == 'mean':
                         m.cv_score = opt_metric._sign*numpy.mean(m.cv_results['test_score'])
                     elif cv_select == 'median':
