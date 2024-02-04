@@ -249,7 +249,10 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     def __eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
-        return -metric(self, X, y, sample_weight=sample_weight)
+        try:
+            return -metric(self, X, y, sample_weight=sample_weight)
+        except:
+            return SymbolicSolver.LARGE_FLOAT
     
     def __str__(self):
         return f"RegressorMathModel({self.m.str_representation})"
@@ -264,11 +267,6 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
     """
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         super().__init__(m, parent_params)
-
-    def eval(self, X, y, metric, c=None, sample_weight=None):
-        if c is not None:
-            self.m.coeffs = c
-        return -metric(self, X, y, sample_weight=sample_weight)
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
@@ -320,7 +318,7 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
             sample_weight = sample_weight*cw_sample_weight
 
         def objective(c):
-            return self.eval(X, y, metric=self.opt_metric, c=c, sample_weight=sample_weight)
+            return self.__eval(X, y, metric=self.opt_metric, c=c, sample_weight=sample_weight)
 
         if len(self.m.coeffs) > 0:
             result = opt.minimize(objective, self.m.coeffs,
@@ -374,6 +372,14 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         preds = self._predict(X, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
+    
+    def __eval(self, X, y, metric, c=None, sample_weight=None):
+        if c is not None:
+            self.m.coeffs = c
+        try:
+            return -metric(self, X, y, sample_weight=sample_weight)
+        except:
+            return SymbolicSolver.LARGE_FLOAT
     
     def __str__(self):
         return f"ClassifierMathModel({self.m.str_representation})"
@@ -785,24 +791,21 @@ class SymbolicSolver(BaseEstimator):
                     continue
                 try:
                     m.cv_results = cross_validate(
-                        estimator=m, X=X, y=y, n_jobs=None, error_score=invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
+                        estimator=m, X=X, y=y, n_jobs=None, error_score=opt_metric._sign*invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
                     if cv_select == 'mean':
-                        m.cv_score = numpy.mean(m.cv_results['test_score'])
+                        m.cv_score = opt_metric._sign*numpy.mean(m.cv_results['test_score'])
                     elif cv_select == 'median':
-                        m.cv_score = numpy.median(m.cv_results['test_score'])
+                        m.cv_score = opt_metric._sign*numpy.median(m.cv_results['test_score'])
                 except Exception:
                     m.cv_score = invalid_score
                 
                 if numpy.isnan(m.cv_score):
                     m.cv_score = invalid_score
 
-                m.cv_score *= opt_metric._sign
-
                 # fit final coeffs from whole data
                 m.fit(X, y, check_input=False)
 
-            self.models_.sort(
-                key=lambda x: x.cv_score*(-opt_metric._sign))
+            self.models_.sort(key=lambda x: x.cv_score, reverse=opt_metric._sign > 0)
 
         self.sexpr_ = self.models_[0].equation
 
