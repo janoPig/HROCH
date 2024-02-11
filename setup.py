@@ -92,7 +92,7 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.4.8',
+    version='1.4.9',
     description='Symbolic regression and classification',
     long_description=ldesc,
     long_description_content_type="text/markdown",
