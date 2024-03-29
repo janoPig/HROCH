@@ -135,17 +135,14 @@ class MathModelBase(BaseEstimator):
     """
     Base class for RegressorMathModel and ClassifierMathModel
     """
-    def __init__(self, m: ParsedMathModel, parent_params) -> None:
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_) -> None:
         self.m = m
-        cv_params = parent_params.get('cv_params')
-        self.opt_metric = cv_params.get('opt_metric')
-        self.opt_params = cv_params.get('opt_params')
-        self.transformation = None if parent_params['transformation'] is None else parent_params['transformation'].upper()
-        self.target_clip = parent_params['target_clip']
-        if self.target_clip is not None and (len(self.target_clip) != 2 or self.target_clip[0] >= self.target_clip[1]):
-            self.target_clip = None
-        self.class_weight_ = parent_params.get('class_weight_')
-        self.classes_ = parent_params.get('classes_')
+        self.opt_metric = opt_metric
+        self.opt_params = opt_params
+        self.transformation = transformation
+        self.target_clip = target_clip
+        self.class_weight_ = class_weight_
+        self.classes_ = classes_
         self.is_fitted_ = True
 
     def _predict(self, X, c=None, transform=True, check_input=True):
@@ -167,7 +164,7 @@ class MathModelBase(BaseEstimator):
             elif self.transformation == 'ORDINAL':
                 y = numpy.round(y)
 
-        if self.target_clip is not None:
+        if self.target_clip is not None and self.target_clip[1] > self.target_clip[0]:
             y = numpy.clip(y, self.target_clip[0], self.target_clip[1])
 
         return y
@@ -181,8 +178,8 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     """
     A regressor class for the symbolic model.
     """
-    def __init__(self, m: ParsedMathModel, parent_params) -> None:
-        super().__init__(m, parent_params)
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip) -> None:
+        super().__init__(m, opt_metric, opt_params, transformation, target_clip, None, None)
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
@@ -264,8 +261,8 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
     """
     A classifier class for the symbolic model.
     """
-    def __init__(self, m: ParsedMathModel, parent_params) -> None:
-        super().__init__(m, parent_params)
+    def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_) -> None:
+        super().__init__(m, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_)
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
@@ -564,6 +561,9 @@ class SymbolicSolver(BaseEstimator):
         - select : (str) Best model selection method choose from 'mean'or 'median'
         - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
         - opt_metric : (make_scorer) Scoring method
+        
+    warm_start : bool, default=False
+        If True, then the solver will be reused for the next call of fit.
     """
 
     LARGE_FLOAT = 1e30
@@ -941,20 +941,15 @@ class SymbolicSolver(BaseEstimator):
         return 0
 
     def __create_model(self, m: MathModel):
-        attrib = self.__dict__.copy()
-        attrib['algo_settings'] = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS,
-        attrib['code_settings'] = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS
-        attrib['population_settings'] = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
-        attrib['init_const_settings'] = self.init_const_settings if self.init_const_settings is not None else self.INIT_CONST_SETTINGS
-        attrib['const_settings'] = self.const_settings if self.const_settings is not None else self.CONST_SETTINGS
         target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == 'regressor' else self.CLASSIFICATION_TARGET_CLIP
-        attrib['target_clip'] = self.target_clip if self.target_clip is not None else target_clip_
+        target_clip = self.target_clip if self.target_clip is not None else target_clip_
         cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == 'regressor' else self.CLASSIFICATION_CV_PARAMS
-        attrib['cv_params'] = self.cv_params if self.cv_params is not None else cv_params_
+        cv_params = self.cv_params if self.cv_params is not None else cv_params_
+        transformation = self.transformation if self.transformation is not None else 'None'
         if self._estimator_type == 'regressor':
-            return RegressorMathModel(ParsedMathModel(m), attrib)
+            return RegressorMathModel(ParsedMathModel(m), cv_params['opt_metric'], cv_params['opt_params'], transformation, target_clip)
         else:
-            return ClassifierMathModel(ParsedMathModel(m), attrib)
+            return ClassifierMathModel(ParsedMathModel(m), cv_params['opt_metric'], cv_params['opt_params'], transformation, target_clip, self.class_weight_, self.classes_)
         
     def __getstate__(self):
         all_attributes = self.__dict__.copy()
