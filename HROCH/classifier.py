@@ -138,6 +138,9 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         - select : (str) Best model selection method choose from 'mean'or 'median'
         - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
         - opt_metric : (make_scorer) Scoring method
+        
+    warm_start : bool, default=False
+        If True, then the solver will be reused for the next call of fit.
     """
 
     def __init__(self,
