@@ -137,12 +137,11 @@ class MathModelBase(BaseEstimator):
     """
     def __init__(self, m: ParsedMathModel, parent_params) -> None:
         self.m = m
-        self.parent_params = parent_params
         cv_params = parent_params.get('cv_params')
         self.opt_metric = cv_params.get('opt_metric')
         self.opt_params = cv_params.get('opt_params')
         self.transformation = None if parent_params['transformation'] is None else parent_params['transformation'].upper()
-        self.target_clip = self.parent_params['target_clip']
+        self.target_clip = parent_params['target_clip']
         if self.target_clip is not None and (len(self.target_clip) != 2 or self.target_clip[0] >= self.target_clip[1]):
             self.target_clip = None
         self.class_weight_ = parent_params.get('class_weight_')
