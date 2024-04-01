@@ -4,6 +4,7 @@ include HROCH/hroch.py
 include HROCH/classifier.py
 include HROCH/regressor.py
 include HROCH/fuzzy.py
+include HROCH/pseudo_classifier.py
 include HROCH/__init__.py
 recursive-exclude HROCH/__pycache__ *
 recursive-exclude ci-test *
