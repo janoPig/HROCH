@@ -87,7 +87,7 @@ class PseudoClassifierMathModel(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         preds = self.optimized_model_.predict(X)
         preds = np.nan_to_num(preds,nan=0)
-        return self.classes_[(preds > 0.5).astype(int)]
+        return self.classes_[(preds > 0.0).astype(int)]
 
     def predict_proba(self, X, check_input=True):
         """
@@ -209,7 +209,7 @@ class PseudoClassifier(BaseEstimator, ClassifierMixin):
         self.optimized_models_ = []
         for m in self.models_:
             opt_model = PseudoClassifierMathModel(m, opt_params, self.verbose > 1)
-            opt_model.fit(X, y_ind)
+            opt_model.fit(X, y)
             self.optimized_models_.append(opt_model)
         self.optimized_models_.sort(key=lambda x: x.opt_score_)
         self.reg_ = reg
