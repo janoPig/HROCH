@@ -1,4 +1,4 @@
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, PseudoClassifier
 import unittest
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
@@ -47,8 +47,8 @@ class TestEnsemble(unittest.TestCase):
         self.assertEqual(y_pred.shape[0], self.y_test.shape[0])
 
     def test_bagging_classifier(self):
-        for c in [NonlinearLogisticRegressor, FuzzyRegressor]:
-            ensemble_model = BaggingClassifier(estimator=c(**self.params))
+        for c in [NonlinearLogisticRegressor, FuzzyRegressor, PseudoClassifier]:
+            ensemble_model = BaggingClassifier(estimator=c(t=3.0, n=4, regressor_params=self.params)) if c is PseudoClassifier else BaggingClassifier(estimator=c(**self.params))
             ensemble_model.fit(self.X_train, self.y_train)
             y_pred = ensemble_model.predict(self.X_test)
             self.assertEqual(y_pred.shape[0], self.y_test.shape[0])
@@ -60,8 +60,8 @@ class TestEnsemble(unittest.TestCase):
         self.assertEqual(y_pred.shape[0], self.y_test.shape[0])
 
     def test_stacking_classifier(self):
-        for c in [NonlinearLogisticRegressor, FuzzyRegressor]:
-            base_model = c(**self.params)
+        for c in [NonlinearLogisticRegressor, FuzzyRegressor, PseudoClassifier]:
+            base_model = c(t=3.0, n=5, regressor_params=self.params) if c is PseudoClassifier else c(**self.params)
             base_model.fit(self.X_train, self.y_train)
             math_models = base_model.get_models()[:5]
             estimators = [(str(m), m) for m in math_models]
@@ -71,8 +71,8 @@ class TestEnsemble(unittest.TestCase):
             self.assertEqual(y_pred.shape[0], self.y_test.shape[0])
 
     def test_voting_classifier(self):
-        for c in [NonlinearLogisticRegressor, FuzzyRegressor]:
-            base_model = c(**self.params)
+        for c in [NonlinearLogisticRegressor, FuzzyRegressor, PseudoClassifier]:
+            base_model = c(t=3.0, n=5, regressor_params=self.params) if c is PseudoClassifier else c(**self.params)
             base_model.fit(self.X_train, self.y_train)
             math_models = base_model.get_models()[:5]
             estimators = [(str(m), m) for m in math_models]

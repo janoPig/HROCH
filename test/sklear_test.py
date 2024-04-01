@@ -1,5 +1,5 @@
 import unittest
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, RegressorMathModel, ClassifierMathModel
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, PseudoClassifier, RegressorMathModel, ClassifierMathModel, PseudoClassifierMathModel
 from sklearn.utils.estimator_checks import check_estimator
 
 
@@ -14,7 +14,7 @@ common_params = {
     'num_threads':1,
     'problem':{'add':1.0, 'mul':1.0, 'sub':0.1}, # avoid dangerous div or sqrt
     }
-binary_estimators = [SymbolicRegressor, NonlinearLogisticRegressor, FuzzyRegressor, RegressorMathModel, ClassifierMathModel]
+
 class TestSklearnCheck(unittest.TestCase):
     def __test_estimator(self, estimator):
         print(estimator.__class__.__name__ )
@@ -40,3 +40,6 @@ class TestSklearnCheck(unittest.TestCase):
             
     def test_fuzzy_classifier(self):
         self.__test_estimator(FuzzyClassifier(FuzzyRegressor(**common_params)))
+        
+    def test_pseudo_classifier(self):
+        self.__test_estimator(PseudoClassifier(t=3.0, n=4, regressor_params=common_params))

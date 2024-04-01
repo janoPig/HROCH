@@ -1,4 +1,4 @@
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, PseudoClassifier
 import unittest
 import numpy as np
 import pandas as pd
@@ -77,6 +77,7 @@ class TestCommon(unittest.TestCase):
             SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
             FuzzyRegressor(**p),
             FuzzyClassifier(estimator=FuzzyRegressor(**p)),
+            PseudoClassifier(t = 3.0, n = 4, regressor_params=p)
             ]
             for model in classifiers:
                 model.fit(self.X_train, self.y_train)
