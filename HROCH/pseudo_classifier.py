@@ -233,9 +233,7 @@ class PseudoClassifier(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = self._validate_data(X, accept_sparse=False, reset=False)
         
-        preds = self.optimized_models_[0].predict(X)
-        preds = np.nan_to_num(preds,nan=0)    
-        return self.classes_[(preds > 0.0).astype(int)]
+        return self.optimized_models_[0].predict(X)
     
     def predict_proba(self, X, check_input=True):
         """
@@ -254,11 +252,7 @@ class PseudoClassifier(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = self._validate_data(X, accept_sparse=False, reset=False)
         
-        preds = self.optimized_models_[0].predict(X)
-        preds = np.nan_to_num(preds,nan=0)
-        preds = np.clip(preds, -20, 20)
-        proba = 1.0/(1.0+np.exp(-preds))
-        return np.vstack([1 - proba, proba]).T
+        return self.optimized_models_[0].predict_proba(X)
     
     def get_models(self):
         """
