@@ -115,17 +115,32 @@ class TestCommon(unittest.TestCase):
                         np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
 
     def test_xicor(self):
+        # https://towardsdatascience.com/a-new-coefficient-of-correlation-64ae4f260310
+        def xicor_orig(X, Y, ties=True):
+            np.random.seed(42)
+            n = len(X)
+            order = np.array([i[0] for i in sorted(enumerate(X), key=lambda x: x[1])])
+            if ties:
+                l = np.array([sum(y >= Y[order]) for y in Y[order]])
+                r = l.copy()
+                for j in range(n):
+                    if sum([r[j] == r[i] for i in range(n)]) > 1:
+                        tie_index = np.array([r[j] == r[i] for i in range(n)])
+                        r[tie_index] = np.random.choice(r[tie_index] - np.arange(0, sum([r[j] == r[i] for i in range(n)])), sum(tie_index), replace=False)
+                return 1 - n*sum( abs(r[1:] - r[:n-1]) ) / (2*sum(l*(n - l)))
+            else:
+                r = np.array([sum(y >= Y[order]) for y in Y[order]])
+                return 1 - 3 * sum( abs(r[1:] - r[:n-1]) ) / (n**2 - 1)
         np.random.seed(seed=42)
-        n = 1000
+        n = 100
         f = 5
-        u = 2
         X = np.random.random((n, f))
         y = X[:,0]**3 + 2*X[:,1]**2
         noise = np.random.normal(0,0.1,n)
         for i in range(f):
+            orig1 = xicor_orig(X[:,i], y)
+            orig2 = xicor_orig(y, X[:,i])
+            orig = max(orig1, orig2)
             xi = Xicor(X[:,i], y)
-            if i >= u:
-                self.assertLess(xi, 0.05)
-            else:
-                self.assertGreater(xi, 0.05)
+            self.assertAlmostEqual(xi, orig)
 
