@@ -53,11 +53,12 @@ yp = reg.predict(X_test)
 
 ### v1.4
 
-- sklearn compatibility
+- Sklearn compatibility
 - Classificators:
   - NonlinearLogisticRegressor for a binary classification
   - SymbolicClassifier for multiclass classification
   - FuzzyRegressor for a special binary classification
+- Xi corelation used for filter unrelated features
 
 <details>
 <summary>Older versions</summary>

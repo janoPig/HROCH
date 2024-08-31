@@ -52,11 +52,12 @@ yp = reg.predict(X_test)
 
 ### v1.4
 
-- sklearn compatibility
+- Sklearn compatibility
 - Classificators:
   - NonlinearLogisticRegressor for a binary classification
   - SymbolicClassifier for multiclass classification
   - FuzzyRegressor for a special binary classification
+- Xi corelation used for filter unrelated features
 
 ### v1.3
 
@@ -92,7 +93,7 @@ yp = reg.predict(X_test)
 
 setup(
     name='HROCH',
-    version='1.4.11',
+    version='1.4.12',
     description='Symbolic regression and classification',
     long_description=ldesc,
     long_description_content_type="text/markdown",
