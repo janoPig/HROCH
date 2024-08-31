@@ -432,6 +432,33 @@ FreeModel = lib.FreeModel
 FreeModel.argtypes = [ctypes.POINTER(MathModel)]
 FreeModel.restype = None
 
+# double Xicor32(const float *X, const float *y, unsigned int rows);
+Xicor32 = lib.Xicor32
+Xicor32.argtypes = [FloatPointer, FloatPointer, ctypes.c_uint]
+Xicor32.restype = ctypes.c_double
+# double Xicor64(const double *X, const double *y, unsigned int rows);
+Xicor64 = lib.Xicor64
+Xicor64.argtypes = [DoublePointer, DoublePointer, ctypes.c_uint]
+Xicor64.restype = ctypes.c_double
+
+def Xicor(X : numpy.ndarray, Y:numpy.ndarray):
+    if X.ndim != 1:
+        X = numpy.ravel(X)
+    if Y.ndim != 1:
+        Y = numpy.ravel(Y)
+    if len(X) != len(Y):
+        raise ValueError("X and Y must be same size")
+    precision = numpy.float32
+    if X.dtype == Y.dtype and X.dtype == numpy.float64:
+        precision = numpy.float64
+    if not X.flags['C_CONTIGUOUS'] or X.dtype != precision:
+        X = numpy.ascontiguousarray(X.astype(precision))
+    if not Y.flags['C_CONTIGUOUS'] or Y.dtype != precision:
+        Y = numpy.ascontiguousarray(Y.astype(precision))
+    if precision == numpy.float32:
+        return Xicor32(X, Y, len(X))
+    return Xicor64(X, Y, len(X))
+
 class SymbolicSolver(BaseEstimator):
     """
     Symbolic regression base for SymbolicRegressor, NonlinearLogisticRegressor and FuzzyRegressor
@@ -473,8 +500,10 @@ class SymbolicSolver(BaseEstimator):
 
         *lt, gt, lte, gte -* $<, >, <=, >=$
 
-    feature_probs : array of shape (n_features,), default=None
+    feature_probs : str or array of shape (n_features,), default='xicor'
         The probability that a mutation will select a feature.
+        If None then the features are selected with equal probability.
+        If 'xicor' then the probabilities are deriveded from xicor corelation coefficient https://towardsdatascience.com/a-new-coefficient-of-correlation-64ae4f260310
 
     random_state : int, default=0
         Random generator seed. If 0 then random generator will be initialized by system time.
@@ -903,6 +932,10 @@ class SymbolicSolver(BaseEstimator):
     def __feature_probs_to_string(self, feat):
         result = ""
         if feat is None:
+            return result
+        if isinstance(feat, str):
+            if feat.lower() == 'xicor':
+                result = 'xicor'
             return result
         for prob in feat:
             result = result + f'{prob};'

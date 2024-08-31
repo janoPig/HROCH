@@ -1,4 +1,4 @@
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, Xicor
 import unittest
 import numpy as np
 import pandas as pd
@@ -113,3 +113,18 @@ class TestCommon(unittest.TestCase):
                         yp = eq.predict_proba(self.X_test)
                         np.testing.assert_equal(y.shape, self.y_test.shape)
                         np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
+
+    def test_xicor(self):
+        n = 1000
+        f = 5
+        u = 3
+        X = np.random.random((n, f))
+        y = X[:,0]**3 + X[:,1]**2/X[:,2]
+        noise = np.random.normal(0,1,n)
+        for i in range(f):
+            xi = Xicor(X[:,i], y)
+            if i >= u:
+                self.assertLess(xi, 0.05)
+            else:
+                self.assertGreater(xi, 0.05)
+

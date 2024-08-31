@@ -48,8 +48,10 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
 
         *lt, gt, lte, gte -* $<, >, <=, >=$
 
-    feature_probs : array of shape (n_features,), default=None
+    feature_probs : str or array of shape (n_features,), default='xicor'
         The probability that a mutation will select a feature.
+        If None then the features are selected with equal probability.
+        If 'xicor' then the probabilities are deriveded from xicor corelation coefficient https://towardsdatascience.com/a-new-coefficient-of-correlation-64ae4f260310
 
     random_state : int, default=0
         Random generator seed. If 0 then random generator will be initialized by system time.
@@ -149,7 +151,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
                  iter_limit: int = 0,
                  precision: str = 'f32',
                  problem = 'math',
-                 feature_probs = None,
+                 feature_probs = 'xicor',
                  random_state: int = 0,
                  verbose: int = 0,
                  metric: str = 'LogLoss',
