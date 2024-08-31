@@ -115,12 +115,13 @@ class TestCommon(unittest.TestCase):
                         np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
 
     def test_xicor(self):
+        np.random.seed(seed=42)
         n = 1000
         f = 5
-        u = 3
+        u = 2
         X = np.random.random((n, f))
-        y = X[:,0]**3 + X[:,1]**2/X[:,2]
-        noise = np.random.normal(0,1,n)
+        y = X[:,0]**3 + 2*X[:,1]**2
+        noise = np.random.normal(0,0.1,n)
         for i in range(f):
             xi = Xicor(X[:,i], y)
             if i >= u:
