@@ -442,6 +442,21 @@ Xicor64.argtypes = [DoublePointer, DoublePointer, ctypes.c_uint]
 Xicor64.restype = ctypes.c_double
 
 def Xicor(X : numpy.ndarray, Y:numpy.ndarray):
+    """
+    Xicor corelation coefficient.
+
+    This function computes the xi coefficient between two vectors x and y.
+
+    Parameters
+    ----------
+    X : array-like input vector x
+
+    Y : array-like input vector y
+
+    Returns
+    -------
+    xi : float
+    """
     if X.ndim != 1:
         X = numpy.ravel(X)
     if Y.ndim != 1:
