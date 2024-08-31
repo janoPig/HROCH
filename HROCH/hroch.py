@@ -446,6 +446,7 @@ def Xicor(X : numpy.ndarray, Y:numpy.ndarray):
     Xicor corelation coefficient.
 
     This function computes the xi coefficient between two vectors x and y.
+    https://towardsdatascience.com/a-new-coefficient-of-correlation-64ae4f260310
 
     Parameters
     ----------
