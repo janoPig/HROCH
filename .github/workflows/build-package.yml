@@ -1,0 +1,181 @@
+name: Build HROCH package
+
+on:
+  push:
+    branches:
+      - "automatize"
+
+  workflow_dispatch:
+    inputs:
+      hash:
+        description: 'Commit hash to checkout in https://github.com/janoPig/sr_core'
+        required: true
+        type: string
+        default: '06a66a338c4444a476e7c7e04beb2c01273a08c6'
+
+jobs:
+  build-linux:
+    name: Build sr_core (linux)
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_HASH: ${{ github.event.inputs.hash || '06a66a338c4444a476e7c7e04beb2c01273a08c6' }}
+    steps:
+      - name: Clone sr_core
+        run: |
+          git clone https://github.com/janoPig/sr_core sr_core
+          cd sr_core
+          git fetch --all --tags
+          
+          git checkout $COMMIT_HASH
+          git rev-parse --verify HEAD
+
+      - name: Run build script (linux)
+        working-directory: sr_core/Hroch
+        run: |
+          mkdir -p bin
+          pwd
+          ls
+          echo "Running clang.sh in sr_core/Hroch"
+          chmod +x clang.sh || true
+          ./clang.sh
+        shell: bash
+
+      - name: List build output
+        run: ls -la sr_core/Hroch/bin || true
+
+      - name: Upload hroch.bin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hroch.bin
+          path: sr_core/Hroch/bin/hroch.bin
+
+  build-windows:
+    name: Build sr_core (windows)
+    runs-on: windows-latest
+    env:
+      COMMIT_HASH: ${{ github.event.inputs.hash || '06a66a338c4444a476e7c7e04beb2c01273a08c6' }}
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Clone sr_core
+        run: |
+          git clone https://github.com/janoPig/sr_core sr_core
+          cd sr_core
+          git fetch --all --tags
+          git checkout $COMMIT_HASH
+          git rev-parse --verify HEAD
+        shell: bash
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Run build script (windows)
+        working-directory: sr_core
+        run: MSBuild Hroch.sln /p:Configuration=Production /p:Platform=x64 /m
+
+      - name: List build output
+        run: ls -la sr_core/Hroch/bin || true
+        shell: bash
+
+      - name: Upload hroch.dll artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hroch.dll
+          path: sr_core/Hroch/bin/hroch.dll
+
+  package:
+    name: Prepare package and build Python distribution
+    runs-on: ubuntu-latest
+    needs:
+      - build-linux
+      - build-windows
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Download linux binary (hroch.bin)
+        uses: actions/download-artifact@v4
+        with:
+          name: hroch.bin
+          path: artifacts/linux
+
+      - name: Download windows binary (hroch.dll)
+        uses: actions/download-artifact@v4
+        with:
+          name: hroch.dll
+          path: artifacts/windows
+
+      - name: Ensure HROCH folder exists and replace binaries
+        run: |
+          mkdir -p HROCH
+          # Replace linux binary
+          if [ -f artifacts/linux/hroch.bin ]; then
+              cp artifacts/linux/hroch.bin HROCH/hroch.bin
+          fi
+          # Replace windows binary
+          if [ -f artifacts/windows/hroch.dll ]; then
+              cp artifacts/windows/hroch.dll HROCH/hroch.dll
+          fi
+          ls -la HROCH
+
+      - name: Update version in setup.py and HROCH/version.py
+        env:
+            COMMIT_HASH: ${{ github.event.inputs.hash || '06a66a338c4444a476e7c7e04beb2c01273a08c6' }}
+        run: |
+            python - <<'PY'
+            import re, pathlib, os
+            
+            commit_hash = os.environ['COMMIT_HASH']
+            short_hash = commit_hash[:7]
+            
+            def update_file(path, pattern):
+                p = pathlib.Path(path)
+                if not p.exists():
+                    print(f"File {path} does not exist")
+                    return
+                
+                text = p.read_text(encoding='utf-8')
+                print(f"Original content of {path}:")
+                print(text[:200] + "..." if len(text) > 200 else text)
+                
+                m = re.search(pattern, text)
+                if m:
+                    old_version = m.group(1)
+                    print(f"Found version: {old_version}")
+                    
+                    # Check if hash is already in version
+                    if short_hash in old_version:
+                        print(f"Version already contains hash {short_hash}, skipping")
+                        return
+                    
+                    # Add hash to version
+                    new_version = f"{old_version}+{short_hash}"
+                    new_text = text[:m.start(1)] + new_version + text[m.end(1):]
+                    
+                    print(f"Updating version from {old_version} to {new_version}")
+                    p.write_text(new_text, encoding='utf-8')
+                else:
+                    print(f"Version pattern not found in {path}")
+            
+            # Update files
+            update_file('setup.py', r"version\s*=\s*['\"]([^'\"]+)['\"]")
+            update_file('HROCH/version.py', r"__version__\s*=\s*['\"]([^'\"]+)['\"]")
+            PY
+
+      - name: Show changed version files
+        run: |
+          sed -n '1,200p' setup.py || true
+          sed -n '1,200p' HROCH/version.py || true
+
+      - name: Build Python package
+        run: |
+          python -m pip install --upgrade build
+          python -m build --sdist --wheel
+        shell: bash
+
+      - name: Upload Python package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hroch-python-package
+          path: dist/*
