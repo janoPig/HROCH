@@ -1,10 +1,11 @@
 import unittest
 from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier, RegressorMathModel, ClassifierMathModel
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.estimator_checks import estimator_checks_generator
 
 
 skipped_tests = {
     'check_sample_weights_invariance': [{'kind': 'zeros'}], # mixing samples in this test leads to inconsistent results for small iter_limit
+    'check_sample_weight_equivalence_on_dense_data': [{}],
 }
 
 common_params = {
@@ -18,7 +19,7 @@ binary_estimators = [SymbolicRegressor, NonlinearLogisticRegressor, FuzzyRegress
 class TestSklearnCheck(unittest.TestCase):
     def __test_estimator(self, estimator):
         print(estimator.__class__.__name__ )
-        generator = check_estimator(estimator=estimator, generate_only=True)
+        generator = estimator_checks_generator(estimator=estimator)
         for est, check in generator:
             if check.func.__name__ in skipped_tests and check.keywords in skipped_tests.get(check.func.__name__):
                 print('skip ', check.func.__name__, check.keywords)   

@@ -121,5 +121,9 @@ setup(
     packages=['HROCH'],
     license='MIT',
     include_package_data=True,
-    install_requires=['numpy', 'scikit-learn', 'scipy'],
+    install_requires=[
+    "numpy>=1.19.5",
+    'scikit-learn>=1.6.0',
+    "scipy>=1.6.0",
+    ],
 )

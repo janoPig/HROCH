@@ -4,7 +4,7 @@ import numpy as numpy
 from typing import Iterable
 
 
-class SymbolicRegressor(SymbolicSolver, RegressorMixin):
+class SymbolicRegressor(RegressorMixin, SymbolicSolver):
     """
     SymbolicRegressor class
 
@@ -224,3 +224,6 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             The predicted values.
         """
         return super(SymbolicRegressor, self).predict(X, id=id, check_input=check_input, use_parsed_model=use_parsed_model)
+    
+    def __sklearn_tags__(self):
+        return super(RegressorMixin, self).__sklearn_tags__()

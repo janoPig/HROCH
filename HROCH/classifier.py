@@ -1,13 +1,14 @@
 from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
-from sklearn.utils import compute_class_weight
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils import compute_class_weight, ClassifierTags
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
+from sklearn.utils.validation import validate_data
 from sklearn.preprocessing import LabelEncoder
 from sklearn.multiclass import OneVsRestClassifier
 import numpy as numpy
 
 
-class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
+class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
     """
     Nonlinear Logistic Regressor
 
@@ -133,7 +134,7 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
     cv_params : dict, default = None
         If not defined SymbolicSolver.CLASSIFICATION_CV_PARAMS is used.
         ```python
-        cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+        cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, response_method='predict_proba')}
         ```
         - 'n' : (int) Crossvalidate n top models
         - 'cv_params' : (dict) Parameters passed to scikit-learn cross_validate method
@@ -217,7 +218,14 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         """
         
         if check_input:
-            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+            X, y = validate_data(self, X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+
+        y_type = type_of_target(y, input_name='y', raise_unknown=True)
+        if y_type != 'binary':
+            raise ValueError(
+                'Only binary classification is supported. The type of the target '
+                f'is {y_type}.'
+        )
         check_classification_targets(y)
         enc = LabelEncoder()
         y_ind = enc.fit_transform(y)
@@ -282,8 +290,11 @@ class NonlinearLogisticRegressor(SymbolicSolver, ClassifierMixin):
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
     
-    def _more_tags(self):
-        return {'binary_only': True}
+    def __sklearn_tags__(self):
+        tags = super(ClassifierMixin, self).__sklearn_tags__()
+        tags.estimator_type = 'classifier'
+        tags.classifier_tags = ClassifierTags(multi_class = False)
+        return tags
 
 class SymbolicClassifier(OneVsRestClassifier):
     """
@@ -294,7 +305,7 @@ class SymbolicClassifier(OneVsRestClassifier):
     estimator : NonlinearLogisticRegressor
         Instance of NonlinearLogisticRegressor class.
     """
-    def __init__(self, estimator=NonlinearLogisticRegressor()):
+    def __init__(self, estimator : NonlinearLogisticRegressor):
         super().__init__(estimator=estimator)
     
     def fit(self, X, y):
@@ -350,3 +361,6 @@ class SymbolicClassifier(OneVsRestClassifier):
             classes corresponds to that in the attribute :term:`classes_`.
         """
         return super().predict_proba(X)
+    
+    def __sklearn_tags__(self):
+        return super(OneVsRestClassifier, self).__sklearn_tags__()

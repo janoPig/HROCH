@@ -86,7 +86,7 @@ class TestCommon(unittest.TestCase):
                 np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
                 
     def test_classifier_cv(self):
-        cv = {'n':2, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'L-BFGS-B'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+        cv = {'n':2, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'L-BFGS-B'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, response_method='predict_proba')}
         params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},
                   {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},]
         for p in params:

@@ -1,7 +1,7 @@
 import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.utils.validation import check_array, check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import check_array, check_is_fitted, _check_sample_weight, validate_data
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import log_loss, mean_squared_error, make_scorer
@@ -172,6 +172,9 @@ class MathModelBase(BaseEstimator):
     @property
     def equation(self):
         return apply_const(self.m.str_representation, self.m.coeffs)
+    
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
 
 
 class RegressorMathModel(MathModelBase, RegressorMixin):
@@ -255,6 +258,9 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
     
     def __repr__(self):
         return f"RegressorMathModel({self.m.str_representation})"
+    
+    def __sklearn_tags__(self):
+        return super(RegressorMixin, self).__sklearn_tags__()
 
 
 class ClassifierMathModel(MathModelBase, ClassifierMixin):
@@ -382,6 +388,9 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
     
     def __repr__(self):
         return f"ClassifierMathModel({self.m.str_representation})"
+    
+    def __sklearn_tags__(self):
+        return super(ClassifierMixin, self).__sklearn_tags__()
 
 
 # void * CreateSolver(solver_params * params)
@@ -630,7 +639,7 @@ class SymbolicSolver(BaseEstimator):
     INIT_CONST_SETTINGS = {'const_min':-1.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
     CONST_SETTINGS = {'const_min':-LARGE_FLOAT, 'const_max':LARGE_FLOAT, 'predefined_const_prob':0.0, 'predefined_const_set': []}
     REGRESSION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(mean_squared_error, greater_is_better=False)}
-    CLASSIFICATION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+    CLASSIFICATION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, response_method='predict_proba')}
     REGRESSION_TARGET_CLIP = [0.0, 0.0]
     CLASSIFICATION_TARGET_CLIP = [3e-7, 1.0-3e-7]
 
@@ -655,13 +664,6 @@ class SymbolicSolver(BaseEstimator):
                  cv_params = None,
                  warm_start : bool = False
                  ):
-
-        if precision not in ['f32', 'f64']:
-            raise ValueError("precision parameter must be 'f32' or 'f64'")
-
-        if num_threads <= 0:
-            raise ValueError(
-                "num_threads parameter must be greather that zero")
 
         self.num_threads = num_threads
         self.time_limit = time_limit
@@ -718,6 +720,13 @@ class SymbolicSolver(BaseEstimator):
             Fitted estimator.
         """
         
+        if self.precision not in ['f32', 'f64']:
+            raise ValueError("precision parameter must be 'f32' or 'f64'")
+
+        if self.num_threads <= 0:
+            raise ValueError(
+                "num_threads parameter must be greather that zero")
+        
         if not self.warm_start and hasattr(self,'handle_'):
             if self.handle_ is not None:
                 DeleteSolver(self.handle_)
@@ -730,12 +739,12 @@ class SymbolicSolver(BaseEstimator):
             return v
         
         if check_input:
-            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=True, multi_output=False)
+            X, y = validate_data(self, X, y, accept_sparse=False, y_numeric=True, multi_output=False)
             
         has_sw = sample_weight is not None
         if has_sw:
             sample_weight = _check_sample_weight(
-                sample_weight, X, dtype=X.dtype, only_non_negative=True
+                sample_weight, X, dtype=X.dtype, ensure_non_negative=True
             )
             
         algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS
@@ -875,7 +884,7 @@ class SymbolicSolver(BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self)
-        X = self._validate_data(X, accept_sparse=False, reset=False)
+        X = validate_data(self, X, accept_sparse=False, reset=False)
 
         if use_parsed_model:
             m = self.models_[0] if id is None else next(
@@ -1010,3 +1019,6 @@ class SymbolicSolver(BaseEstimator):
                 all_attributes['models_'] = self.get_models()
         all_attributes.pop('handle_', None)
         return all_attributes
+    
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()

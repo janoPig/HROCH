@@ -1,12 +1,13 @@
 from sklearn.multiclass import OneVsRestClassifier
 from .hroch import SymbolicSolver
 from sklearn.base import ClassifierMixin
-from sklearn.utils import compute_class_weight
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils import compute_class_weight, ClassifierTags
+from sklearn.utils.validation import validate_data
+from sklearn.utils.multiclass import check_classification_targets, type_of_target
 from sklearn.preprocessing import LabelEncoder
 import numpy as numpy
 
-class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
+class FuzzyRegressor(ClassifierMixin, SymbolicSolver):
     """
     Fuzzy Regressor
 
@@ -120,7 +121,7 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
     cv_params : dict, default = None
         If not defined SymbolicSolver.CLASSIFICATION_CV_PARAMS is used.
         ```python
-        cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+        cv_params = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, response_method='predict_proba')}
         ```
         - 'n' : (int) Crossvalidate n top models
         - 'cv_params' : (dict) Parameters passed to scikit-learn cross_validate method
@@ -205,7 +206,14 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
             Fitted estimator.
         """
         if check_input:
-            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+            X, y = validate_data(self, X, y, accept_sparse=False, y_numeric=False, multi_output=False)
+
+        y_type = type_of_target(y, input_name='y', raise_unknown=True)
+        if y_type != 'binary':
+            raise ValueError(
+                'Only binary classification is supported. The type of the target '
+                f'is {y_type}.'
+        )
         check_classification_targets(y)
         enc = LabelEncoder()
         y_ind = enc.fit_transform(y)
@@ -270,11 +278,11 @@ class FuzzyRegressor(SymbolicSolver, ClassifierMixin):
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
     
-    def _more_tags(self):
-        return {
-            'binary_only': True,
-            'poor_score':True, # tests from check_estimator dont have fuzzy number type
-            }
+    def __sklearn_tags__(self):
+        tags = super(ClassifierMixin, self).__sklearn_tags__()
+        tags.estimator_type = 'classifier'
+        tags.classifier_tags = ClassifierTags(multi_class = False, poor_score=True)
+        return tags
 
 
 class FuzzyClassifier(OneVsRestClassifier):
@@ -286,7 +294,7 @@ class FuzzyClassifier(OneVsRestClassifier):
     estimator : FuzzyRegressor
         Instance of FuzzyRegressor class.
     """
-    def __init__(self, estimator=FuzzyRegressor()):
+    def __init__(self, estimator : FuzzyRegressor):
         super().__init__(estimator=estimator)
     
     def fit(self, X, y):
@@ -343,7 +351,10 @@ class FuzzyClassifier(OneVsRestClassifier):
         """
         return super().predict_proba(X)
     
-    def _more_tags(self):
-        return {
-            'poor_score':True, # tests from check_estimator dont have fuzzy number type
-            }
+    def __sklearn_tags__(self):
+        tags = super(OneVsRestClassifier, self).__sklearn_tags__()
+        if tags.classifier_tags is not None:
+            tags.classifier_tags.poor_score = True
+        else:
+            tags.classifier_tags = ClassifierTags(poor_score=True)
+        return tags
