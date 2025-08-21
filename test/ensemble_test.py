@@ -1,4 +1,4 @@
-from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, SymbolicClassifier, FuzzyRegressor, FuzzyClassifier
+from HROCH import SymbolicRegressor, NonlinearLogisticRegressor, FuzzyRegressor
 import unittest
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
@@ -9,10 +9,9 @@ class TestEnsemble(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestEnsemble, self).__init__(*args, **kwargs)
 
-        self.params = {'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42}
+        self.params = {"num_threads": 1, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42}
         X, y = load_breast_cancer(return_X_y=True)
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=0.2, random_state=self.params['random_state'])
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2, random_state=self.params["random_state"])
 
     def test_bagging_regressor(self):
         ensemble_model = BaggingRegressor(estimator=SymbolicRegressor(**self.params))

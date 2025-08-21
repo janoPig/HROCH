@@ -85,7 +85,7 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         - 'const_size' : (int) Maximum alloved constants in symbolic model, accept also 0.
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
-        
+
     population_settings : dict, default = None
         If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
@@ -141,32 +141,33 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         - select : (str) Best model selection method choose from 'mean'or 'median'
         - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
         - opt_metric : (make_scorer) Scoring method
-        
+
     warm_start : bool, default=False
         If True, then the solver will be reused for the next call of fit.
     """
 
-    def __init__(self,
-                 num_threads: int = 1,
-                 time_limit: float = 5.0,
-                 iter_limit: int = 0,
-                 precision: str = 'f32',
-                 problem = 'math',
-                 feature_probs = 'xicor',
-                 random_state: int = 0,
-                 verbose: int = 0,
-                 metric: str = 'LogLoss',
-                 transformation: str = 'LOGISTIC',
-                 algo_settings = None,
-                 code_settings = None,
-                 population_settings = None,
-                 init_const_settings = None,
-                 const_settings = None,
-                 target_clip = None,
-                 class_weight = None,
-                 cv_params = None,
-                 warm_start : bool = False
-                 ):
+    def __init__(
+        self,
+        num_threads: int = 1,
+        time_limit: float = 5.0,
+        iter_limit: int = 0,
+        precision: str = "f32",
+        problem="math",
+        feature_probs="xicor",
+        random_state: int = 0,
+        verbose: int = 0,
+        metric: str = "LogLoss",
+        transformation: str = "LOGISTIC",
+        algo_settings=None,
+        code_settings=None,
+        population_settings=None,
+        init_const_settings=None,
+        const_settings=None,
+        target_clip=None,
+        class_weight=None,
+        cv_params=None,
+        warm_start: bool = False,
+    ):
 
         super(NonlinearLogisticRegressor, self).__init__(
             num_threads=num_threads,
@@ -187,12 +188,12 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
             target_clip=target_clip,
             class_weight=class_weight,
             cv_params=cv_params,
-            warm_start=warm_start
+            warm_start=warm_start,
         )
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
-        Fit the symbolic models according to the given training data. 
+        Fit the symbolic models according to the given training data.
 
         Parameters
         ----------
@@ -216,28 +217,20 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         self
             Fitted estimator.
         """
-        
+
         if check_input:
             X, y = validate_data(self, X, y, accept_sparse=False, y_numeric=False, multi_output=False)
 
-        y_type = type_of_target(y, input_name='y', raise_unknown=True)
-        if y_type != 'binary':
-            raise ValueError(
-                'Only binary classification is supported. The type of the target '
-                f'is {y_type}.'
-        )
+        y_type = type_of_target(y, input_name="y", raise_unknown=True)
+        if y_type != "binary":
+            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
         check_classification_targets(y)
         enc = LabelEncoder()
         y_ind = enc.fit_transform(y)
         self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
         if self.n_classes_ != 2:
-            raise ValueError(
-                "This solver needs samples of 2 classes"
-                " in the data, but the data contains"
-                " %r classes"
-                % self.n_classes_
-            )
+            raise ValueError("This solver needs samples of 2 classes" " in the data, but the data contains" " %r classes" % self.n_classes_)
 
         self.class_weight_ = compute_class_weight(self.class_weight, classes=self.classes_, y=y)
 
@@ -252,7 +245,7 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         ----------
         X : array-like of shape (n_samples, n_features)
             The input samples.
-            
+
         id : int
             Model id, default=None. id can be obtained from get_models method. If its None prediction use the best model.
 
@@ -289,27 +282,29 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         preds = super(NonlinearLogisticRegressor, self).predict(X, id, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
-    
+
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
-        tags.classifier_tags = ClassifierTags(multi_class = False)
+        tags.classifier_tags = ClassifierTags(multi_class=False)
         return tags
+
 
 class SymbolicClassifier(OneVsRestClassifier):
     """
     OVR multiclass symbolic classificator
-    
+
     Parameters
     ----------
     estimator : NonlinearLogisticRegressor
         Instance of NonlinearLogisticRegressor class.
     """
-    def __init__(self, estimator : NonlinearLogisticRegressor):
+
+    def __init__(self, estimator: NonlinearLogisticRegressor):
         super().__init__(estimator=estimator)
-    
+
     def fit(self, X, y):
         """
-        Fit the symbolic models according to the given training data. 
+        Fit the symbolic models according to the given training data.
 
         Parameters
         ----------
@@ -360,6 +355,6 @@ class SymbolicClassifier(OneVsRestClassifier):
             classes corresponds to that in the attribute :term:`classes_`.
         """
         return super().predict_proba(X)
-    
+
     def __sklearn_tags__(self):
         return super().__sklearn_tags__()
