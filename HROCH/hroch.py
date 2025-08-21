@@ -187,7 +187,7 @@ class MathModelBase(BaseEstimator):
         return super().__sklearn_tags__()
 
 
-class RegressorMathModel(MathModelBase, RegressorMixin):
+class RegressorMathModel(RegressorMixin, MathModelBase):
     """
     A regressor class for the symbolic model.
     """
@@ -273,7 +273,7 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
         return super(RegressorMixin, self).__sklearn_tags__()
 
 
-class ClassifierMathModel(MathModelBase, ClassifierMixin):
+class ClassifierMathModel(ClassifierMixin, MathModelBase):
     """
     A classifier class for the symbolic model.
     """
