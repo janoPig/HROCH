@@ -117,8 +117,13 @@ class ParsedMathModel:
 
         self.method_name = self.str_code_representation[4:self.str_code_representation.find(
             '(')]
-        exec(self.str_code_representation)
-        self.method = locals()[self.method_name]
+        exec_globals = globals().copy()
+        exec_locals = {}
+        exec(self.str_code_representation, exec_globals, exec_locals)
+        if not self.method_name in exec_locals:
+            print(exec_locals)
+            raise ValueError(f"Method {self.method_name} not found in the code representation")
+        self.method = exec_locals[self.method_name]
         
     def __getstate__(self):
         all_attributes = self.__dict__.copy()
@@ -127,8 +132,13 @@ class ParsedMathModel:
     
     def __setstate__(self, state):
         self.__dict__.update(state)
-        exec(self.str_code_representation)
-        self.method = locals()[self.method_name]
+        exec_globals = globals().copy()
+        exec_locals = {}
+        exec(self.str_code_representation, exec_globals, exec_locals)
+        if not self.method_name in exec_locals:
+            print(exec_locals)
+            raise ValueError(f"Method {self.method_name} not found in the code representation")
+        self.method = exec_locals[self.method_name]
 
 
 class MathModelBase(BaseEstimator):
