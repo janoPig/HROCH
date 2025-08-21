@@ -279,7 +279,7 @@ class FuzzyRegressor(ClassifierMixin, SymbolicSolver):
         return proba
     
     def __sklearn_tags__(self):
-        tags = super(ClassifierMixin, self).__sklearn_tags__()
+        tags = super().__sklearn_tags__()
         tags.estimator_type = 'classifier'
         tags.classifier_tags = ClassifierTags(multi_class = False, poor_score=True)
         return tags
@@ -352,9 +352,6 @@ class FuzzyClassifier(OneVsRestClassifier):
         return super().predict_proba(X)
     
     def __sklearn_tags__(self):
-        tags = super(OneVsRestClassifier, self).__sklearn_tags__()
-        if tags.classifier_tags is not None:
-            tags.classifier_tags.poor_score = True
-        else:
-            tags.classifier_tags = ClassifierTags(poor_score=True)
+        tags = super().__sklearn_tags__()
+        tags.classifier_tags = ClassifierTags(poor_score = True)
         return tags

@@ -291,8 +291,7 @@ class NonlinearLogisticRegressor(ClassifierMixin, SymbolicSolver):
         return proba
     
     def __sklearn_tags__(self):
-        tags = super(ClassifierMixin, self).__sklearn_tags__()
-        tags.estimator_type = 'classifier'
+        tags = super().__sklearn_tags__()
         tags.classifier_tags = ClassifierTags(multi_class = False)
         return tags
 
@@ -363,4 +362,4 @@ class SymbolicClassifier(OneVsRestClassifier):
         return super().predict_proba(X)
     
     def __sklearn_tags__(self):
-        return super(OneVsRestClassifier, self).__sklearn_tags__()
+        return super().__sklearn_tags__()

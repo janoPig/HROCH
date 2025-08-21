@@ -226,4 +226,4 @@ class SymbolicRegressor(RegressorMixin, SymbolicSolver):
         return super(SymbolicRegressor, self).predict(X, id=id, check_input=check_input, use_parsed_model=use_parsed_model)
     
     def __sklearn_tags__(self):
-        return super(RegressorMixin, self).__sklearn_tags__()
+        return super().__sklearn_tags__()

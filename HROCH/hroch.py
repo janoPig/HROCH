@@ -270,7 +270,7 @@ class RegressorMathModel(RegressorMixin, MathModelBase):
         return f"RegressorMathModel({self.m.str_representation})"
     
     def __sklearn_tags__(self):
-        return super(RegressorMixin, self).__sklearn_tags__()
+        return super().__sklearn_tags__()
 
 
 class ClassifierMathModel(ClassifierMixin, MathModelBase):
@@ -400,7 +400,7 @@ class ClassifierMathModel(ClassifierMixin, MathModelBase):
         return f"ClassifierMathModel({self.m.str_representation})"
     
     def __sklearn_tags__(self):
-        return super(ClassifierMixin, self).__sklearn_tags__()
+        return super().__sklearn_tags__()
 
 
 # void * CreateSolver(solver_params * params)
