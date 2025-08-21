@@ -1,7 +1,12 @@
 import os
 import numpy as numpy
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.utils.validation import check_array, check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import (
+    check_array,
+    check_is_fitted,
+    _check_sample_weight,
+    validate_data,
+)
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import log_loss, mean_squared_error, make_scorer
@@ -22,120 +27,141 @@ else:
 
 lib = ctypes.cdll.LoadLibrary(lib_path)
 
-FloatPointer = numpy.ctypeslib.ndpointer(
-    dtype=numpy.float32, ndim=1, flags='C')
-FloatDPointer = numpy.ctypeslib.ndpointer(
-    dtype=numpy.float32, ndim=2, flags='C')
-DoublePointer = numpy.ctypeslib.ndpointer(
-    dtype=numpy.float64, ndim=1, flags='C')
-DoubleDPointer = numpy.ctypeslib.ndpointer(
-    dtype=numpy.float64, ndim=2, flags='C')
+FloatPointer = numpy.ctypeslib.ndpointer(dtype=numpy.float32, ndim=1, flags="C")
+FloatDPointer = numpy.ctypeslib.ndpointer(dtype=numpy.float32, ndim=2, flags="C")
+DoublePointer = numpy.ctypeslib.ndpointer(dtype=numpy.float64, ndim=1, flags="C")
+DoubleDPointer = numpy.ctypeslib.ndpointer(dtype=numpy.float64, ndim=2, flags="C")
 
 
 class Params(ctypes.Structure):
-    _fields_ = [("random_state", ctypes.c_ulonglong),
-                ("num_threads", ctypes.c_uint),
-                ("precision", ctypes.c_uint),
-                ("pop_size", ctypes.c_uint),
-                ("transformation", ctypes.c_uint),
-                ("clip_min", ctypes.c_double),
-                ("clip_max", ctypes.c_double),
-                ("input_size", ctypes.c_uint),
-                ("const_size", ctypes.c_uint),
-                ("code_min_size", ctypes.c_uint),
-                ("code_max_size", ctypes.c_uint),
-                ("init_const_min", ctypes.c_double),
-                ("init_const_max", ctypes.c_double),
-                ("init_predefined_const_prob", ctypes.c_double),
-                ("init_predefined_const_count", ctypes.c_uint),
-                ("init_predefined_const_set", DoublePointer)]
+    _fields_ = [
+        ("random_state", ctypes.c_ulonglong),
+        ("num_threads", ctypes.c_uint),
+        ("precision", ctypes.c_uint),
+        ("pop_size", ctypes.c_uint),
+        ("transformation", ctypes.c_uint),
+        ("clip_min", ctypes.c_double),
+        ("clip_max", ctypes.c_double),
+        ("input_size", ctypes.c_uint),
+        ("const_size", ctypes.c_uint),
+        ("code_min_size", ctypes.c_uint),
+        ("code_max_size", ctypes.c_uint),
+        ("init_const_min", ctypes.c_double),
+        ("init_const_max", ctypes.c_double),
+        ("init_predefined_const_prob", ctypes.c_double),
+        ("init_predefined_const_count", ctypes.c_uint),
+        ("init_predefined_const_set", DoublePointer),
+    ]
 
 
 class FitParams(ctypes.Structure):
-    _fields_ = [("time_limit", ctypes.c_uint),
-                ("verbose", ctypes.c_uint),
-                ("pop_sel", ctypes.c_uint),
-                ("metric", ctypes.c_uint),
-                ("pretest_size", ctypes.c_uint),
-                ("sample_size", ctypes.c_uint),
-                ("neighbours_count", ctypes.c_uint),
-                ("alpha", ctypes.c_double),
-                ("beta", ctypes.c_double),
-                ("iter_limit", ctypes.c_ulonglong),
-                ("const_min", ctypes.c_double),
-                ("const_max", ctypes.c_double),
-                ("predefined_const_prob", ctypes.c_double),
-                ("predefined_const_count", ctypes.c_uint),
-                ("predefined_const_set", DoublePointer),
-                ('problem', ctypes.c_char_p),
-                ('feature_probs', ctypes.c_char_p),
-                ("cw0", ctypes.c_double),
-                ("cw1", ctypes.c_double),
-                ]
+    _fields_ = [
+        ("time_limit", ctypes.c_uint),
+        ("verbose", ctypes.c_uint),
+        ("pop_sel", ctypes.c_uint),
+        ("metric", ctypes.c_uint),
+        ("pretest_size", ctypes.c_uint),
+        ("sample_size", ctypes.c_uint),
+        ("neighbours_count", ctypes.c_uint),
+        ("alpha", ctypes.c_double),
+        ("beta", ctypes.c_double),
+        ("iter_limit", ctypes.c_ulonglong),
+        ("const_min", ctypes.c_double),
+        ("const_max", ctypes.c_double),
+        ("predefined_const_prob", ctypes.c_double),
+        ("predefined_const_count", ctypes.c_uint),
+        ("predefined_const_set", DoublePointer),
+        ("problem", ctypes.c_char_p),
+        ("feature_probs", ctypes.c_char_p),
+        ("cw0", ctypes.c_double),
+        ("cw1", ctypes.c_double),
+    ]
 
 
 class PredictParams(ctypes.Structure):
-    _fields_ = [("id", ctypes.c_uint64),
-                ("verbose", ctypes.c_uint32),
-                ]
+    _fields_ = [
+        ("id", ctypes.c_uint64),
+        ("verbose", ctypes.c_uint32),
+    ]
 
 
 class MathModel(ctypes.Structure):
-    _fields_ = [("id", ctypes.c_uint64),
-                ("score", ctypes.c_double),
-                ("partial_score", ctypes.c_double),
-                ('str_representation', ctypes.c_char_p),
-                ('str_code_representation', ctypes.c_char_p),
-                ("used_constants_count", ctypes.c_uint32),
-                ("used_constants", ctypes.POINTER(ctypes.c_double)),
-                ]
+    _fields_ = [
+        ("id", ctypes.c_uint64),
+        ("score", ctypes.c_double),
+        ("partial_score", ctypes.c_double),
+        ("str_representation", ctypes.c_char_p),
+        ("str_code_representation", ctypes.c_char_p),
+        ("used_constants_count", ctypes.c_uint32),
+        ("used_constants", ctypes.POINTER(ctypes.c_double)),
+    ]
+
 
 def apply_const(s, c):
-    pattern = r'\b(c\d+)\b'
+    pattern = r"\b(c\d+)\b"
 
     def replace_coef(match):
         symbol = match.group(1)
         index = int(symbol[1:])
         value = c[index]
         if value < 0:
-            return f'({value})'
+            return f"({value})"
         return str(value)
-    
+
     return re.sub(pattern, replace_coef, s)
+
 
 class ParsedMathModel:
     def __init__(self, m: MathModel) -> None:
         self.id = m.id
         self.score = m.score
         self.partial_score = m.partial_score
-        self.str_representation = m.str_representation.decode('ascii')
-        self.str_code_representation = m.str_code_representation.decode(
-            'ascii')
+        self.str_representation = m.str_representation.decode("ascii")
+        self.str_code_representation = m.str_code_representation.decode("ascii")
         self.coeffs = numpy.zeros(m.used_constants_count)
         for i in range(m.used_constants_count):
             self.coeffs[i] = m.used_constants[i]
 
-        self.method_name = self.str_code_representation[4:self.str_code_representation.find(
-            '(')]
-        exec(self.str_code_representation)
-        self.method = locals()[self.method_name]
-        
+        self.method_name = self.str_code_representation[4 : self.str_code_representation.find("(")]
+        exec_globals = globals().copy()
+        exec_locals = {}
+        exec(self.str_code_representation, exec_globals, exec_locals)
+        if self.method_name not in exec_locals:
+            print(exec_locals)
+            raise ValueError(f"Method {self.method_name} not found in the code representation")
+        self.method = exec_locals[self.method_name]
+
     def __getstate__(self):
         all_attributes = self.__dict__.copy()
-        all_attributes.pop('method', None)
+        all_attributes.pop("method", None)
         return all_attributes
-    
+
     def __setstate__(self, state):
         self.__dict__.update(state)
-        exec(self.str_code_representation)
-        self.method = locals()[self.method_name]
+        exec_globals = globals().copy()
+        exec_locals = {}
+        exec(self.str_code_representation, exec_globals, exec_locals)
+        if self.method_name not in exec_locals:
+            print(exec_locals)
+            raise ValueError(f"Method {self.method_name} not found in the code representation")
+        self.method = exec_locals[self.method_name]
 
 
 class MathModelBase(BaseEstimator):
     """
     Base class for RegressorMathModel and ClassifierMathModel
     """
-    def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_) -> None:
+
+    def __init__(
+        self,
+        m: ParsedMathModel,
+        opt_metric,
+        opt_params,
+        transformation,
+        target_clip,
+        class_weight_,
+        classes_,
+    ) -> None:
         self.m = m
         self.opt_metric = opt_metric
         self.opt_params = opt_params
@@ -159,32 +185,36 @@ class MathModelBase(BaseEstimator):
 
     def __transform(self, y):
         if self.transformation is not None:
-            if self.transformation == 'LOGISTIC':
-                y = 1.0/(1.0+numpy.exp(-numpy.clip(y,a_min=-20.0, a_max=20.0)))
-            elif self.transformation == 'ORDINAL':
+            if self.transformation == "LOGISTIC":
+                y = 1.0 / (1.0 + numpy.exp(-numpy.clip(y, a_min=-20.0, a_max=20.0)))
+            elif self.transformation == "ORDINAL":
                 y = numpy.round(y)
 
         if self.target_clip is not None and self.target_clip[1] > self.target_clip[0]:
             y = numpy.clip(y, self.target_clip[0], self.target_clip[1])
 
         return y
-    
+
     @property
     def equation(self):
         return apply_const(self.m.str_representation, self.m.coeffs)
 
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
 
-class RegressorMathModel(MathModelBase, RegressorMixin):
+
+class RegressorMathModel(RegressorMixin, MathModelBase):
     """
     A regressor class for the symbolic model.
     """
+
     def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip) -> None:
         super().__init__(m, opt_metric, opt_params, transformation, target_clip, None, None)
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
-        Fit the model according to the given training data. 
-        
+        Fit the model according to the given training data.
+
         That means find a optimal values for constants in a symbolic equation.
 
         Parameters
@@ -241,33 +271,54 @@ class RegressorMathModel(MathModelBase, RegressorMixin):
             The predicted values.
         """
         return self._predict(X)
-    
+
     def __eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         try:
             return -metric(self, X, y, sample_weight=sample_weight)
-        except:
+        except Exception:
             return SymbolicSolver.LARGE_FLOAT
-    
+
     def __str__(self):
         return f"RegressorMathModel({self.m.str_representation})"
-    
+
     def __repr__(self):
         return f"RegressorMathModel({self.m.str_representation})"
 
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
 
-class ClassifierMathModel(MathModelBase, ClassifierMixin):
+
+class ClassifierMathModel(ClassifierMixin, MathModelBase):
     """
     A classifier class for the symbolic model.
     """
-    def __init__(self, m: ParsedMathModel, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_) -> None:
-        super().__init__(m, opt_metric, opt_params, transformation, target_clip, class_weight_, classes_)
+
+    def __init__(
+        self,
+        m: ParsedMathModel,
+        opt_metric,
+        opt_params,
+        transformation,
+        target_clip,
+        class_weight_,
+        classes_,
+    ) -> None:
+        super().__init__(
+            m,
+            opt_metric,
+            opt_params,
+            transformation,
+            target_clip,
+            class_weight_,
+            classes_,
+        )
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
-        Fit the model according to the given training data. 
-        
+        Fit the model according to the given training data.
+
         That means find a optimal values for constants in a symbolic equation.
 
         Parameters
@@ -299,26 +350,20 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
         if self.n_classes_ != 2:
-            raise ValueError(
-                "This solver needs samples of 2 classes"
-                " in the data, but the data contains"
-                " %r classes"
-                % self.n_classes_
-            )
-        
+            raise ValueError("This solver needs samples of 2 classes" " in the data, but the data contains" " %r classes" % self.n_classes_)
+
         cw = self.class_weight_
         cw_sample_weight = numpy.array(cw)[y_ind] if len(cw) == 2 and cw[0] != cw[1] else None
         if sample_weight is None:
             sample_weight = cw_sample_weight
         elif cw_sample_weight is not None:
-            sample_weight = sample_weight*cw_sample_weight
+            sample_weight = sample_weight * cw_sample_weight
 
         def objective(c):
             return self.__eval(X, y, metric=self.opt_metric, c=c, sample_weight=sample_weight)
 
         if len(self.m.coeffs) > 0:
-            result = opt.minimize(objective, self.m.coeffs,
-                                  **self.opt_params)
+            result = opt.minimize(objective, self.m.coeffs, **self.opt_params)
 
             for i in range(len(self.m.coeffs)):
                 self.m.coeffs[i] = result.x[i]
@@ -368,20 +413,23 @@ class ClassifierMathModel(MathModelBase, ClassifierMixin):
         preds = self._predict(X, check_input=check_input)
         proba = numpy.vstack([1 - preds, preds]).T
         return proba
-    
+
     def __eval(self, X, y, metric, c=None, sample_weight=None):
         if c is not None:
             self.m.coeffs = c
         try:
             return -metric(self, X, y, sample_weight=sample_weight)
-        except:
+        except Exception:
             return SymbolicSolver.LARGE_FLOAT
-    
+
     def __str__(self):
         return f"ClassifierMathModel({self.m.str_representation})"
-    
+
     def __repr__(self):
         return f"ClassifierMathModel({self.m.str_representation})"
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()
 
 
 # void * CreateSolver(solver_params * params)
@@ -396,24 +444,52 @@ DeleteSolver.restype = None
 
 # int FitData[32/64](void *hsolver, const [float/double] *X, const [float/double] *y, unsigned int rows, unsigned int xcols, fit_params *params, const [float/double] *sw)
 FitData32 = lib.FitData32
-FitData32.argtypes = [ctypes.c_void_p, FloatDPointer, FloatPointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams), FloatPointer, ctypes.c_uint]
+FitData32.argtypes = [
+    ctypes.c_void_p,
+    FloatDPointer,
+    FloatPointer,
+    ctypes.c_uint,
+    ctypes.c_uint,
+    ctypes.POINTER(FitParams),
+    FloatPointer,
+    ctypes.c_uint,
+]
 FitData32.restype = ctypes.c_int
 
 FitData64 = lib.FitData64
-FitData64.argtypes = [ctypes.c_void_p, DoubleDPointer, DoublePointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(FitParams), DoublePointer, ctypes.c_uint]
+FitData64.argtypes = [
+    ctypes.c_void_p,
+    DoubleDPointer,
+    DoublePointer,
+    ctypes.c_uint,
+    ctypes.c_uint,
+    ctypes.POINTER(FitParams),
+    DoublePointer,
+    ctypes.c_uint,
+]
 FitData64.restype = ctypes.c_int
 
 # int Predict[32/64](void * hsolver, const [float/double] *X, [float/double] *y, unsigned int rows, unsigned int xcols, predict_params * params)
 Predict32 = lib.Predict32
-Predict32.argtypes = [ctypes.c_void_p, FloatDPointer, FloatPointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(PredictParams)]
+Predict32.argtypes = [
+    ctypes.c_void_p,
+    FloatDPointer,
+    FloatPointer,
+    ctypes.c_uint,
+    ctypes.c_uint,
+    ctypes.POINTER(PredictParams),
+]
 Predict32.restype = ctypes.c_int
 
 Predict64 = lib.Predict64
-Predict64.argtypes = [ctypes.c_void_p, DoubleDPointer, DoublePointer,
-                      ctypes.c_uint, ctypes.c_uint, ctypes.POINTER(PredictParams)]
+Predict64.argtypes = [
+    ctypes.c_void_p,
+    DoubleDPointer,
+    DoublePointer,
+    ctypes.c_uint,
+    ctypes.c_uint,
+    ctypes.POINTER(PredictParams),
+]
 Predict64.restype = ctypes.c_int
 
 # int GetBestModel(void *hsolver, math_model *model);
@@ -423,8 +499,7 @@ GetBestModel.restype = ctypes.c_int
 
 # int GetModel(void *hsolver, unsigned long long id, math_model *model)
 GetModel = lib.GetModel
-GetModel.argtypes = [ctypes.c_void_p,
-                     ctypes.c_uint64, ctypes.POINTER(MathModel)]
+GetModel.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.POINTER(MathModel)]
 GetModel.restype = ctypes.c_int
 
 # void FreeModel(math_model *model)
@@ -441,7 +516,8 @@ Xicor64 = lib.Xicor64
 Xicor64.argtypes = [DoublePointer, DoublePointer, ctypes.c_uint]
 Xicor64.restype = ctypes.c_double
 
-def Xicor(X : numpy.ndarray, Y:numpy.ndarray):
+
+def Xicor(X: numpy.ndarray, Y: numpy.ndarray):
     """
     Xicor corelation coefficient.
 
@@ -467,13 +543,14 @@ def Xicor(X : numpy.ndarray, Y:numpy.ndarray):
     precision = numpy.float32
     if X.dtype == Y.dtype and X.dtype == numpy.float64:
         precision = numpy.float64
-    if not X.flags['C_CONTIGUOUS'] or X.dtype != precision:
+    if not X.flags["C_CONTIGUOUS"] or X.dtype != precision:
         X = numpy.ascontiguousarray(X.astype(precision))
-    if not Y.flags['C_CONTIGUOUS'] or Y.dtype != precision:
+    if not Y.flags["C_CONTIGUOUS"] or Y.dtype != precision:
         Y = numpy.ascontiguousarray(Y.astype(precision))
     if precision == numpy.float32:
         return Xicor32(X, Y, len(X))
     return Xicor64(X, Y, len(X))
+
 
 class SymbolicSolver(BaseEstimator):
     """
@@ -552,7 +629,7 @@ class SymbolicSolver(BaseEstimator):
         - 'const_size' : (int) Maximum alloved constants in symbolic model, accept also 0.
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
-        
+
     population_settings : dict, default = None
         If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
@@ -606,62 +683,99 @@ class SymbolicSolver(BaseEstimator):
         - select : (str) Best model selection method choose from 'mean'or 'median'
         - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
         - opt_metric : (make_scorer) Scoring method
-        
+
     warm_start : bool, default=False
         If True, then the solver will be reused for the next call of fit.
     """
 
     LARGE_FLOAT = 1e30
 
-    SIMPLE = {'nop': 0.01, 'add': 1.0, 'sub': 1.0,
-          'mul': 1.0, 'div': 0.1, 'sq2': 0.05}
+    SIMPLE = {"nop": 0.01, "add": 1.0, "sub": 1.0, "mul": 1.0, "div": 0.1, "sq2": 0.05}
 
-    MATH = {'nop': 0.01, 'add': 1.0, 'sub': 1.0, 'mul': 1.0,
-            'div': 0.1, 'sq2': 0.05, 'pow': 0.001, 'exp': 0.001,
-            'log': 0.001, 'sqrt': 0.1, 'sin': 0.005, 'cos': 0.005,
-            'tan': 0.001, 'asin': 0.001, 'acos': 0.001, 'atan': 0.001,
-            'sinh': 0.001, 'cosh': 0.001, 'tanh': 0.001}
+    MATH = {
+        "nop": 0.01,
+        "add": 1.0,
+        "sub": 1.0,
+        "mul": 1.0,
+        "div": 0.1,
+        "sq2": 0.05,
+        "pow": 0.001,
+        "exp": 0.001,
+        "log": 0.001,
+        "sqrt": 0.1,
+        "sin": 0.005,
+        "cos": 0.005,
+        "tan": 0.001,
+        "asin": 0.001,
+        "acos": 0.001,
+        "atan": 0.001,
+        "sinh": 0.001,
+        "cosh": 0.001,
+        "tanh": 0.001,
+    }
 
-    FUZZY = {'nop': 0.01, 'f_and': 1.0, 'f_or': 1.0, 'f_xor': 1.0, 'f_not': 1.0}
-    
-    ALGO_SETTINGS = {'neighbours_count':15, 'alpha':0.15, 'beta':0.5, 'pretest_size':1, 'sample_size':16}
-    CODE_SETTINGS = {'min_size': 32, 'max_size':32, 'const_size':8}
-    POPULATION_SETTINGS = {'size': 64, 'tournament':4}
-    INIT_CONST_SETTINGS = {'const_min':-1.0, 'const_max':1.0, 'predefined_const_prob':0.0, 'predefined_const_set': []}
-    CONST_SETTINGS = {'const_min':-LARGE_FLOAT, 'const_max':LARGE_FLOAT, 'predefined_const_prob':0.0, 'predefined_const_set': []}
-    REGRESSION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(mean_squared_error, greater_is_better=False)}
-    CLASSIFICATION_CV_PARAMS = {'n':0, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'Nelder-Mead'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
+    FUZZY = {"nop": 0.01, "f_and": 1.0, "f_or": 1.0, "f_xor": 1.0, "f_not": 1.0}
+
+    ALGO_SETTINGS = {
+        "neighbours_count": 15,
+        "alpha": 0.15,
+        "beta": 0.5,
+        "pretest_size": 1,
+        "sample_size": 16,
+    }
+    CODE_SETTINGS = {"min_size": 32, "max_size": 32, "const_size": 8}
+    POPULATION_SETTINGS = {"size": 64, "tournament": 4}
+    INIT_CONST_SETTINGS = {
+        "const_min": -1.0,
+        "const_max": 1.0,
+        "predefined_const_prob": 0.0,
+        "predefined_const_set": [],
+    }
+    CONST_SETTINGS = {
+        "const_min": -LARGE_FLOAT,
+        "const_max": LARGE_FLOAT,
+        "predefined_const_prob": 0.0,
+        "predefined_const_set": [],
+    }
+    REGRESSION_CV_PARAMS = {
+        "n": 0,
+        "cv_params": {},
+        "select": "mean",
+        "opt_params": {"method": "Nelder-Mead"},
+        "opt_metric": make_scorer(mean_squared_error, greater_is_better=False),
+    }
+    CLASSIFICATION_CV_PARAMS = {
+        "n": 0,
+        "cv_params": {},
+        "select": "mean",
+        "opt_params": {"method": "Nelder-Mead"},
+        "opt_metric": make_scorer(log_loss, greater_is_better=False, response_method="predict_proba"),
+    }
     REGRESSION_TARGET_CLIP = [0.0, 0.0]
-    CLASSIFICATION_TARGET_CLIP = [3e-7, 1.0-3e-7]
+    CLASSIFICATION_TARGET_CLIP = [3e-7, 1.0 - 3e-7]
 
-    def __init__(self,
-                 num_threads: int = 1,
-                 time_limit: float = 5.0,
-                 iter_limit: int = 0,
-                 precision: str = 'f32',
-                 problem = 'math',
-                 feature_probs = None,
-                 random_state: int = 0,
-                 verbose: int = 0,
-                 metric: str = 'MSE',
-                 transformation: str = None,
-                 algo_settings = None,
-                 code_settings = None,
-                 population_settings = None,
-                 init_const_settings = None,
-                 const_settings = None,
-                 target_clip = None,
-                 class_weight = None,
-                 cv_params = None,
-                 warm_start : bool = False
-                 ):
-
-        if precision not in ['f32', 'f64']:
-            raise ValueError("precision parameter must be 'f32' or 'f64'")
-
-        if num_threads <= 0:
-            raise ValueError(
-                "num_threads parameter must be greather that zero")
+    def __init__(
+        self,
+        num_threads: int = 1,
+        time_limit: float = 5.0,
+        iter_limit: int = 0,
+        precision: str = "f32",
+        problem="math",
+        feature_probs=None,
+        random_state: int = 0,
+        verbose: int = 0,
+        metric: str = "MSE",
+        transformation: str = None,
+        algo_settings=None,
+        code_settings=None,
+        population_settings=None,
+        init_const_settings=None,
+        const_settings=None,
+        target_clip=None,
+        class_weight=None,
+        cv_params=None,
+        warm_start: bool = False,
+    ):
 
         self.num_threads = num_threads
         self.time_limit = time_limit
@@ -691,9 +805,9 @@ class SymbolicSolver(BaseEstimator):
     def equation(self):
         return self.sexpr_
 
-    def fit(self, X, y, sample_weight = None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """
-        Fit the symbolic models according to the given training data. 
+        Fit the symbolic models according to the given training data.
 
         Parameters
         ----------
@@ -717,8 +831,14 @@ class SymbolicSolver(BaseEstimator):
         self
             Fitted estimator.
         """
-        
-        if not self.warm_start and hasattr(self,'handle_'):
+
+        if self.precision not in ["f32", "f64"]:
+            raise ValueError("precision parameter must be 'f32' or 'f64'")
+
+        if self.num_threads <= 0:
+            raise ValueError("num_threads parameter must be greather that zero")
+
+        if not self.warm_start and hasattr(self, "handle_"):
             if self.handle_ is not None:
                 DeleteSolver(self.handle_)
                 self.handle_ = None
@@ -728,105 +848,119 @@ class SymbolicSolver(BaseEstimator):
             if d is not None and key in d:
                 return d[key]
             return v
-        
+
         if check_input:
-            X, y = self._validate_data(X, y, accept_sparse=False, y_numeric=True, multi_output=False)
-            
+            X, y = validate_data(self, X, y, accept_sparse=False, y_numeric=True, multi_output=False)
+
         has_sw = sample_weight is not None
         if has_sw:
-            sample_weight = _check_sample_weight(
-                sample_weight, X, dtype=X.dtype, only_non_negative=True
-            )
-            
+            sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype, ensure_non_negative=True)
+
         algo_settings = self.algo_settings if self.algo_settings is not None else self.ALGO_SETTINGS
         code_settings = self.code_settings if self.code_settings is not None else self.CODE_SETTINGS
         population_settings = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
         init_const_settings = self.init_const_settings if self.init_const_settings is not None else self.INIT_CONST_SETTINGS
         const_settings = self.const_settings if self.const_settings is not None else self.CONST_SETTINGS
-        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == 'regressor' else self.CLASSIFICATION_TARGET_CLIP
+        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == "regressor" else self.CLASSIFICATION_TARGET_CLIP
         target_clip = self.target_clip if self.target_clip is not None else target_clip_
-        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == 'regressor' else self.CLASSIFICATION_CV_PARAMS
+        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == "regressor" else self.CLASSIFICATION_CV_PARAMS
         cv_params = self.cv_params if self.cv_params is not None else cv_params_
 
         if not hasattr(self, "handle_") or self.handle_ is None:
-            tmp = val(init_const_settings, 'predefined_const_set', [])
-            init_predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
-            params = Params(random_state=self.random_state,
-                            num_threads=self.num_threads,
-                            precision=1 if self.precision == 'f32' else 2,
-                            pop_size=val(population_settings,'size', 64),
-                            transformation=self.__parse_transformation(
-                                self.transformation),
-                            clip_min=target_clip[0],
-                            clip_max=target_clip[1],
-                            input_size=X.shape[1],
-                            const_size=val(code_settings, 'const_size', 8),
-                            code_min_size=val(code_settings, 'min_size', 32),
-                            code_max_size=val(code_settings, 'max_size', 32),
-                            init_const_min=val(init_const_settings, 'const_min', -1.0),
-                            init_const_max=val(init_const_settings, 'const_max', 1.0),
-                            init_predefined_const_prob=val(init_const_settings, 'predefined_const_prob', 0.0),
-                            init_predefined_const_count=0 if init_predefined_const_set is None else len(init_predefined_const_set),
-                            init_predefined_const_set=init_predefined_const_set,
-                            )
+            tmp = val(init_const_settings, "predefined_const_set", [])
+            init_predefined_const_set = numpy.ascontiguousarray(tmp).astype("float64").ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
+            params = Params(
+                random_state=self.random_state,
+                num_threads=self.num_threads,
+                precision=1 if self.precision == "f32" else 2,
+                pop_size=val(population_settings, "size", 64),
+                transformation=self.__parse_transformation(self.transformation),
+                clip_min=target_clip[0],
+                clip_max=target_clip[1],
+                input_size=X.shape[1],
+                const_size=val(code_settings, "const_size", 8),
+                code_min_size=val(code_settings, "min_size", 32),
+                code_max_size=val(code_settings, "max_size", 32),
+                init_const_min=val(init_const_settings, "const_min", -1.0),
+                init_const_max=val(init_const_settings, "const_max", 1.0),
+                init_predefined_const_prob=val(init_const_settings, "predefined_const_prob", 0.0),
+                init_predefined_const_count=(0 if init_predefined_const_set is None else len(init_predefined_const_set)),
+                init_predefined_const_set=init_predefined_const_set,
+            )
             self.handle_ = CreateSolver(ctypes.pointer(params))
 
-        _x = numpy.ascontiguousarray(X.T).astype(
-            'float32' if self.precision == 'f32' else 'float64')
-        _y = numpy.ascontiguousarray(
-            y.astype('float32' if self.precision == 'f32' else 'float64'))
-        
-        _sw = numpy.ndarray(shape=(0,), dtype=numpy.float32 if self.precision == 'f32' else numpy.float64)
+        _x = numpy.ascontiguousarray(X.T).astype("float32" if self.precision == "f32" else "float64")
+        _y = numpy.ascontiguousarray(y.astype("float32" if self.precision == "f32" else "float64"))
+
+        _sw = numpy.ndarray(
+            shape=(0,),
+            dtype=numpy.float32 if self.precision == "f32" else numpy.float64,
+        )
         _sw_len = 0 if sample_weight is None else len(sample_weight)
         if sample_weight is not None:
             if len(sample_weight) != len(y):
                 raise ValueError("sample_weight len incorrect")
-            _sw = numpy.ascontiguousarray(sample_weight.astype('float32' if self.precision == 'f32' else 'float64'))
+            _sw = numpy.ascontiguousarray(sample_weight.astype("float32" if self.precision == "f32" else "float64"))
 
-        tmp = val(const_settings, 'predefined_const_set', [])
-        predefined_const_set = numpy.ascontiguousarray(tmp).astype('float64').ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
+        tmp = val(const_settings, "predefined_const_set", [])
+        predefined_const_set = numpy.ascontiguousarray(tmp).astype("float64").ctypes.data_as(DoublePointer) if len(tmp) > 0 else None
 
         fit_params = FitParams(
-            time_limit=round(self.time_limit*1000),
+            time_limit=round(self.time_limit * 1000),
             verbose=self.verbose,
-            pop_sel=val(population_settings, 'tournament', 4),
+            pop_sel=val(population_settings, "tournament", 4),
             metric=self.__parse_metric(self.metric),
-            pretest_size=val(algo_settings, 'pretest_size', 1),
-            sample_size=val(algo_settings, 'sample_size', 16),
-            neighbours_count=val(algo_settings, 'neighbours_count', 15),
-            alpha=val(algo_settings, 'alpha', 0.15),
-            beta=val(algo_settings, 'beta', 0.5),
+            pretest_size=val(algo_settings, "pretest_size", 1),
+            sample_size=val(algo_settings, "sample_size", 16),
+            neighbours_count=val(algo_settings, "neighbours_count", 15),
+            alpha=val(algo_settings, "alpha", 0.15),
+            beta=val(algo_settings, "beta", 0.5),
             iter_limit=self.iter_limit,
-            const_min=val(const_settings, 'const_min', -self.LARGE_FLOAT),
-            const_max=val(const_settings, 'const_max', self.LARGE_FLOAT),
-            predefined_const_prob=val(const_settings, 'predefined_const_prob', 0.0),
-            predefined_const_count=0 if predefined_const_set is None else len(predefined_const_set),
+            const_min=val(const_settings, "const_min", -self.LARGE_FLOAT),
+            const_max=val(const_settings, "const_max", self.LARGE_FLOAT),
+            predefined_const_prob=val(const_settings, "predefined_const_prob", 0.0),
+            predefined_const_count=(0 if predefined_const_set is None else len(predefined_const_set)),
             predefined_const_set=predefined_const_set,
-            problem=self.__problem_to_string(self.problem).encode('utf-8'),
-            feature_probs=self.__feature_probs_to_string(
-                self.feature_probs).encode('utf-8'),
-            cw0=self.class_weight_[0] if hasattr(self, 'class_weight_') else 1.0,
-            cw1=self.class_weight_[1] if hasattr(self, 'class_weight_') else 1.0,
+            problem=self.__problem_to_string(self.problem).encode("utf-8"),
+            feature_probs=self.__feature_probs_to_string(self.feature_probs).encode("utf-8"),
+            cw0=self.class_weight_[0] if hasattr(self, "class_weight_") else 1.0,
+            cw1=self.class_weight_[1] if hasattr(self, "class_weight_") else 1.0,
         )
 
-        if self.precision == 'f32':
-            ret = FitData32(self.handle_, _x, _y,
-                            X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
-        elif self.precision == 'f64':
-            ret = FitData64(self.handle_, _x, _y,
-                            X.shape[0], X.shape[1], ctypes.pointer(fit_params), _sw, _sw_len)
+        if self.precision == "f32":
+            ret = FitData32(
+                self.handle_,
+                _x,
+                _y,
+                X.shape[0],
+                X.shape[1],
+                ctypes.pointer(fit_params),
+                _sw,
+                _sw_len,
+            )
+        elif self.precision == "f64":
+            ret = FitData64(
+                self.handle_,
+                _x,
+                _y,
+                X.shape[0],
+                X.shape[1],
+                ctypes.pointer(fit_params),
+                _sw,
+                _sw_len,
+            )
 
         self.is_fitted_ = True if ret == 0 else False
 
         if not self.is_fitted_:
             return
-        
-        n = cv_params['n']
-        cv_select = cv_params['select']
-        opt_metric = cv_params['opt_metric']
+
+        n = cv_params["n"]
+        cv_select = cv_params["select"]
+        opt_metric = cv_params["opt_metric"]
         self.models_ = self.__get_models()
         if n > 0:
-            invalid_score = self.LARGE_FLOAT*(-opt_metric._sign)
+            invalid_score = self.LARGE_FLOAT * (-opt_metric._sign)
             i = 0
             for m in self.models_:
                 i = i + 1
@@ -835,14 +969,21 @@ class SymbolicSolver(BaseEstimator):
                     continue
                 try:
                     m.cv_results = cross_validate(
-                        estimator=m, X=X, y=y, n_jobs=None, error_score=opt_metric._sign*invalid_score, scoring=cv_params['opt_metric'], **cv_params['cv_params'])
-                    if cv_select == 'mean':
-                        m.cv_score = opt_metric._sign*numpy.mean(m.cv_results['test_score'])
-                    elif cv_select == 'median':
-                        m.cv_score = opt_metric._sign*numpy.median(m.cv_results['test_score'])
+                        estimator=m,
+                        X=X,
+                        y=y,
+                        n_jobs=None,
+                        error_score=opt_metric._sign * invalid_score,
+                        scoring=cv_params["opt_metric"],
+                        **cv_params["cv_params"],
+                    )
+                    if cv_select == "mean":
+                        m.cv_score = opt_metric._sign * numpy.mean(m.cv_results["test_score"])
+                    elif cv_select == "median":
+                        m.cv_score = opt_metric._sign * numpy.median(m.cv_results["test_score"])
                 except Exception:
                     m.cv_score = invalid_score
-                
+
                 if numpy.isnan(m.cv_score):
                     m.cv_score = invalid_score
 
@@ -875,15 +1016,14 @@ class SymbolicSolver(BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self)
-        X = self._validate_data(X, accept_sparse=False, reset=False)
+        X = validate_data(self, X, accept_sparse=False, reset=False)
 
         if use_parsed_model:
-            m = self.models_[0] if id is None else next(
-                (x for x in self.models_ if x.m.id == id), None)
+            m = self.models_[0] if id is None else next((x for x in self.models_ if x.m.id == id), None)
             return m._predict(X, check_input=check_input)
         else:
             return self._predict(X, id, check_input=check_input)
-        
+
     def get_models(self):
         """
         Get population of symbolic models.
@@ -893,7 +1033,7 @@ class SymbolicSolver(BaseEstimator):
         models : array of RegressorMathModel or ClassifierMathModel
         """
         check_is_fitted(self)
-        if not hasattr(self, 'models_'):
+        if not hasattr(self, "models_"):
             self.models_ = self.__get_models()
         return self.models_
 
@@ -903,26 +1043,26 @@ class SymbolicSolver(BaseEstimator):
         if check_input:
             X = check_array(X, accept_sparse=False)
 
-        _x = numpy.ascontiguousarray(X.T).astype(
-            'float32' if self.precision == 'f32' else 'float64')
+        _x = numpy.ascontiguousarray(X.T).astype("float32" if self.precision == "f32" else "float64")
         _y = numpy.ascontiguousarray(
-            numpy.zeros(X.shape[0], dtype=numpy.float32 if self.precision == 'f32' else numpy.float64))
+            numpy.zeros(
+                X.shape[0],
+                dtype=numpy.float32 if self.precision == "f32" else numpy.float64,
+            )
+        )
 
-        params = PredictParams(
-            id if id is not None else 0xffffffff, self.verbose)
+        params = PredictParams(id if id is not None else 0xFFFFFFFF, self.verbose)
 
-        if self.precision == 'f32':
-            Predict32(self.handle_, _x, _y,
-                      X.shape[0], X.shape[1], ctypes.pointer(params))
-        elif self.precision == 'f64':
-            Predict64(self.handle_, _x, _y,
-                      X.shape[0], X.shape[1], ctypes.pointer(params))
+        if self.precision == "f32":
+            Predict32(self.handle_, _x, _y, X.shape[0], X.shape[1], ctypes.pointer(params))
+        elif self.precision == "f64":
+            Predict64(self.handle_, _x, _y, X.shape[0], X.shape[1], ctypes.pointer(params))
         return _y
 
     def __get_models(self):
         models = []
         population_settings = self.population_settings if self.population_settings is not None else self.POPULATION_SETTINGS
-        for i in range(self.num_threads*population_settings['size']):
+        for i in range(self.num_threads * population_settings["size"]):
             model = MathModel()
             GetModel(self.handle_, i, model)
             models.append(self.__create_model(model))
@@ -931,18 +1071,18 @@ class SymbolicSolver(BaseEstimator):
 
     def __problem_to_string(self, problem):
         if isinstance(problem, str):
-            if problem == 'simple' or problem == 'math' or problem == 'fuzzy':
+            if problem == "simple" or problem == "math" or problem == "fuzzy":
                 return problem
-            raise ValueError('Invalid problem type')
+            raise ValueError("Invalid problem type")
         if not isinstance(problem, dict):
-            raise TypeError('Invalid problem type')
+            raise TypeError("Invalid problem type")
         result = ""
         for instr, prob in problem.items():
             if not isinstance(instr, str) or not isinstance(prob, float):
-                raise TypeError('Invalid instruction type')
+                raise TypeError("Invalid instruction type")
             if len(instr) == 0 or prob < 0.0:
-                raise ValueError('Invalid instruction value')
-            result = result + f'{instr} {prob};'
+                raise ValueError("Invalid instruction value")
+            result = result + f"{instr} {prob};"
         return result
 
     def __feature_probs_to_string(self, feat):
@@ -950,11 +1090,11 @@ class SymbolicSolver(BaseEstimator):
         if feat is None:
             return result
         if isinstance(feat, str):
-            if feat.lower() == 'xicor':
-                result = 'xicor'
+            if feat.lower() == "xicor":
+                result = "xicor"
             return result
         for prob in feat:
-            result = result + f'{prob};'
+            result = result + f"{prob};"
         return result
 
     def __parse_metric(self, metric: str):
@@ -962,15 +1102,15 @@ class SymbolicSolver(BaseEstimator):
             return 0
 
         metric = metric.upper()
-        if metric == 'MSE':
+        if metric == "MSE":
             return 0
-        elif metric == 'MAE':
+        elif metric == "MAE":
             return 1
-        elif metric == 'MSLE':
+        elif metric == "MSLE":
             return 2
-        elif metric == 'LOGLOSS':
+        elif metric == "LOGLOSS":
             return 4
-        elif metric == 'LOGITAPPROX':
+        elif metric == "LOGITAPPROX":
             return 20
         return 0
 
@@ -979,34 +1119,51 @@ class SymbolicSolver(BaseEstimator):
             return 0
 
         transformation = transformation.upper()
-        if transformation == 'NONE':
+        if transformation == "NONE":
             return 0
-        elif transformation == 'LOGISTIC':
+        elif transformation == "LOGISTIC":
             return 1
-        elif transformation == 'PSEUDOLOG':
+        elif transformation == "PSEUDOLOG":
             return 2
-        elif transformation == 'ORDINAL':
+        elif transformation == "ORDINAL":
             return 3
         return 0
 
     def __create_model(self, m: MathModel):
-        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == 'regressor' else self.CLASSIFICATION_TARGET_CLIP
+        target_clip_ = self.REGRESSION_TARGET_CLIP if self._estimator_type == "regressor" else self.CLASSIFICATION_TARGET_CLIP
         target_clip = self.target_clip if self.target_clip is not None else target_clip_
-        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == 'regressor' else self.CLASSIFICATION_CV_PARAMS
+        cv_params_ = self.REGRESSION_CV_PARAMS if self._estimator_type == "regressor" else self.CLASSIFICATION_CV_PARAMS
         cv_params = self.cv_params if self.cv_params is not None else cv_params_
-        transformation = self.transformation if self.transformation is not None else 'None'
-        if self._estimator_type == 'regressor':
-            return RegressorMathModel(ParsedMathModel(m), cv_params['opt_metric'], cv_params['opt_params'], transformation, target_clip)
+        transformation = self.transformation if self.transformation is not None else "None"
+        if self._estimator_type == "regressor":
+            return RegressorMathModel(
+                ParsedMathModel(m),
+                cv_params["opt_metric"],
+                cv_params["opt_params"],
+                transformation,
+                target_clip,
+            )
         else:
-            return ClassifierMathModel(ParsedMathModel(m), cv_params['opt_metric'], cv_params['opt_params'], transformation, target_clip, self.class_weight_, self.classes_)
-        
+            return ClassifierMathModel(
+                ParsedMathModel(m),
+                cv_params["opt_metric"],
+                cv_params["opt_params"],
+                transformation,
+                target_clip,
+                self.class_weight_,
+                self.classes_,
+            )
+
     def __getstate__(self):
         all_attributes = self.__dict__.copy()
         # disable warm_start because handle is not valid
-        all_attributes['warm_start'] = False
+        all_attributes["warm_start"] = False
         # store models
-        if hasattr(self,'is_fitted_') and self.is_fitted_:
-            if not hasattr(self, 'models_'):
-                all_attributes['models_'] = self.get_models()
-        all_attributes.pop('handle_', None)
+        if hasattr(self, "is_fitted_") and self.is_fitted_:
+            if not hasattr(self, "models_"):
+                all_attributes["models_"] = self.get_models()
+        all_attributes.pop("handle_", None)
         return all_attributes
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()

@@ -1,10 +1,9 @@
 from .hroch import SymbolicSolver
 from sklearn.base import RegressorMixin
-import numpy as numpy
 from typing import Iterable
 
 
-class SymbolicRegressor(SymbolicSolver, RegressorMixin):
+class SymbolicRegressor(RegressorMixin, SymbolicSolver):
     """
     SymbolicRegressor class
 
@@ -81,7 +80,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         - 'const_size' : (int) Maximum alloved constants in symbolic model, accept also 0.
         - 'min_size': (int) Minimum allowed equation size(as a linear program).
         - 'max_size' : (int) Maximum allowed equation size(as a linear program).
-        
+
     population_settings : dict, default = None
         If not defined SymbolicSolver.POPULATION_SETTINGS is used.
         ```python
@@ -125,31 +124,32 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
         - select : (str) Best model selection method choose from 'mean'or 'median'
         - opt_params : (dict) Parameters passed to scipy.optimize.minimize method
         - opt_metric : (make_scorer) Scoring method
-        
+
     warm_start : bool, default=False
         If True, then the solver will be reused for the next call of fit.
     """
 
-    def __init__(self,
-                 num_threads: int = 1,
-                 time_limit: float = 5.0,
-                 iter_limit: int = 0,
-                 precision: str = 'f32',
-                 problem = 'math',
-                 feature_probs = 'xicor',
-                 random_state: int = 0,
-                 verbose: int = 0,
-                 metric: str = 'MSE',
-                 transformation: str = None,
-                 algo_settings = None,
-                 code_settings = None,
-                 population_settings = None,
-                 init_const_settings = None,
-                 const_settings = None,
-                 target_clip: Iterable = None,
-                 cv_params = None,
-                 warm_start : bool = False
-                 ):
+    def __init__(
+        self,
+        num_threads: int = 1,
+        time_limit: float = 5.0,
+        iter_limit: int = 0,
+        precision: str = "f32",
+        problem="math",
+        feature_probs="xicor",
+        random_state: int = 0,
+        verbose: int = 0,
+        metric: str = "MSE",
+        transformation: str = None,
+        algo_settings=None,
+        code_settings=None,
+        population_settings=None,
+        init_const_settings=None,
+        const_settings=None,
+        target_clip: Iterable = None,
+        cv_params=None,
+        warm_start: bool = False,
+    ):
         super(SymbolicRegressor, self).__init__(
             num_threads=num_threads,
             time_limit=time_limit,
@@ -169,12 +169,12 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             target_clip=target_clip,
             class_weight=None,
             cv_params=cv_params,
-            warm_start=warm_start
+            warm_start=warm_start,
         )
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """
-        Fit the symbolic models according to the given training data. 
+        Fit the symbolic models according to the given training data.
 
         Parameters
         ----------
@@ -201,7 +201,7 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
 
         super(SymbolicRegressor, self).fit(X, y, sample_weight=sample_weight, check_input=check_input)
         return self
-    
+
     def predict(self, X, id=None, check_input=True, use_parsed_model=True):
         """
         Predict regression target for X.
@@ -224,3 +224,6 @@ class SymbolicRegressor(SymbolicSolver, RegressorMixin):
             The predicted values.
         """
         return super(SymbolicRegressor, self).predict(X, id=id, check_input=check_input, use_parsed_model=use_parsed_model)
+
+    def __sklearn_tags__(self):
+        return super().__sklearn_tags__()

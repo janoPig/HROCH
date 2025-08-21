@@ -10,10 +10,9 @@ from sklearn.metrics import r2_score, log_loss, make_scorer
 class TestCommon(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestCommon, self).__init__(*args, **kwargs)
-        self.params = {'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42}
+        self.params = {"num_threads": 1, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42}
         X, y = load_breast_cancer(return_X_y=True)
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=0.2, random_state=self.params['random_state'])
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2, random_state=self.params["random_state"])
 
     def test_fit_predict(self):
         reg = SymbolicRegressor(**self.params)
@@ -50,7 +49,7 @@ class TestCommon(unittest.TestCase):
         reg.fit(self.X_train, self.y_train)
         y = reg.predict_proba(self.X_test)
 
-        reg_cw = NonlinearLogisticRegressor(**self.params, class_weight={0:1.0, 1:2.0})
+        reg_cw = NonlinearLogisticRegressor(**self.params, class_weight={0: 1.0, 1: 2.0})
         reg_cw.fit(self.X_train, self.y_train)
         y_cw = reg_cw.predict_proba(self.X_test)
 
@@ -67,16 +66,18 @@ class TestCommon(unittest.TestCase):
         np.testing.assert_array_almost_equal(y_swd, y, decimal=6)
         self.assertGreater(np.sum(np.abs(y_cw - y)), 0.001)
         np.testing.assert_array_almost_equal(y_cw, y_sw, decimal=6)
-        
+
     def test_classifier(self):
-        params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},
-                  {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42},]
+        params = [
+            {"num_threads": 1, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42},
+            {"num_threads": 2, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42},
+        ]
         for p in params:
             classifiers = [
-            NonlinearLogisticRegressor(**p), 
-            SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
-            FuzzyRegressor(**p),
-            FuzzyClassifier(estimator=FuzzyRegressor(**p)),
+                NonlinearLogisticRegressor(**p),
+                SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
+                FuzzyRegressor(**p),
+                FuzzyClassifier(estimator=FuzzyRegressor(**p)),
             ]
             for model in classifiers:
                 model.fit(self.X_train, self.y_train)
@@ -84,17 +85,19 @@ class TestCommon(unittest.TestCase):
                 yp = model.predict_proba(self.X_test)
                 np.testing.assert_equal(y.shape, self.y_test.shape)
                 np.testing.assert_equal(yp.shape, (self.y_test.shape[0], 2))
-                
+
     def test_classifier_cv(self):
-        cv = {'n':2, 'cv_params':{}, 'select':'mean', 'opt_params':{'method': 'L-BFGS-B'}, 'opt_metric':make_scorer(log_loss, greater_is_better=False, needs_proba=True)}
-        params = [{'num_threads': 1, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},
-                  {'num_threads': 2, 'time_limit': 0.0,'iter_limit': 1000, 'random_state': 42, 'cv_params' : cv},]
+        cv = {"n": 2, "cv_params": {}, "select": "mean", "opt_params": {"method": "L-BFGS-B"}, "opt_metric": make_scorer(log_loss, greater_is_better=False, response_method="predict_proba")}
+        params = [
+            {"num_threads": 1, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42, "cv_params": cv},
+            {"num_threads": 2, "time_limit": 0.0, "iter_limit": 1000, "random_state": 42, "cv_params": cv},
+        ]
         for p in params:
             classifiers = [
-            NonlinearLogisticRegressor(**p), 
-            SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
-            FuzzyRegressor(**p),
-            FuzzyClassifier(estimator=FuzzyRegressor(**p)),
+                NonlinearLogisticRegressor(**p),
+                SymbolicClassifier(estimator=NonlinearLogisticRegressor(**p)),
+                FuzzyRegressor(**p),
+                FuzzyClassifier(estimator=FuzzyRegressor(**p)),
             ]
             for model in classifiers:
                 model.fit(self.X_train, self.y_train)
@@ -107,7 +110,7 @@ class TestCommon(unittest.TestCase):
                     est = model.estimators_[0]
                     equations = est.get_models()[:2]
                     for eq in equations:
-                        self.assertTrue(hasattr(eq, 'cv_score'))
+                        self.assertTrue(hasattr(eq, "cv_score"))
                         eq.fit(self.X_train, self.y_train)
                         y = eq.predict(self.X_test)
                         yp = eq.predict_proba(self.X_test)
@@ -121,26 +124,25 @@ class TestCommon(unittest.TestCase):
             n = len(X)
             order = np.array([i[0] for i in sorted(enumerate(X), key=lambda x: x[1])])
             if ties:
-                l = np.array([sum(y >= Y[order]) for y in Y[order]])
-                r = l.copy()
+                L = np.array([sum(y >= Y[order]) for y in Y[order]])
+                R = L.copy()
                 for j in range(n):
-                    if sum([r[j] == r[i] for i in range(n)]) > 1:
-                        tie_index = np.array([r[j] == r[i] for i in range(n)])
-                        r[tie_index] = np.random.choice(r[tie_index] - np.arange(0, sum([r[j] == r[i] for i in range(n)])), sum(tie_index), replace=False)
-                return 1 - n*sum( abs(r[1:] - r[:n-1]) ) / (2*sum(l*(n - l)))
+                    if sum([R[j] == R[i] for i in range(n)]) > 1:
+                        tie_index = np.array([R[j] == R[i] for i in range(n)])
+                        R[tie_index] = np.random.choice(R[tie_index] - np.arange(0, sum([R[j] == R[i] for i in range(n)])), sum(tie_index), replace=False)
+                return 1 - n * sum(abs(R[1:] - R[: n - 1])) / (2 * sum(L * (n - L)))
             else:
-                r = np.array([sum(y >= Y[order]) for y in Y[order]])
-                return 1 - 3 * sum( abs(r[1:] - r[:n-1]) ) / (n**2 - 1)
+                R = np.array([sum(y >= Y[order]) for y in Y[order]])
+                return 1 - 3 * sum(abs(R[1:] - R[: n - 1])) / (n**2 - 1)
+
         np.random.seed(seed=42)
         n = 100
         f = 5
         X = np.random.random((n, f))
-        y = X[:,0]**3 + 2*X[:,1]**2
-        noise = np.random.normal(0,0.1,n)
+        y = X[:, 0] ** 3 + 2 * X[:, 1] ** 2
         for i in range(f):
-            orig1 = xicor_orig(X[:,i], y)
-            orig2 = xicor_orig(y, X[:,i])
+            orig1 = xicor_orig(X[:, i], y)
+            orig2 = xicor_orig(y, X[:, i])
             orig = max(orig1, orig2)
-            xi = Xicor(X[:,i], y)
+            xi = Xicor(X[:, i], y)
             self.assertAlmostEqual(xi, orig)
-
